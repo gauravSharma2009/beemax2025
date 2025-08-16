@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import Geolocation from 'react-native-geolocation-service';
 import { allCategoryPink } from '../common/colours';
 import { changeAddressState, changePinCodeState } from '../actions/pincodeAction';
 import { connect } from 'react-redux';
@@ -135,20 +136,33 @@ const Pincode = (props) => {
     setPreviousCount(0)
     setCount(0)
     setPincode("")
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== 'granted') {
-        console.log('Permission denied for location');
-        return;
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'ios') {
+        const auth = await Geolocation.requestAuthorization("whenInUse");
+        if (auth === "granted") {
+          //do something if granted...
+        }
       }
 
-      const location = await Location.getCurrentPositionAsync({});
-      console.log("location  :  ", location)
-      setCurrentLocation(location);
-    } catch (error) {
-      console.error('Error fetching current location:', error);
-    }
+      if (Platform.OS === 'android') {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        );
+      }
+    };
+
+    requestLocationPermission().then(() => {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation(position);
+        },
+        (error) => {
+          // See error code charts below.
+          console.log(error.code, error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    })
   };
 
   // return (<View style={{width:'100%', height:"100%", backgroundColor:'red'}}></View>)

@@ -8,8 +8,9 @@ import { changeAuthState } from '../actions/authAction';
 import { getData, storeData } from '../common/asyncStore';
 import { allCategoryPink, BackgroundGray, buttonBgColor, categorySaperator, offPurpleColor, productBorderColor, screenBgColor, textColor, whiteTxtColor } from '../common/colours';
 import Header from '../components/Header';
-import { Ionicons } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Entypo from 'react-native-vector-icons/Entypo';
+
 import { Image } from 'react-native';
 
 function AccountScreen(props) {

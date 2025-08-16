@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { Text, View, ScrollView, TouchableOpacity, Image, ImageBackground, Dimensions } from "react-native"
-import * as Font from 'expo-font';
 import { homePageUrl, server } from "../common/apiConstant";
 import { allCategoryPink, BackgroundGray, buttonBgColor, categoryTextpurpleColor, mrpColor, offColor, productBorderColor, textColor, whiteTxtColor } from "../common/colours";
 import { Rating, AirbnbRating } from 'react-native-ratings';

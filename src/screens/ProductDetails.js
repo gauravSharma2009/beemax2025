@@ -8,11 +8,13 @@ import { allCategoryPink, buttonBgColor, categorySaperator, categoryTextpurpleCo
 import { WebView } from 'react-native-webview';
 import { backgroundColor } from "styled-system"
 import * as Progress from 'react-native-progress';
-import { AntDesign } from '@expo/vector-icons';
+
+
 import { getData, storeData } from "../common/asyncStore"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 import { changeLoadingState } from "../actions/loadingAction"
 // import { PagerTabIndicator, IndicatorViewPager, PagerTitleIndicator, PagerDotIndicator } from 'react-native-best-viewpager';

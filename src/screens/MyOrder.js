@@ -4,7 +4,8 @@ import { getData } from "../common/asyncStore";
 import { allCategoryPink, buttonBgColor, categorySaperator, textColor, whiteTxtColor } from "../common/colours";
 import { currency } from "../common/strings";
 import Header from "../components/Header";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { changeLoadingState } from "../actions/loadingAction";

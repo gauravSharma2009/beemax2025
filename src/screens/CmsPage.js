@@ -3,7 +3,8 @@ import { ScrollView, Text, View } from "react-native"
 import Header from "../components/Header";
 import { server } from '../common/apiConstant'
 import { TouchableOpacity } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import { whiteTxtColor } from "../common/colours";
 import { Image } from "react-native";
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react"
 import { Dimensions, FlatList, Image, Text, TouchableOpacity, View } from "react-native"
 import { allcategorylist, server } from "../common/apiConstant"
 import { BackgroundGray, buttonBgColor, categoryBackground, categorySaperator, subCategoriesname, textColor, whiteTxtColor } from "../common/colours"
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import { storeData } from "../common/asyncStore";
 function Header(props) {
     const { navigation, name, fontSize = 20, onBack, search = false } = props

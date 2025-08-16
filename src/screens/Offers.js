@@ -8,7 +8,8 @@ import { server } from "../common/apiConstant"
 import { getData } from "../common/asyncStore"
 import { BackgroundGray, whiteTxtColor } from "../common/colours"
 import CouponList from "../common/CouponList"
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import { Image } from "react-native"
 import { TouchableOpacity } from "react-native"
 

@@ -8,7 +8,8 @@ import ProductItem from '../common/ProductItem';
 import { getData } from '../common/asyncStore';
 import { Image } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import { offPurpleColor, whiteTxtColor } from '../common/colours';
 
 const ProductSearch = (props) => {

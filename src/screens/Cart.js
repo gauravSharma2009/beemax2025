@@ -7,13 +7,15 @@ import { getData } from "../common/asyncStore"
 import { allCategoryPink, buttonBgColor, categorySaperator, coupanGreen, textColor, textInputColor, whiteTxtColor } from "../common/colours"
 import { currency } from "../common/strings"
 import Header from '../components/Header'
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import { StackActions } from '@react-navigation/native';
 import ValidationView from "../common/ValidationView"
 import { server } from "../common/apiConstant"
 import AddButton from "../common/AddButton"
 import CouponList from "../common/CouponList"
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import { changeCartCount } from "../actions/cartCount"
 import SlotSelection from "../common/SlotSelection"
 import { setPopup } from "../actions/message"

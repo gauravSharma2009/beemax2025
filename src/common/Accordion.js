@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, LayoutAnimation, TextInput } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import { WebView } from 'react-native-webview';
 import { ratingBackground, screenBgColor, textColor, textInputColor, whiteTxtColor } from './colours';
 import { Rating, AirbnbRating } from 'react-native-ratings';
