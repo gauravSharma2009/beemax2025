@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Image, Dimensions, TouchableOpacity } from 'react-native';
-// import Carousel from 'react-native-snap-carousel';
+import Carousel from 'react-native-snap-carousel';
 import FastImage from 'react-native-fast-image'
 
 const SliderComponent = (props) => {
@@ -70,7 +70,17 @@ const SliderComponent = (props) => {
     );
 
     return (
-       <View>Hello Text</View>
+        <Carousel
+            ref={carouselRef}
+            data={bannerData}
+            renderItem={renderItem}
+            sliderWidth={screenWidth}
+            itemWidth={screenWidth}
+            autoplay
+            autoplayDelay={2000} // The delay before the auto-scrolling starts (in milliseconds)
+            autoplayInterval={5000} // The interval between each auto-scroll (in milliseconds)
+            loop
+        />
     );
 };
 

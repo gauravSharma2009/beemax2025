@@ -1,7 +1,8 @@
 import React from "react";
-import { Text } from "react-native";
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Home from "../screens/Home";
 import Categories from "../screens/Categories";
 import Offers from "../screens/Offers";
 import Cart from "../screens/Cart";
@@ -47,6 +48,7 @@ function NavigatorScreen(props) {
                     }}
                 >
                     <Stack.Screen name="Tabs" component={MyTabs} />
+                    {/* <Stack.Screen name="ProductListing" component={ProductListing} /> */}
                     <Stack.Screen name="ProductListing" component={ProductListing} />
                     <Stack.Screen name="ProductDetails" component={ProductDetails} />
                     <Stack.Screen name="CmsPage" component={Cms} />
@@ -76,13 +78,6 @@ function NavigatorScreen(props) {
         </SafeAreaView>
     );
 }
-
-// function NavigatorScreen(props) {
-//     const { isLoading, message, status, open, setPopup } = props
-//     return (
-//        <View> <Text>Hello this is the project</Text></View>
-//     );
-// }
 
 
 

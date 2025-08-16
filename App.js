@@ -74,6 +74,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    alert("Hello 1")
     getAppInformation()
   }, [])
   const [appInfo, setAppInfo] = useState({})
@@ -278,39 +279,44 @@ export default function App() {
       return null;
     }
   }
-  
+
+ 
 
   return (
     <Provider store={store}>
-        <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>
+      <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>
+        {/* <Navigator /> */}
+        <View style={{width:'100%',height:'100%', backgroundColor:'red'}}>
           <Navigator />
-        </GestureHandlerRootView>}</NavigationContainer>
-        {showUpdate && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
-          <View style={{ width: '80%',  backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
-            <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>
-            <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Regular", fontSize: 14, marginTop: 10 }}>{"There are new feature available,\nPlease update your app."}</Text>
-            <View style={{ width: '100%', height: 1, backgroundColor: '#d0d0d0', marginTop: 20 }}></View>
-            <View style={{ width: '100%', justifyContent: 'space-evenly', flexDirection: 'row', marginTop: 10 }}>
-              <TouchableOpacity
-                onPress={() => {
-                 // const link = 'itms-apps://apps.apple.com/id/app/halojasa/id1492671277?l=id';
-                  const link = redirectUrl;
-                 
-                  Linking.canOpenURL(link).then(supported => {
-                    supported && Linking.openURL(link);
-                  }, (err) => console.log(err));
-                }}
-              >
-                <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Update</Text>
-              </TouchableOpacity>
-              {appInfo?.force_update === "0" && <TouchableOpacity
-                onPress={() => { setShowUpdate(false) }}
-              >
-                <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Cancel</Text>
-              </TouchableOpacity>}
-            </View>
+        </View>
+
+      </GestureHandlerRootView>}</NavigationContainer>
+      {false && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
+        <View style={{ width: '80%', backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
+          <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>
+          <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Regular", fontSize: 14, marginTop: 10 }}>{"There are new feature available,\nPlease update your app."}</Text>
+          <View style={{ width: '100%', height: 1, backgroundColor: '#d0d0d0', marginTop: 20 }}></View>
+          <View style={{ width: '100%', justifyContent: 'space-evenly', flexDirection: 'row', marginTop: 10 }}>
+            <TouchableOpacity
+              onPress={() => {
+                // const link = 'itms-apps://apps.apple.com/id/app/halojasa/id1492671277?l=id';
+                const link = redirectUrl;
+
+                Linking.canOpenURL(link).then(supported => {
+                  supported && Linking.openURL(link);
+                }, (err) => console.log(err));
+              }}
+            >
+              <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Update</Text>
+            </TouchableOpacity>
+            {appInfo?.force_update === "0" && <TouchableOpacity
+              onPress={() => { setShowUpdate(false) }}
+            >
+              <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Cancel</Text>
+            </TouchableOpacity>}
           </View>
-        </View>}
+        </View>
+      </View>}
     </Provider>
   );
 }
