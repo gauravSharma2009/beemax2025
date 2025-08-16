@@ -1,6 +1,5 @@
-import { Box, ScrollView, VStack } from "native-base"
 import React, { useEffect, useState } from "react"
-import { Dimensions, FlatList, Image, ImageBackground, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Dimensions, FlatList, Image, ImageBackground, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { allcategorylist, server } from "../common/apiConstant"
 import Header from "../components/Header"
 import { Rating, AirbnbRating } from 'react-native-ratings';

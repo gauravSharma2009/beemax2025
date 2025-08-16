@@ -1,4 +1,3 @@
-import { InputGroup } from "native-base"
 import React, { useEffect, useState } from "react"
 import { Text, View, ScrollView, FlatList, Image, TouchableOpacity, TextInput } from "react-native"
 import { connect } from "react-redux"

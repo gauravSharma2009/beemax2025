@@ -1,6 +1,5 @@
-import { ScrollView } from "native-base"
 import React, { useEffect, useState } from "react"
-import { Dimensions, FlatList, Image, ImageBackground, Text, TouchableOpacity, View } from "react-native"
+import { Dimensions, FlatList, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import { allcategorylist, server } from "../common/apiConstant"
 import { productBorderColor, textColor, whiteTxtColor } from "../common/colours"
 import Header from "../components/Header"

@@ -1,35 +1,22 @@
 import React, { useState, useEffect } from "react";
-import {
-  Link,
-  HStack,
-  Center,
-  Heading,
-  Switch,
-  useColorMode,
-  NativeBaseProvider,
-  extendTheme,
-  VStack,
-  Code,
-} from "native-base";
+
 import { Provider } from 'react-redux';
 import store from './src/store/configureStore';
 
 import { NavigationContainer } from "@react-navigation/native";
-import AppLoading from "expo-app-loading";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import Navigator from "./src/navigation";
-import * as Font from 'expo-font';
-import { Linking, Platform, Text, TouchableOpacity } from "react-native";
+import { Linking, Platform, Text, TouchableOpacity, PermissionsAndroid } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { getData, storeData } from "./src/common/asyncStore";
-import * as Location from 'expo-location';
+import Geolocation from 'react-native-geolocation-service';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { changePinCodeState, changeAddressState } from "./src/actions/pincodeAction";
 import { server } from "./src/common/apiConstant";
+// import SplashScreen from "react-native-splash-screen";
 
 // Define the config
 const config = {
@@ -38,7 +25,6 @@ const config = {
 };
 
 // extend the theme
-export const theme = extendTheme({ config });
 
 export default function App() {
   const [location, setLocation] = useState(null);
@@ -54,22 +40,37 @@ export default function App() {
       }
     }
     getUniqueId()
+    // SplashScreen.hide();
   }, [])
+
   useEffect(() => {
-    (async () => {
-
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'ios') {
+        const auth = await Geolocation.requestAuthorization("whenInUse");
+        if (auth === "granted") {
+          //do something if granted...
+        }
       }
-      Location.setGoogleApiKey('AIzaSyDHhmAsz97YrEw-8xqToaNzgs72yeL-i6k')
 
-      let location = await Location.getCurrentPositionAsync({});
-      // alert(location)
-      //console.log("location  :  ", location)
-      setLocation(location);
-    })();
+      if (Platform.OS === 'android') {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        );
+      }
+    };
+
+    requestLocationPermission().then(() => {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          setLocation(position);
+        },
+        (error) => {
+          // See error code charts below.
+          console.log(error.code, error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    })
   }, []);
 
   useEffect(() => {
@@ -277,37 +278,8 @@ export default function App() {
       return null;
     }
   }
-  const [fontsLoaded] = Font.useFonts({
-    "Poppins-Black": require("./assets/fonts/Poppins-Black.ttf"),
-    "Poppins-BlackItalic": require("./assets/fonts/Poppins-BlackItalic.ttf"),
-    "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
-    "Poppins-BoldItalic": require("./assets/fonts/Poppins-BoldItalic.ttf"),
-    "Poppins-ExtraBold": require("./assets/fonts/Poppins-ExtraBold.ttf"),
-    "Poppins-ExtraBoldItalic": require("./assets/fonts/Poppins-ExtraBoldItalic.ttf"),
-    "Poppins-ExtraLight": require("./assets/fonts/Poppins-ExtraLight.ttf"),
-    "Poppins-ExtraLightItalic": require("./assets/fonts/Poppins-ExtraLightItalic.ttf"),
-    "Poppins-Italic": require("./assets/fonts/Poppins-Italic.ttf"),
-    "Poppins-Light": require("./assets/fonts/Poppins-Light.ttf"),
-    "Poppins-LightItalic": require("./assets/fonts/Poppins-LightItalic.ttf"),
-    "Poppins-Medium": require("./assets/fonts/Poppins-Medium.ttf"),
-    "Poppins-MediumItalic": require("./assets/fonts/Poppins-MediumItalic.ttf"),
-    "Poppins-Regular": require("./assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-SemiBold": require("./assets/fonts/Poppins-SemiBold.ttf"),
-    "Poppins-SemiBoldItalic": require("./assets/fonts/Poppins-SemiBoldItalic.ttf"),
-    "Poppins-Thin": require("./assets/fonts/Poppins-Thin.ttf"),
-    "Poppins-ThinItalic": require("./assets/fonts/Poppins-ThinItalic.ttf"),
-  });
-  let text = 'Waiting..';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
+  
 
-  console.log(location, " Location")
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  }
   return (
     <Provider store={store}>
         <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>

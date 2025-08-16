@@ -1,6 +1,5 @@
-import { ScrollView } from "native-base"
 import React, { useEffect, useState } from "react"
-import { Dimensions, FlatList, Image, ImageBackground, Text, TouchableOpacity, View } from "react-native"
+import { Dimensions, FlatList, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 import { changeLoadingState } from "../actions/loadingAction"

@@ -1,12 +1,13 @@
 import React from "react";
 
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Home from "../../src/screens/Home";
-import Categories from "../../src/screens/Categories";
-import Offers from "../../src/screens/Offers";
-import Cart from "../../src/screens/Cart";
-import Account from "../../src/screens/Account";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Home from "../screens/Home";
+import Categories from "../screens/Categories";
+import Offers from "../screens/Offers";
+import Cart from "../screens/Cart";
+import Account from "../screens/Account";
+
 import HomeStack from "./HomeNavigator";
 import CategoriesStack from "./CategoriesNavigator";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -17,10 +18,9 @@ import LoginWithOTPNew from "../screens/LoginWithOTPNew";
 import CartLogin from "../screens/CartLogin";
 import Address from "../screens/MyAddresses";
 import CustomTab from "../common/CustomTab";
-import { Platform, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Spinner, } from "native-base";
 import { textColor } from "../common/colours";
 import OTPVerify from "../screens/OTPVerifyNew";
 import { SafeAreaView } from "react-native";
@@ -63,7 +63,7 @@ function NavigatorScreen(props) {
 
                 </Stack.Navigator>
                 {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                    <Spinner
+                    <ActivityIndicator
                         color={textColor}
                         size="lg"
                     />

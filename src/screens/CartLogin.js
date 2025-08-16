@@ -1,6 +1,5 @@
-import { ScrollView } from 'native-base';
 import React, { useState } from 'react';
-import { View, useWindowDimensions, Text, TouchableOpacity, TextInput } from 'react-native';
+import { View, useWindowDimensions, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { TabView, SceneMap } from 'react-native-tab-view';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
