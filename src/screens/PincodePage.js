@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, PermissionsAndroid, Platform, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import Geolocation from 'react-native-geolocation-service';
-import { allCategoryPink } from '../common/colours';
+import { allCategoryPink, textColor } from '../common/colours';
 import { changeAddressState, changePinCodeState } from '../actions/pincodeAction';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -180,6 +180,7 @@ const Pincode = (props) => {
           style={styles.input}
           placeholder="Enter your pincode"
           keyboardType="numeric"
+          placeholderTextColor={textColor}
           maxLength={6}
           value={pincode}
           onChangeText={text => {
@@ -188,7 +189,11 @@ const Pincode = (props) => {
         />
         {address ? <Text>{address || ""}</Text> : null}
         <View style={styles.locationContainer}>
-          <Ionicons name="location" size={32} color={allCategoryPink} />
+          {/* <Ionicons name="location" size={32} color={allCategoryPink} /> */}
+               <Image
+                    source={require('../../assets/icons/location.png')}
+                    style={{ width: 32, height: 32, resizeMode: 'contain' }}
+                />
           <View>
             <TouchableOpacity onPress={handleGetCurrentLocation}>
               <Text style={styles.locationText}>Current Location</Text>
@@ -232,6 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 20,
     backgroundColor: '#e1e1e1',
+    color:textColor
   },
   locationContainer: {
     flexDirection: 'row',

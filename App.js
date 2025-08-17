@@ -286,7 +286,7 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>
         {/* <Navigator /> */}
-        <View style={{width:'100%',height:'100%', backgroundColor:'red'}}>
+        <View style={{width:'100%',height:'100%'}}>
           <Navigator />
         </View>
 

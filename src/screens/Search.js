@@ -74,8 +74,8 @@ const ProductSearch = (props) => {
 
     return (
         <KeyboardAvoidingView style={styles.container}>
-            <View style={{  width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', paddingVertical: 15 }}>
-                <Ionicons
+            <View style={{ width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', paddingVertical: 15 }}>
+                {/* <Ionicons
                     onPress={() => {
                         navigation.goBack()
                     }}
@@ -83,7 +83,16 @@ const ProductSearch = (props) => {
                     style={{ marginLeft: 10 }}
                     name="arrow-back-outline"
                     size={28}
-                    color={whiteTxtColor} />
+                    color={whiteTxtColor} /> */}
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: 10 }}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor:'#FFFFFF' }}
+                    />
+                </TouchableOpacity>
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search products"

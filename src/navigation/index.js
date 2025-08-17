@@ -62,8 +62,8 @@ function NavigatorScreen(props) {
                 </Stack.Navigator>
                 {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator
-                        color={textColor}
-                        size="lg"
+                        size={50}
+                        color="green"
                     />
 
                 </View>}
