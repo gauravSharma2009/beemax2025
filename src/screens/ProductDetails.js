@@ -393,12 +393,21 @@ function ProductDetailsScreen(props) {
             /> */}
 
             <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
-                <Ionicons
+                {/* <Ionicons
                     onPress={() => navigation.goBack()}
                     style={{ marginLeft: 10 }}
                     name="ios-chevron-back-outline"
                     size={32}
-                    color={whiteTxtColor} />
+                    color={whiteTxtColor} /> */}
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: 10 ,marginTop:10}}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                    />
+                </TouchableOpacity>
 
                 <View style={{ flexDirection: 'row', alignSelf: 'center', flex: .2, justifyContent: 'flex-end' }}>
                     <TouchableOpacity
@@ -506,7 +515,7 @@ function ProductDetailsScreen(props) {
                             <Text
                                 style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', }}
                             >{"More Options "}</Text>
-                            {console.log("selectedColor  :  ", selectedColor , "   :  ",product )}
+                            {console.log("selectedColor  :  ", selectedColor, "   :  ", product)}
                             {console.log("productDetails[0].Primary_Attributes_Details.Color  :  ", productDetails[0].Primary_Attributes_Details.Color)}
                             <FlatList
                                 numColumns={4}
@@ -518,7 +527,7 @@ function ProductDetailsScreen(props) {
                                         }}
                                         style={{
                                             resizeMode: 'center', alignItems: 'center', width: '21%', height: 100, paddingHorizontal: 10, paddingVertical: 10,
-                                            borderRadius: 5, borderColor:product.id === item ? categoryTextpurpleColor : whiteTxtColor, borderWidth: 1, marginLeft: '2%', 
+                                            borderRadius: 5, borderColor: product.id === item ? categoryTextpurpleColor : whiteTxtColor, borderWidth: 1, marginLeft: '2%',
                                         }}>
                                         <Image
                                             style={{ height: 60, width: '100%' }}
@@ -562,15 +571,16 @@ function ProductDetailsScreen(props) {
                         {pincodeMessage?.availability.toLowerCase() === 'no' ? <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: "red", alignSelf: 'flex-end' }}>Delivery not available in your area.</Text> : null}
 
                     </View> : null}
+{console.log("productDetails[0]  :  ", productDetails[0].specification)}
 
                     <Accordion
                         changeLoadingState={changeLoadingState}
                         product={product}
                         reviews={reviews}
                         data={[
-                            { type: "web", title: 'About Product', content: productDetails[0].description },
-                            { type: 'web', title: 'Specification', content: productDetails[0].specification },
-                            { type: 'review', title: 'Review', content: productDetails[0].specification },
+                            { type: "web", title: 'About Product', content: `${productDetails[0].description} <br/>${productDetails[0].specification}` },
+                            // { type: 'web', title: 'Specification', content: productDetails[0].specification },
+                            // { type: 'review', title: 'Review', content: productDetails[0].specification },
                         ]}
                     />
                 </View>}

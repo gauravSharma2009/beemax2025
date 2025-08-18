@@ -29,6 +29,9 @@ function HomeScreen(props) {
     const [bannerDataHeight, setbannerDataHeight] = useState(null)
     const [topCategoryData, setTopCategoryData] = useState(null)
     const [homeCategoryProduct, setHomeCategoryProdycts] = useState([])
+    const [aTSNData, setAstnData] = useState([])
+
+
     const [homeCategoryPromotionHeight, setHomeCategoryPromotionHeight] = useState(null)
     const [bannerBottom, setBannerBottom] = useState(null)
     const [bannerBottomHeight, setBannerBottomHeight] = useState(null)
@@ -49,6 +52,7 @@ function HomeScreen(props) {
             setLoadingData(true)
             setTopCategoryData(null)
             setHomeCategoryProdycts(null)
+            setAstnData(null)
             //setHomeCategoryPromotionHeight(null)
             setBannerBottom(null)
             //setBannerBottomHeight(null)
@@ -57,12 +61,12 @@ function HomeScreen(props) {
             setFooterBannerData(null)
             setCurrentPage(0)
             getHomePageData()
-            storeData("clickedItem","")
+            storeData("clickedItem", "")
         });
 
         return unsubscribe;
     }, [navigation, pinCode]);
-    
+
     useEffect(() => {
         pinCode && getHomePageData()
 
@@ -85,7 +89,7 @@ function HomeScreen(props) {
             clearInterval(interval);
         };
     }, [currentPag, bannerData?.length]);
-    
+
 
     const checkCartCount = async () => {
         var myHeaders = new Headers();
@@ -170,9 +174,9 @@ function HomeScreen(props) {
 
                         // });
                     }
-                    //console.log("setting data : ", result?.data?.aHomeCategoryProductsDetails)
+                    console.log("setting data : ", [result?.data?.aTSNData])
                     setHomeCategoryProdycts(result?.data?.aHomeCategoryProductsDetails)
-
+                    setAstnData([{ heading: "Try Something New", aTSNData: [result?.data?.aTSNData] }])
                     if (result?.data?.aBannerBottomImageDetails && result?.data?.aBannerBottomImageDetails.length > 0) {
                         let w = 954; let h = 270
 
@@ -303,6 +307,8 @@ function HomeScreen(props) {
             selectedDotStyle={{ backgroundColor: buttonBgColor }}
             pageCount={bannerData?.length} />;
     }
+    aTSNData
+    console.log("aTSNData  :  ", aTSNData)
     return (
         <View
             style={{ flex: 1, backgroundColor: whiteTxtColor }}
@@ -376,7 +382,7 @@ function HomeScreen(props) {
                     setFooterBannerData(null)
                     setCurrentPage(0)
                     getHomePageData()
-                    storeData("clickedItem","")
+                    storeData("clickedItem", "")
                 }}
             >
 
@@ -403,100 +409,111 @@ function HomeScreen(props) {
                             style={{ width: '100%', height: '100%', resizeMode: "center" }}
                         />
                     </TouchableOpacity>}
-                    {/* {bannerData && bannerData && bannerData.length > 0 && < ScrollView
-                    style={{ marginTop: 10, marginBottom: 10 }}
-                    horizontal={true}
-                    ref={scrollRef}
 
-                    showsHorizontalScrollIndicator={false}
-                >
-                    {bannerData.map((item, index) => */}
                     <SliderComponent
                         navigation={navigation}
                         bannerData={bannerData}
                     />
-                    {/* {bannerData && bannerData.length > 0 && <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                        console.log("item  :  ", bannerData[currentPag])
-                        // item.redirection_type === 'category' ? navigation.navigate("ProductListing", { item, from: 'banner' }) : navigation.navigate("ProductDetails", { product: item, from: 'banner' })
-                        bannerData[currentPag].redirection_type === 'category' ? navigation.navigate("ProductListing", { item: bannerData[currentPag], from: 'banner' }) : navigation.navigate("ProductDetails", { product: bannerData[currentPag], from: 'banner' })
 
-                    }}
-                    key={''}
-                    style={{
-                        marginLeft: 0,
-                        padding:5,
-                        //width: bannerDataWidth ,
-                        width: Dimensions.get('window').width
-                    }}>
-                    <Image
-                        style={{ borderRadius: 10, width: "100%", height: 180, resizeMode: 'stretch', }}
-                        source={{ uri: bannerData[currentPag].image_url }}
-                    />
-                </TouchableOpacity>} */}
-                    {/* )}
-                </ScrollView>} */}
-                    {/* <ScrollView
-                style={{ marginTop: 15 }}
-                showsHorizontalScrollIndicator={false}
-                horizontal={true}>
+                    <View  style={{marginTop:10 , marginBottom:10}}>
+                        {aTSNData && aTSNData?.length > 0 && aTSNData?.map((item, index) => {
+                            return <View key={"homeCategories" + index}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, paddingHorizontal: 10 }}>
+                                    <Text style={{ fontFamily: "Poppins-SemiBold", color: 'black', alignSelf: 'center', fontSize: 17 }}>{item?.heading}</Text>
+                                    
+                                </View>
+                                {item && item?.aTSNData && Array.isArray(item?.aTSNData) && item?.aTSNData.length > 0
+                                    && item?.aTSNData[0] &&item?.aTSNData[0].products && Array.isArray(item.aTSNData[0]?.products) && item?.aTSNData[0].products?.length > 0 && < ScrollView
+                                        style={{ marginTop: 0, paddingTop: 0 }}
+                                        horizontal={true}
+                                        showsHorizontalScrollIndicator={false}
+                                    >
+                                        {console.log("Inside the loop", item?.aTSNData[0]?.products)}
+                                        {item?.aTSNData[0].products?.map((product, index) =>
 
-                {topCategoryData && topCategoryData.length > 0 && topCategoryData.map((item, index) => <TouchableOpacity
-                    onPress={() => navigateToCategories(item)}
-                    key={"top" + index}
-                    style={{ justifyContent: 'center', alignItems: 'center', width: 120 }}
-                >
-                    {item.id === '-1' ? <Image
-                        style={{ width: 80, height: 80, borderRadius: 40 }}
-                        source={require('../../assets/icons/category-top.png')}
-                    /> : <Image
-                        style={{ width: 80, height: 80, borderRadius: 40 }}
-                        source={{ uri: item.image_url }}
-                    />}
+                                            <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 5 }}>
+                                                <TouchableOpacity
+                                                    onPress={() => navigation.navigate("ProductDetails", { product })}
+                                                    key={"product" + index}
+                                                    style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
+                                                    <Image
+                                                        style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
+                                                        source={{ uri: product.image_first }}
+                                                    />
 
-                    <Text style={{ fontSize: 12, color: textColor, fontFamily: 'Poppins-Regular', marginTop: 5 }}>{item.title}</Text>
-                </TouchableOpacity>)}
-            </ScrollView> */}
-                    {/* <FlatList
-                    data={topCategoryData}
-                    renderItem={({ item }, index) => <TouchableOpacity
-                        onPress={() => navigateToCategories(item)}
-                        key={"top" + index}
-                        style={{ justifyContent: 'space-between', alignItems: 'center', width: Dimensions.get('window').width * .25, padding: 5 }}
-                    >
-                        <Image
-                            style={{
-                                marginTop: 5, width: Dimensions.get('window').width * .25 - 10
-                                , height: Dimensions.get('window').width * .33 - 10,
-                            }}
-                            source={{ uri: item.image_url }}
-                        />
+                                                    <Text
+                                                        numberOfLines={2}
+                                                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 10, marginLeft: 5 }}>{product.title}</Text>
 
-                    </TouchableOpacity>}
-                    keyExtractor={item => item.id}
-                    numColumns={4}
-                /> */}
+                                                    <View style={{ flexDirection: 'row', marginTop: 5, }}>
+
+                                                        <Text
+                                                            style={{
+                                                                fontSize: 10, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 5, textDecorationLine: 'line-through',
+                                                                textDecorationStyle: 'solid'
+                                                            }}
+                                                        >{currency} {product.mrp_price}</Text>
+                                                    </View>
+                                                    <View style={{ flexDirection: 'row', marginTop: 2 }}>
+                                                        <Text
+                                                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 5 }}
+                                                        >{currency}</Text>
+                                                        <Text
+                                                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
+                                                        >{product.selling_price}</Text>
+
+
+                                                    </View>
+                                                    <ImageBackground
+                                                        style={{ width: 35, height: 35, position: 'absolute', right: -10, top: -10, alignItems: 'center', justifyContent: 'center' }}
+                                                        source={require('../../assets/discount-bg.png')}
+                                                    >
+                                                        <Text
+                                                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
+                                                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
+
+                                                    </ImageBackground>
+
+                                                    <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
+                                                        <AddButton
+                                                            callBack={getHomePageData}
+                                                            changeLoadingState={changeLoadingState}
+                                                            type={"plus"}
+                                                            item={product}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>)}
+                                    </ScrollView>}
+                                {/* <View style={{ backgroundColor: BackgroundGray, paddingVertical: 10, marginTop: 10 }}>
+                                    <Text style={{ fontSize: 14, padding: 10, fontFamily: 'Poppins-SemiBold' }}>{item?.app_promotion_banner_title}</Text>
+                                    <TouchableOpacity
+                                        onPress={() => item?.app_promotion_banner_link_type === 'category' ? navigation.navigate("ProductListing", {
+                                            from: "banner", item: {
+                                                ...item, redirection_id: item?.app_promotion_banner_link_id, title: item?.app_promotion_banner_label,
+                                                heading: item?.heading
+                                            }
+                                        })
+
+                                            : navigation.navigate("ProductDetails", { product: { ...item, redirection_id: item?.app_promotion_banner_link_id }, from: 'banner' })}
+                                    >
+                                        <Image
+
+                                            style={{ width: '95%', height: homeCategoryPromotionHeight, alignSelf: 'center' }}
+                                            source={{ uri: item?.app_promotion_banner }}
+                                        />
+                                    </TouchableOpacity>
+
+                                </View> */}
+                            </View>
+                        })}
+                      
+                    </View>
                     <CategoryHome
                         topCategoryData={topCategoryData}
                         navigateToCategories={navigateToCategories}
                     />
-                    {/* {bannerData && bannerData.length > 0 && <IndicatorViewPager
-                style={{ height: 200, width: "80%", marginVertical: 20,marginHorizontal:20 }}
-                indicator={_renderDotIndicator()}
-            >
-                {bannerData && bannerData.length > 0 && bannerData.map((item, index) =>
-                    <View
-                        key={'' + index}
-                        style={{ backgroundColor: 'white',marginLeft:10 }}>
-                        <Image
-                            style={{ borderRadius: 20, width: "100%", height: 220, resizeMode: 'cover' }}
-                            source={{ uri: item.image_url }}
-                        />
-                    </View>
-                )}
 
-            </IndicatorViewPager>} */}
                     {bannerBottom && bannerBottom.length > 0 && <TouchableOpacity
                         onPress={() => {
                             console.log("bannerBottom", bannerBottom)

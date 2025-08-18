@@ -16,6 +16,7 @@ import { View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { changePinCodeState, changeAddressState } from "./src/actions/pincodeAction";
 import { server } from "./src/common/apiConstant";
+import { changeAppHeaderColorState } from "./src/actions/appHeaderColorAction";
 // import SplashScreen from "react-native-splash-screen";
 
 // Define the config
@@ -74,8 +75,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    alert("Hello 1")
     getAppInformation()
+    getAppHeaderColor()
   }, [])
   const [appInfo, setAppInfo] = useState({})
   const [redirectUrl, setRedirectUrl] = useState("")
@@ -146,6 +147,26 @@ export default function App() {
       })
       .catch((error) => console.error(error));
   }
+
+  const getAppHeaderColor = async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Cookie", "ci_session=b85c4e741fb5381ba7db99de1c8cb392db4b2d09");
+
+    const requestOptions = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+    fetch(`${server}app_header_background`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        if (result && result?.data && result?.data?.appHeaderBackground) {
+            store.dispatch(changeAppHeaderColorState(result?.data?.appHeaderBackground?.color))
+        }
+      })
+      .catch((error) => console.error(error));
+  }
+
   const extractPincodeFromAddress = (address) => {
     // Split the address by commas
     console.log("address  :  ", address)
@@ -281,7 +302,6 @@ export default function App() {
   }
 
  
-
   return (
     <Provider store={store}>
       <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, LayoutAnimation, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, LayoutAnimation, TextInput, Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import { WebView } from 'react-native-webview';
@@ -107,10 +107,14 @@ const Accordion = (props) => {
             onPress={() => toggleSection(index)}
           >
             <Text style={styles.sectionTitle}>{section.title}</Text>
-            <AntDesign
+            {/* <AntDesign
               name={expandedSection === index ? 'up' : 'down'}
               size={16}
               color="#000"
+            /> */}
+            <Image
+            source={require('../../assets/down-arrow.png')}
+            style={{ width: 20, height: 20, alignSelf: 'center', marginRight: 10, tintColor: textColor }}
             />
           </TouchableOpacity>
           {expandedSection === index && (

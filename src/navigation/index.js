@@ -34,11 +34,11 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function NavigatorScreen(props) {
-    const { isLoading, message, status, open, setPopup } = props
+    const { isLoading, message, status, open, setPopup, appHeaderColor } = props
     return (
         <SafeAreaView style={{ width: '100%', height: '100%', }}>
             <StatusBar style="light"
-                backgroundColor="#3b006a"
+                backgroundColor={appHeaderColor}
             />
             <View style={{ width: '100%', height: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 0 }}>
                 <Stack.Navigator
@@ -170,6 +170,7 @@ const mapStateToProps = (state) => {
         message: message,
         status: status,
         open: open,
+        appHeaderColor: state.appHeaderColor.appHeaderColor,
         //isLoading: true
 
     }
