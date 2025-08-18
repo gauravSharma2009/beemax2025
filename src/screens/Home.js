@@ -21,6 +21,8 @@ import { changeCartCount } from "../actions/cartCount";
 import SliderComponent from "../common/SliderComponent";
 import { setPopup } from "../actions/message";
 import CategoryHome from "../common/CategoryHome";
+import OrderStatusBottomSheet from "../components/OrderStatusBottomSheet";
+import GroceryHomeScreen from "../components/GroceryHomeScreen";
 
 function HomeScreen(props) {
     const { navigation, changeLoadingState, pinCode, address, changeCartCount, setPopup } = props
@@ -42,6 +44,9 @@ function HomeScreen(props) {
     const [footerBannerData, setFooterBannerData] = useState(null)
     const [loadingData, setLoadingData] = useState(true)
     const [refreshCounter, setRefreshCounter] = useState(1)
+    const [showOrderStatus, setShowOrderStatus] = useState(false)
+
+
 
     const AUTO_SCROLL_INTERVAL = 2000; // 5 seconds
     useEffect(() => {
@@ -290,7 +295,7 @@ function HomeScreen(props) {
         //     navigation.navigate("SubCategories", { item })
         // }
     }, [navigation])
-    
+
     const getFirstFourElements = useCallback((item) => {
         return item.product_details;
         if (item && item.product_details && Array.isArray(item.product_details)) {
@@ -311,7 +316,7 @@ function HomeScreen(props) {
 
     // Memoize expensive calculations
     const windowWidth = useMemo(() => Dimensions.get('window').width, [])
-    
+
     const bannerDimensions = useMemo(() => {
         if (!bannerData?.length) return null
         const w = 969; const h = 501
@@ -432,7 +437,7 @@ function HomeScreen(props) {
             <StatusBar style="light"
                 backgroundColor="#3b006a"
             /> */}
-
+            {/* <GroceryHomeScreen /> */}
             <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
                 <TouchableOpacity
                     onPress={handlePincodePress}
@@ -503,15 +508,15 @@ function HomeScreen(props) {
                         bannerData={bannerData}
                     />
 
-                    <View  style={{marginTop:10 , marginBottom:10}}>
+                    <View style={{ marginTop: 10, marginBottom: 10 }}>
                         {aTSNData && aTSNData?.length > 0 && aTSNData?.map((item, index) => {
                             return <View key={"homeCategories" + index}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, paddingHorizontal: 10 }}>
                                     <Text style={{ fontFamily: "Poppins-SemiBold", color: 'black', alignSelf: 'center', fontSize: 17 }}>{item?.heading}</Text>
-                                    
+
                                 </View>
                                 {item && item?.aTSNData && Array.isArray(item?.aTSNData) && item?.aTSNData.length > 0
-                                    && item?.aTSNData[0] &&item?.aTSNData[0].products && Array.isArray(item.aTSNData[0]?.products) && item?.aTSNData[0].products?.length > 0 && < ScrollView
+                                    && item?.aTSNData[0] && item?.aTSNData[0].products && Array.isArray(item.aTSNData[0]?.products) && item?.aTSNData[0].products?.length > 0 && < ScrollView
                                         style={{ marginTop: 0, paddingTop: 0 }}
                                         horizontal={true}
                                         showsHorizontalScrollIndicator={false}
@@ -548,7 +553,7 @@ function HomeScreen(props) {
                                 </View> */}
                             </View>
                         })}
-                      
+
                     </View>
                     <CategoryHome
                         topCategoryData={topCategoryData}
@@ -595,8 +600,8 @@ function HomeScreen(props) {
                                     <Text style={{ fontSize: 14, padding: 10, fontFamily: 'Poppins-SemiBold' }}>{item.app_promotion_banner_title}</Text>
                                     <TouchableOpacity
                                         onPress={() => handleBannerPress({
-                                            ...item, 
-                                            redirection_id: item.app_promotion_banner_link_id, 
+                                            ...item,
+                                            redirection_id: item.app_promotion_banner_link_id,
                                             title: item.app_promotion_banner_label
                                         }, item.app_promotion_banner_link_type)}
                                     >
@@ -639,7 +644,13 @@ function HomeScreen(props) {
                     </ScrollView>}
                 </ScrollView >
             </PTRView>
-
+            <OrderStatusBottomSheet
+                visible={showOrderStatus}
+                onClose={() => setShowOrderStatus(false)}
+                orderId="BM-3498"
+                deliveryTime="Delivery in 19 minutes*"
+                currentStatus="Order Placed"
+            />
         </View >
 
     )
