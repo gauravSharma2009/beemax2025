@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Text, View, ScrollView, TouchableOpacity, Image, ImageBackground, Dimensions } from "react-native"
 import { homePageUrl, server } from "../common/apiConstant";
 import { allCategoryPink, BackgroundGray, buttonBgColor, categoryTextpurpleColor, mrpColor, offColor, productBorderColor, textColor, whiteTxtColor } from "../common/colours";
@@ -91,7 +91,7 @@ function HomeScreen(props) {
     }, [currentPag, bannerData?.length]);
 
 
-    const checkCartCount = async () => {
+    const checkCartCount = useCallback(async () => {
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Cookie", "ci_session=2bf9726eebea7926b7c73664c9a4797ab758ba13");
@@ -113,10 +113,10 @@ function HomeScreen(props) {
                 console.log('error', error)
 
             });
-    }
+    }, [changeCartCount])
 
 
-    const getHomePageData = async () => {
+    const getHomePageData = useCallback(async () => {
         //console.log("calling data")
         const uniqueId = await getData("uniqueId")
 
@@ -217,9 +217,9 @@ function HomeScreen(props) {
                 setLoadingData(false)
 
             });
-    }
+    }, [pinCode, changeLoadingState])
 
-    const getCartCount = async (id) => {
+    const getCartCount = useCallback(async (id) => {
 
         var myHeaders = new Headers();
         myHeaders.append("Cookie", "ci_session=874a68062a45ca215dc1e254f1c624dd3d92053c");
@@ -237,8 +237,8 @@ function HomeScreen(props) {
                 }
             })
             .catch(error => console.log('error', error));
-    }
-    const addToCart = async (product) => {
+    }, [])
+    const addToCart = useCallback(async (product) => {
         // console.log("  product:  ", product)
         // return;
         var myHeaders = new Headers();
@@ -280,8 +280,8 @@ function HomeScreen(props) {
                 changeLoadingState(false)
 
             });
-    }
-    const navigateToCategories = (item) => {
+    }, [changeLoadingState, getCartCount, setPopup])
+    const navigateToCategories = useCallback((item) => {
         navigation.navigate("ProductListing", { item })
 
         // if (item.id === '-1') {
@@ -289,8 +289,9 @@ function HomeScreen(props) {
         // } else {
         //     navigation.navigate("SubCategories", { item })
         // }
-    }
-    const getFirstFourElements = (item) => {
+    }, [navigation])
+    
+    const getFirstFourElements = useCallback((item) => {
         return item.product_details;
         if (item && item.product_details && Array.isArray(item.product_details)) {
             if (item.product_details.length > 4) {
@@ -301,13 +302,127 @@ function HomeScreen(props) {
         } else {
             return []; // Return an empty array if the input structure is not as expected
         }
-    }
-    const _renderDotIndicator = () => {
+    }, [])
+    const _renderDotIndicator = useCallback(() => {
         return <PagerDotIndicator
             selectedDotStyle={{ backgroundColor: buttonBgColor }}
             pageCount={bannerData?.length} />;
-    }
-    aTSNData
+    }, [bannerData?.length])
+
+    // Memoize expensive calculations
+    const windowWidth = useMemo(() => Dimensions.get('window').width, [])
+    
+    const bannerDimensions = useMemo(() => {
+        if (!bannerData?.length) return null
+        const w = 969; const h = 501
+        return {
+            width: w * (170 / h),
+            height: h
+        }
+    }, [bannerData?.length])
+
+    const promotionHeight = useMemo(() => {
+        const w = 1028; const h = 268
+        return ((windowWidth * .95) / w) * h
+    }, [windowWidth])
+
+    const bottomBannerHeight = useMemo(() => {
+        const w = 954; const h = 270
+        return ((windowWidth * .95) / w) * h
+    }, [windowWidth])
+
+    const topBannerCalculatedHeight = useMemo(() => {
+        const w = 1170; const h = 194
+        return (windowWidth / w) * h
+    }, [windowWidth])
+
+    // Memoized Product Item Component
+    const ProductItem = useMemo(() => {
+        return React.memo(({ product, index, onPress, onAddToCart }) => (
+            <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 5 }}>
+                <TouchableOpacity
+                    onPress={() => onPress(product)}
+                    style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
+                    <Image
+                        style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
+                        source={{ uri: product.image_first }}
+                    />
+
+                    <Text
+                        numberOfLines={2}
+                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 10, marginLeft: 5 }}>{product.title}</Text>
+
+                    <View style={{ flexDirection: 'row', marginTop: 5, }}>
+                        <Text
+                            style={{
+                                fontSize: 10, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 5, textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid'
+                            }}
+                        >{currency} {product.mrp_price}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', marginTop: 2 }}>
+                        <Text
+                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 5 }}
+                        >{currency}</Text>
+                        <Text
+                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
+                        >{product.selling_price}</Text>
+                    </View>
+                    <ImageBackground
+                        style={{ width: 35, height: 35, position: 'absolute', right: -10, top: -10, alignItems: 'center', justifyContent: 'center' }}
+                        source={require('../../assets/discount-bg.png')}
+                    >
+                        <Text
+                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
+                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
+                    </ImageBackground>
+
+                    <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
+                        <AddButton
+                            callBack={getHomePageData}
+                            changeLoadingState={changeLoadingState}
+                            type={"plus"}
+                            item={product}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </View>
+        ))
+    }, [])
+
+    // Memoized navigation handlers
+    const handleProductPress = useCallback((product) => {
+        navigation.navigate("ProductDetails", { product })
+    }, [navigation])
+
+    const handleBannerPress = useCallback((bannerItem, type) => {
+        if (type === 'category') {
+            navigation.navigate("ProductListing", { item: bannerItem, from: 'banner' })
+        } else if (type === 'page') {
+            navigation.navigate("CmsPage", { item: bannerItem, from: 'banner' })
+        } else {
+            navigation.navigate("ProductDetails", { product: bannerItem, from: 'banner' })
+        }
+    }, [navigation])
+
+    const handleRefresh = useCallback(() => {
+        setbannerData(null)
+        setLoadingData(true)
+        setTopCategoryData(null)
+        setHomeCategoryProdycts(null)
+        setTopBannerData(null)
+        setBannerBottom(null)
+        setFooterBannerData(null)
+        setCurrentPage(0)
+        getHomePageData()
+        storeData("clickedItem", "")
+    }, [getHomePageData])
+
+    // Memoized navigation handlers for header
+    const handlePincodePress = useCallback(() => navigation.navigate("PincodePage"), [navigation])
+    const handleSearchPress = useCallback(() => navigation.navigate("ProductSearchPage"), [navigation])
+    const handleUserPress = useCallback(() => navigation.navigate("UserScreen"), [navigation])
+
     console.log("aTSNData  :  ", aTSNData)
     return (
         <View
@@ -320,16 +435,13 @@ function HomeScreen(props) {
 
             <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
                 <TouchableOpacity
-                    onPress={() => navigation.navigate("PincodePage")}
+                    onPress={handlePincodePress}
                     style={{ flexDirection: 'row', alignSelf: 'center', flex: .25, justifyContent: 'center', height: '100%', }}
                 >
                     <Text
-
                         numberOfLines={1}
                         style={{ alignSelf: 'center', color: 'white', marginLeft: 10, flex: .8, fontSize: 15 }}>{address}</Text>
-                    {/* <Text style={{ marginTop: 5, flex: .2, alignSelf: 'center', color: 'white', fontSize: 18, transform: [{ rotate: '90deg' }] }}>{">"}</Text> */}
                     <Image
-                        onPress={() => navigation.navigate("PincodePage")}
                         style={{ width: 15, height: 15, flex: .2, alignSelf: 'center' }}
                         source={require('../../assets/down-arrow.png')}
                     />
@@ -342,10 +454,9 @@ function HomeScreen(props) {
                 </View>
 
                 <View style={{ flexDirection: 'row', alignSelf: 'center', flex: .2, justifyContent: 'flex-end' }}>
-
                     <TouchableOpacity
                         style={{ alignItems: 'center' }}
-                        onPress={() => navigation.navigate("ProductSearchPage")}
+                        onPress={handleSearchPress}
                     >
                         <Image
                             style={{ width: 20, height: 20, alignSelf: 'center', marginRight: 5 }}
@@ -355,35 +466,18 @@ function HomeScreen(props) {
 
                     <TouchableOpacity
                         style={{ alignItems: 'center' }}
-                        onPress={() => navigation.navigate("UserScreen")}
+                        onPress={handleUserPress}
                     >
                         <Image
                             style={{ width: 20, height: 20, alignSelf: 'center', marginHorizontal: 10 }}
                             source={require('../../assets/user.png')}
                         />
                     </TouchableOpacity>
-
                 </View>
             </View>
             <PTRView
                 style={{ flex: .94, }}
-                onRefresh={() => {
-                    // setRefreshCounter(refreshCounter + 1)
-                    //alert("Hello")
-                    setbannerData(null)
-                    setLoadingData(true)
-                    setTopCategoryData(null)
-                    setHomeCategoryProdycts(null)
-                    setTopBannerData(null)
-                    //setHomeCategoryPromotionHeight(null)
-                    setBannerBottom(null)
-                    //setBannerBottomHeight(null)
-                    //setTopBannerHeight(null)
-                    setFooterBannerData(null)
-                    setCurrentPage(0)
-                    getHomePageData()
-                    storeData("clickedItem", "")
-                }}
+                onRefresh={handleRefresh}
             >
 
                 <ScrollView
@@ -396,14 +490,8 @@ function HomeScreen(props) {
              */}
                     {topBannerData && <TouchableOpacity
                         activeOpacity={1}
-                        onPress={(e) => {
-                            e.preventDefault()
-                            topBannerData.redirection_type === 'category' ? navigation.navigate("ProductListing", { item: topBannerData, from: 'banner' }) : topBannerData.redirection_type === 'page' ?
-                                navigation.navigate("CmsPage", { item: topBannerData, from: 'banner' })
-                                : navigation.navigate("ProductDetails", { product: topBannerData, from: 'banner' })
-
-                        }}
-                        style={{ width: '100%', height: topBannerHeight, marginBottom: 7 }}>
+                        onPress={() => handleBannerPress(topBannerData, topBannerData.redirection_type)}
+                        style={{ width: '100%', height: topBannerCalculatedHeight, marginBottom: 7 }}>
                         <Image
                             source={{ uri: topBannerData.image_url }}
                             style={{ width: '100%', height: '100%', resizeMode: "center" }}
@@ -430,60 +518,13 @@ function HomeScreen(props) {
                                     >
                                         {console.log("Inside the loop", item?.aTSNData[0]?.products)}
                                         {item?.aTSNData[0].products?.map((product, index) =>
-
-                                            <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 5 }}>
-                                                <TouchableOpacity
-                                                    onPress={() => navigation.navigate("ProductDetails", { product })}
-                                                    key={"product" + index}
-                                                    style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
-                                                    <Image
-                                                        style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
-                                                        source={{ uri: product.image_first }}
-                                                    />
-
-                                                    <Text
-                                                        numberOfLines={2}
-                                                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 10, marginLeft: 5 }}>{product.title}</Text>
-
-                                                    <View style={{ flexDirection: 'row', marginTop: 5, }}>
-
-                                                        <Text
-                                                            style={{
-                                                                fontSize: 10, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 5, textDecorationLine: 'line-through',
-                                                                textDecorationStyle: 'solid'
-                                                            }}
-                                                        >{currency} {product.mrp_price}</Text>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'row', marginTop: 2 }}>
-                                                        <Text
-                                                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 5 }}
-                                                        >{currency}</Text>
-                                                        <Text
-                                                            style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
-                                                        >{product.selling_price}</Text>
-
-
-                                                    </View>
-                                                    <ImageBackground
-                                                        style={{ width: 35, height: 35, position: 'absolute', right: -10, top: -10, alignItems: 'center', justifyContent: 'center' }}
-                                                        source={require('../../assets/discount-bg.png')}
-                                                    >
-                                                        <Text
-                                                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
-                                                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
-
-                                                    </ImageBackground>
-
-                                                    <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
-                                                        <AddButton
-                                                            callBack={getHomePageData}
-                                                            changeLoadingState={changeLoadingState}
-                                                            type={"plus"}
-                                                            item={product}
-                                                        />
-                                                    </View>
-                                                </TouchableOpacity>
-                                            </View>)}
+                                            <ProductItem
+                                                key={'product_details' + index}
+                                                product={product}
+                                                index={index}
+                                                onPress={handleProductPress}
+                                            />
+                                        )}
                                     </ScrollView>}
                                 {/* <View style={{ backgroundColor: BackgroundGray, paddingVertical: 10, marginTop: 10 }}>
                                     <Text style={{ fontSize: 14, padding: 10, fontFamily: 'Poppins-SemiBold' }}>{item?.app_promotion_banner_title}</Text>
@@ -515,15 +556,9 @@ function HomeScreen(props) {
                     />
 
                     {bannerBottom && bannerBottom.length > 0 && <TouchableOpacity
-                        onPress={() => {
-                            console.log("bannerBottom", bannerBottom)
-                            bannerBottom[0].redirection_type === 'category' ? navigation.navigate("ProductListing", { item: bannerBottom[0], from: 'banner' }) :
-                                navigation.navigate("ProductDetails", { product: bannerBottom[0], from: 'banner' })
-
-                        }}
+                        onPress={() => handleBannerPress(bannerBottom[0], bannerBottom[0].redirection_type)}
                     ><Image
-
-                            style={{ width: Dimensions.get("window").width * .95, height: bannerBottomHeight, marginTop: 20, alignSelf: 'center' }}
+                            style={{ width: windowWidth * .95, height: bottomBannerHeight, marginTop: 20, alignSelf: 'center' }}
                             source={{ uri: bannerBottom[0]?.image_url }}
                         /></TouchableOpacity>}
                     {/* {console.log("homeCategoryProduct . :  ", homeCategoryProduct)} */}
@@ -548,83 +583,25 @@ function HomeScreen(props) {
                                     showsHorizontalScrollIndicator={false}
                                 >
                                     {getFirstFourElements(item).map((product, index) =>
-                                        <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 5 }}>
-                                            <TouchableOpacity
-                                                onPress={() => navigation.navigate("ProductDetails", { product })}
-                                                key={"product" + index}
-                                                style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
-                                                <Image
-                                                    style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
-                                                    source={{ uri: product.image_first }}
-                                                />
-                                                {/* <FastImage
-                                                style={{ width: 100, height: 160 }}
-                                                source={{
-                                                    uri: product.image_first,
-                                                    // headers: { Authorization: 'someAuthToken' },
-                                                    priority: FastImage.priority.normal,
-                                                }}
-                                                resizeMode={FastImage.resizeMode.contain}
-                                            /> */}
-                                                <Text
-                                                    numberOfLines={2}
-                                                    style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 10, marginLeft: 5 }}>{product.title}</Text>
-
-                                                <View style={{ flexDirection: 'row', marginTop: 5, }}>
-
-                                                    <Text
-                                                        style={{
-                                                            fontSize: 10, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 5, textDecorationLine: 'line-through',
-                                                            textDecorationStyle: 'solid'
-                                                        }}
-                                                    >{currency} {product.mrp_price}</Text>
-                                                </View>
-                                                <View style={{ flexDirection: 'row', marginTop: 2 }}>
-                                                    <Text
-                                                        style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 5 }}
-                                                    >{currency}</Text>
-                                                    <Text
-                                                        style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
-                                                    >{product.selling_price}</Text>
-
-
-                                                </View>
-                                                <ImageBackground
-                                                    style={{ width: 35, height: 35, position: 'absolute', right: -10, top: -10, alignItems: 'center', justifyContent: 'center' }}
-                                                    source={require('../../assets/discount-bg.png')}
-                                                >
-                                                    <Text
-                                                        style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
-                                                    >{product.discount_percentage + '%' + "\nOFF"}</Text>
-
-                                                </ImageBackground>
-
-                                                <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
-                                                    <AddButton
-                                                        callBack={getHomePageData}
-                                                        changeLoadingState={changeLoadingState}
-                                                        type={"plus"}
-                                                        item={product}
-                                                    />
-                                                </View>
-                                            </TouchableOpacity>
-                                        </View>)}
+                                        <ProductItem
+                                            key={'product_details' + index}
+                                            product={product}
+                                            index={index}
+                                            onPress={handleProductPress}
+                                        />
+                                    )}
                                 </ScrollView>}
                                 <View style={{ backgroundColor: BackgroundGray, paddingVertical: 10, marginTop: 10 }}>
                                     <Text style={{ fontSize: 14, padding: 10, fontFamily: 'Poppins-SemiBold' }}>{item.app_promotion_banner_title}</Text>
                                     <TouchableOpacity
-                                        onPress={() => item.app_promotion_banner_link_type === 'category' ? navigation.navigate("ProductListing", {
-                                            from: "banner", item: {
-                                                ...item, redirection_id: item.app_promotion_banner_link_id, title: item.app_promotion_banner_label
-                                            }
-                                        })
-
-                                            : navigation.navigate("ProductDetails", { product: { ...item, redirection_id: item.app_promotion_banner_link_id }, from: 'banner' })}
+                                        onPress={() => handleBannerPress({
+                                            ...item, 
+                                            redirection_id: item.app_promotion_banner_link_id, 
+                                            title: item.app_promotion_banner_label
+                                        }, item.app_promotion_banner_link_type)}
                                     >
-                                        {/* {{ from: "banner", item: { ...item, redirection_id: item.app_promotion_banner_link_id,title:item.app_promotion_banner_label} */}
                                         <Image
-
-                                            style={{ width: '95%', height: homeCategoryPromotionHeight, alignSelf: 'center' }}
+                                            style={{ width: '95%', height: promotionHeight, alignSelf: 'center' }}
                                             source={{ uri: item.app_promotion_banner }}
                                         />
                                     </TouchableOpacity>
@@ -651,10 +628,7 @@ function HomeScreen(props) {
                         showsHorizontalScrollIndicator={false}
                     >
                         {footerBannerData.banners.map((product, index) => <TouchableOpacity
-                            onPress={() => {
-                                //console.log("product  :  ", product);
-                                product.redirection_type === 'category' ? navigation.navigate("ProductListing", { item: product, from: 'banner' }) : navigation.navigate("ProductDetails", { product, from: 'banner' })
-                            }}
+                            onPress={() => handleBannerPress(product, product.redirection_type)}
                             key={"product1" + index}
                             style={{ borderRadius: 10, borderColor: productBorderColor, borderWidth: 2, width: 154, marginLeft: 10 }}>
                             <Image
