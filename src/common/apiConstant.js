@@ -1,6 +1,6 @@
 //export const server = "https://www.beemax.in/demo/dynamic1/rest/api/";
-// export const server = "https://www.beemax.in/rest/api/";
-export const server = "https://www.staging.beemax.in/rest/api/";
+ export const server = "https://www.beemax.in/rest/api/";
+//export const server = "https://www.staging.beemax.in/rest/api/";
 
 export const homePageUrl = "homepagedata";
 export const allcategorylist = "allcategorylist";
