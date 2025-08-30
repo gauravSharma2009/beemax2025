@@ -428,7 +428,7 @@ function HomeScreen(props) {
     const handleSearchPress = useCallback(() => navigation.navigate("ProductSearchPage"), [navigation])
     const handleUserPress = useCallback(() => navigation.navigate("UserScreen"), [navigation])
 
-    console.log("aTSNData  :  ", aTSNData)
+    // console.log("aTSNData  :  ", aTSNData)
     return (
         <View
             style={{ flex: 1, backgroundColor: whiteTxtColor }}
@@ -644,13 +644,13 @@ function HomeScreen(props) {
                     </ScrollView>}
                 </ScrollView >
             </PTRView>
-            <OrderStatusBottomSheet
+            {/* <OrderStatusBottomSheet
                 visible={showOrderStatus}
                 onClose={() => setShowOrderStatus(false)}
                 orderId="BM-3498"
                 deliveryTime="Delivery in 19 minutes*"
                 currentStatus="Order Placed"
-            />
+            /> */}
         </View >
 
     )

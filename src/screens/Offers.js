@@ -57,18 +57,21 @@ function OffersScreen(props) {
     }
 
     return (
-        <View style={{ flex: 1 ,backgroundColor:BackgroundGray}}>
+        <View style={{ flex: 1, backgroundColor: BackgroundGray }}>
             {/* <StatusBar style="light"
                 backgroundColor="#3b006a"
             /> */}
 
             <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
-                <Ionicons
+                <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 10 }}
-                    name="ios-chevron-back-outline"
-                    size={32}
-                    color={whiteTxtColor} />
+                    style={{ marginLeft: 10, marginTop: 10 }}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                    />
+                </TouchableOpacity>
 
                 {/* <View style={{ flexDirection: 'row', alignSelf: 'center', flex: .2, justifyContent: 'flex-end' }}>
                     <Image

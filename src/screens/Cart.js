@@ -520,7 +520,7 @@ function CartScreen(props) {
                         borderRadius: 7, backgroundColor: coupanGreen, paddingHorizontal: 10, height: 35, justifyContent: 'center',
                         flex: item.is_deal_product && item.is_deal_product == '1' ? .32 : 1, alignSelf: 'flex-end'
                     }}>
-                        <Text style={{ color: '#ffffff', fontSize: 12, fontFamily: 'Poppins-Medium',alignSelf:'center' }}>Deal Applied</Text>
+                        <Text style={{ color: '#ffffff', fontSize: 12, fontFamily: 'Poppins-Medium', alignSelf: 'center' }}>Deal Applied</Text>
                     </View>}
                 </View>
                 <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end', flexDirection: 'row', flex: .4, justifyContent: 'flex-end', }}>
@@ -875,7 +875,7 @@ function CartScreen(props) {
         <View style={{ flex: 1 }}>
 
             <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'center', flexDirection: 'row', paddingVertical: 15 }}>
-                <Ionicons
+                {/* <Ionicons
                     onPress={() => {
                         if (iAddress) {
                             setIsCart(true)
@@ -887,7 +887,23 @@ function CartScreen(props) {
                     style={{ marginLeft: 0, position: 'absolute', left: 5, alignSelf: 'center' }}
                     name="ios-chevron-back-outline"
                     size={32}
-                    color={whiteTxtColor} />
+                    color={whiteTxtColor} /> */}
+                <TouchableOpacity
+                    onPress={() => {
+                        if (iAddress) {
+                            setIsCart(true)
+                            setAddress(false)
+                        }
+                        else
+                            navigation.goBack()
+                    }}
+                    style={{ marginLeft: 10, marginTop: 10, position: 'absolute', left: 10, alignSelf: 'center' }}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                    />
+                </TouchableOpacity>
                 <View style={{ flex: .6, justifyContent: 'center', alignSelf: 'center' }}>
                     <Image
                         style={{ alignSelf: 'center', width: 138, height: 30 }}

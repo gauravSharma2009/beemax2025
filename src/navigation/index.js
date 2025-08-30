@@ -36,11 +36,11 @@ const Tab = createBottomTabNavigator();
 function NavigatorScreen(props) {
     const { isLoading, message, status, open, setPopup, appHeaderColor } = props
     return (
-        <SafeAreaView style={{ width: '100%', height: '100%', }}>
-            <StatusBar style="light"
+        <SafeAreaView style={{ width: '100%', height: '100%', backgroundColor: appHeaderColor }}>
+            {/* <StatusBar style="light"
                 backgroundColor={appHeaderColor}
-            />
-            <View style={{ width: '100%', height: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 0 }}>
+            /> */}
+            <View style={{ width: '100%', height: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 25, paddingTop: Platform.OS === 'ios' ? 0 : 42 }}>
                 <Stack.Navigator
                     screenOptions={{
                         headerShown: false
@@ -57,7 +57,7 @@ function NavigatorScreen(props) {
                     <Stack.Screen name="OtpVerifyFlow" component={OTPVerify} />
                     <Stack.Screen name="UserScreen" component={UserNavigator} />
                     <Stack.Screen name="ProductSearchPage" component={ProductSearchPage} />
-                    
+
 
                 </Stack.Navigator>
                 {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>

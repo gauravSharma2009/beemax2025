@@ -45,12 +45,21 @@ function CmsPage(props) {
     return (
         <View style={{ flex: 1 }}>
             <View style={{ justifyContent: 'center', flex: .06, width: "100%", backgroundColor: '#3b006a', flexDirection: 'row', paddingVertical: 15 }}>
-                <Ionicons
+                {/* <Ionicons
                     onPress={() => navigation.goBack()}
                     style={{ marginLeft: 10, position: 'absolute', left: 0, top: 18 }}
                     name="ios-chevron-back-outline"
                     size={32}
-                    color={whiteTxtColor} />
+                    color={whiteTxtColor} /> */}
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: 10, position: 'absolute', left: 0, top: 18 }}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                    />
+                </TouchableOpacity>
                 <Text
                     style={{ fontSize: 15, color: 'white', fontFamily: 'Poppins-SemiBold', alignSelf: 'center' }}>{aboutUsTitle}</Text>
 
