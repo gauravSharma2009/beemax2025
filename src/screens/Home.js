@@ -131,7 +131,8 @@ function HomeScreen(props) {
                             "message": "Please find data",
                             "statusCode": 200
                         }
-                        if (dta.status && dta.data) {
+                        // if (dta.status && dta.data) {
+                        if (result.status && result.data) {
                             // Process order history data
                             setShowOrderStatus(true);
                             setorderData(dta.data)
@@ -769,7 +770,7 @@ function HomeScreen(props) {
                 onClose={() => {
                     setShowOrderStatus(false);
                     // Call API to close recent order history
-                    fetch(server+'close_recent_order_history', {
+                    fetch(server + 'close_recent_order_history', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -779,8 +780,8 @@ function HomeScreen(props) {
                             "primary_order_id": orderdta?.PRIMARY_ORDER_ID
                         })
                     })
-                    .then(response => response.json())
-                    .catch(error => console.error('Error closing order history:', error));
+                        .then(response => response.json())
+                        .catch(error => console.error('Error closing order history:', error));
                 }}
                 orderId="BM-3498"
                 deliveryTime="Delivery in 19 minutes*"

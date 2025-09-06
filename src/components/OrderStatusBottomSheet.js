@@ -6,12 +6,12 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
-  PanResponder,
+  // PanResponder,
   Image,
 } from 'react-native';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-const BOTTOM_SHEET_HEIGHT = 200;
+const BOTTOM_SHEET_HEIGHT = 300;
 
 const OrderStatusBottomSheet = ({
   visible,
@@ -22,7 +22,7 @@ const OrderStatusBottomSheet = ({
   currentStatus = 'Order Placed', // 'Order Placed', 'Accepted', 'Shipped', 'Delivered'
 }) => {
   const translateY = useRef(new Animated.Value(BOTTOM_SHEET_HEIGHT)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  // const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   const [data, setData] = useState(null)
   useEffect(() => {
@@ -97,24 +97,24 @@ const OrderStatusBottomSheet = ({
 
   const statusSteps = generateStatusSteps();
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt, gestureState) => true,
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dy) > 20;
-    },
-    onPanResponderMove: (evt, gestureState) => {
-      if (gestureState.dy > 0) {
-        translateY.setValue(gestureState.dy);
-      }
-    },
-    onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dy > 100) {
-        hideBottomSheet();
-      } else {
-        showBottomSheet();
-      }
-    },
-  });
+  // const panResponder = PanResponder.create({
+  //   onStartShouldSetPanResponder: (evt, gestureState) => true,
+  //   onMoveShouldSetPanResponder: (evt, gestureState) => {
+  //     return Math.abs(gestureState.dy) > 20;
+  //   },
+  //   onPanResponderMove: (evt, gestureState) => {
+  //     if (gestureState.dy > 0) {
+  //       translateY.setValue(gestureState.dy);
+  //     }
+  //   },
+  //   onPanResponderRelease: (evt, gestureState) => {
+  //     if (gestureState.dy > 100) {
+  //       hideBottomSheet();
+  //     } else {
+  //       showBottomSheet();
+  //     }
+  //   },
+  // });
 
   useEffect(() => {
     if (visible) {
@@ -125,33 +125,19 @@ const OrderStatusBottomSheet = ({
   }, [visible]);
 
   const showBottomSheet = () => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0.5,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const hideBottomSheet = () => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: BOTTOM_SHEET_HEIGHT,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(translateY, {
+      toValue: BOTTOM_SHEET_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
       onClose && onClose();
     });
   };
@@ -196,7 +182,7 @@ const OrderStatusBottomSheet = ({
 
   return (
     <View style={styles.container}>
-      <Animated.View
+      {/* <Animated.View
         style={[styles.backdrop, { opacity: backdropOpacity }]}
       >
         <TouchableOpacity
@@ -204,14 +190,14 @@ const OrderStatusBottomSheet = ({
           onPress={hideBottomSheet}
           activeOpacity={1}
         />
-      </Animated.View>
+      </Animated.View> */}
 
       <Animated.View
         style={[
           styles.bottomSheet,
           { transform: [{ translateY }] }
         ]}
-        {...panResponder.panHandlers}
+        // {...panResponder.panHandlers}
       >
         {/* Handle bar */}
         <View style={styles.handleBar} />
@@ -268,19 +254,18 @@ const OrderStatusBottomSheet = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     bottom: 0,
+    width: SCREEN_WIDTH,
+    height: BOTTOM_SHEET_HEIGHT,
     zIndex: 1000,
   },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  backdropTouch: {
-    flex: 1,
-  },
+  // backdrop: {
+  //   flex: 1,
+  //   backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  // },
+  // backdropTouch: {
+  //   flex: 1,
+  // },
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
@@ -435,20 +420,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#9CA3AF',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 8,
+    width: '100%',
   },
   statusImage: {
     width: 24,
     height: 24,
     resizeMode: 'contain',
-  },
-  horizontalStatusLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 8,
-    width: '100%',
   },
 });
 

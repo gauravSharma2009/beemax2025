@@ -1,5 +1,7 @@
 const initialState = {
-    appHeaderColor: "#3c006a",
+    // appHeaderColor: "#3c006a",
+    appHeaderColor: "#FFFFFF",
+
 };
 
 export function appHeaderColor(state = initialState, action) {
