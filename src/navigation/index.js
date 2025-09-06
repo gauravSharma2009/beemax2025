@@ -36,11 +36,15 @@ const Tab = createBottomTabNavigator();
 function NavigatorScreen(props) {
     const { isLoading, message, status, open, setPopup, appHeaderColor } = props
     return (
-        <SafeAreaView style={{ width: '100%', height: '100%', backgroundColor: appHeaderColor }}>
-            {/* <StatusBar style="light"
+        <SafeAreaView style={{
+            width: '100%', height: '100%', backgroundColor: appHeaderColor,
+            // paddingBottom: Platform.OS === 'ios' ? 0 : 25, paddingTop: Platform.OS === 'ios' ? 0 : 42
+
+        }}>
+            <StatusBar style="light"
                 backgroundColor={appHeaderColor}
-            /> */}
-            <View style={{ width: '100%', height: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 25, paddingTop: Platform.OS === 'ios' ? 0 : 42 }}>
+            />
+            <View style={{ width: '100%', height: '100%' }}>
                 <Stack.Navigator
                     screenOptions={{
                         headerShown: false

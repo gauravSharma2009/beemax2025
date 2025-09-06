@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,50 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
+import { pinCode } from '../reducer/pincode';
+import { server } from '../common/apiConstant';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = () => {
+const GroceryHomeScreen = ({ appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
   const [searchText, setSearchText] = useState('');
   const [quantities, setQuantities] = useState({});
+  const [deliveryTime, setDeliveryTime] = useState("")
+
+  const fetchDeliveryTime = async () => {
+    try {
+      const url = server + 'quickdeliverybypincode/' + pinCode
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.status && result.statusCode === 200) {
+        const deliveryTime = result.data.aQuickDeliveryData.delivery_time;
+        setDeliveryTime(deliveryTime);
+        console.log('Delivery time set:', deliveryTime);
+      } else {
+        throw new Error(result.message || 'Failed to fetch delivery data');
+      }
+    } catch (error) {
+      console.error('Error fetching delivery data:', error.message);
+      setDeliveryTime('Error fetching delivery time');
+    }
+  }
+
+
+  useEffect(() => {
+    pinCode && fetchDeliveryTime()
+  }, [pinCode])
 
   const products = [
     {
@@ -68,10 +105,10 @@ const GroceryHomeScreen = () => {
 
   const renderQuantityControl = (product) => {
     const quantity = quantities[product.id] || 0;
-    
+
     if (quantity === 0) {
       return (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => updateQuantity(product.id, 1)}
         >
@@ -79,19 +116,19 @@ const GroceryHomeScreen = () => {
         </TouchableOpacity>
       );
     }
-    
+
     return (
       <View style={styles.quantityContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.quantityButton}
           onPress={() => updateQuantity(product.id, -1)}
         >
           <Text style={styles.quantityButtonText}>−</Text>
         </TouchableOpacity>
-        
+
         <Text style={styles.quantityText}>{quantity}</Text>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.quantityButton}
           onPress={() => updateQuantity(product.id, 1)}
         >
@@ -106,61 +143,79 @@ const GroceryHomeScreen = () => {
       <View style={styles.productImageContainer}>
         <Image source={{ uri: product.image }} style={styles.productImage} />
       </View>
-      
+
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingNumber}>{product.rating}</Text>
         {renderStars(product.rating)}
       </View>
-      
+
       <Text style={styles.productWeight}>{product.weight}</Text>
       <Text style={styles.productName}>{product.name}</Text>
-      
+
       <View style={styles.discountBadge}>
         <Text style={styles.discountText}>{product.discount}</Text>
       </View>
-      
+
       <View style={styles.priceContainer}>
         <Text style={styles.originalPrice}>₹{product.originalPrice}</Text>
         <Text style={styles.discountedPrice}>₹{product.discountedPrice}</Text>
       </View>
-      
+
       {renderQuantityControl(product)}
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ ...styles.container, backgroundColor: appHeaderColor }}>
       {/* Header */}
       <View style={styles.header}>
+        <Image
+          style={{ alignSelf: 'flex-start', width: 120, height: 25, resizeMode: 'contain', marginTop: 10 }}
+          source={require('../../assets/logo.png')}
+        />
         <View style={styles.headerTop}>
-          <Text style={styles.deliveryTime}>10 minutes</Text>
-          <TouchableOpacity style={styles.profileButton}>
+          <Text style={styles.deliveryTime}>{deliveryTime}</Text>
+          <TouchableOpacity
+            onPress={handleUserPress}
+            style={styles.profileButton}>
             <View style={styles.profileIcon}>
-              <Text style={styles.profileIconText}>👤</Text>
+              {/* <Text style={styles.profileIconText}>👤</Text> */}
+              <Image
+                source={require('../../assets/user_circle.png')}
+                style={{ width: 32, height: 32, resizeMode: 'contain' }}
+              />
             </View>
           </TouchableOpacity>
         </View>
-        
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationText}>HOME - Tulsi Nagar, Berhampur...</Text>
-          <Text style={styles.dropdownIcon}>▼</Text>
-        </View>
-        
+
+        <TouchableOpacity
+          onPress={handlePincodePress}
+          style={styles.locationContainer}>
+          <Text style={styles.locationText}>{address}</Text>
+          {/* <Text style={styles.dropdownIcon}>▼</Text> */}
+          <Image
+            source={require('../../assets/down-arrow.png')}
+            style={{ width: 24, height: 24, resizeMode: 'contain' }}
+          />
+        </TouchableOpacity>
+
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
+        <TouchableOpacity
+          onPress={handleSearchPress}
+          style={styles.searchContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
+            editable={false}
             style={styles.searchInput}
             placeholder={`Search "Atta"`}
             placeholderTextColor="#9CA3AF"
             value={searchText}
             onChangeText={setSearchText}
           />
-        </View>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Promotional Banner */}
+      <View style={{ ...styles.content, backgroundColor: appHeaderColor }} >
         <View style={styles.promoBanner}>
           <View style={styles.promoContent}>
             <Text style={styles.promoTitle}>Weekend</Text>
@@ -174,16 +229,12 @@ const GroceryHomeScreen = () => {
         </View>
 
         {/* Products Grid */}
-        <View style={styles.productsContainer}>
-          <View style={styles.productsRow}>
-            {products.slice(0, 2).map(renderProductCard)}
-          </View>
-          <View style={styles.productsRow}>
-            {products.slice(2, 3).map(renderProductCard)}
-            <View style={styles.productCard} />
-          </View>
-        </View>
-      </ScrollView>
+        {/* <ScrollView horizontal={true}>
+          {products.map(renderProductCard)}
+          <View style={styles.productCard} />
+        </ScrollView>
+        */}
+      </View>
     </SafeAreaView>
   );
 };
@@ -194,7 +245,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#8B5CF6',
   },
   header: {
-    backgroundColor: '#8B5CF6',
+    // backgroundColor: '#8B5CF6',
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -205,7 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   deliveryTime: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -228,14 +279,17 @@ const styles = StyleSheet.create({
   },
   locationContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 0
   },
   locationText: {
     color: '#ffffff',
     fontSize: 16,
-    flex: 1,
+    // flex: 1,
     opacity: 0.9,
+    marginLeft:-5,
+    marginRight:10
   },
   dropdownIcon: {
     color: '#ffffff',

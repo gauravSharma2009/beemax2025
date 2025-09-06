@@ -25,7 +25,7 @@ import OrderStatusBottomSheet from "../components/OrderStatusBottomSheet";
 import GroceryHomeScreen from "../components/GroceryHomeScreen";
 
 function HomeScreen(props) {
-    const { navigation, changeLoadingState, pinCode, address, changeCartCount, setPopup } = props
+    const { navigation, changeLoadingState, pinCode, address, isLoggedIn, changeCartCount, setPopup, appHeaderColor } = props
     const [bannerData, setbannerData] = useState(null)
     const [bannerDataWidth, setbannerDataWidth] = useState(null)
     const [bannerDataHeight, setbannerDataHeight] = useState(null)
@@ -45,6 +45,7 @@ function HomeScreen(props) {
     const [loadingData, setLoadingData] = useState(true)
     const [refreshCounter, setRefreshCounter] = useState(1)
     const [showOrderStatus, setShowOrderStatus] = useState(false)
+    const [orderdta, setorderData] = useState(null)
 
 
 
@@ -71,6 +72,117 @@ function HomeScreen(props) {
 
         return unsubscribe;
     }, [navigation, pinCode]);
+
+    useEffect(() => {
+        let intervalId;
+
+        const fetchRecentOrderHistory = async () => {
+            console.log("calling api :")
+            if (isLoggedIn) {
+                const loginData = await getData("loginData");
+                const userData = JSON.parse(loginData);
+                const userId = userData?.USER_ID; // Default to 1270 if USER_ID not available
+
+                var myHeaders = new Headers();
+                var requestOptions = {
+                    method: 'GET',
+                    headers: myHeaders,
+                    redirect: 'follow'
+                };
+
+                fetch(`${server}recent_order_history/${userId}`, requestOptions)
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log("Recent order history:", result);
+                        // Handle the order history data here
+                        let dta = {
+                            "status": true,
+                            "data": {
+                                "aRecentOrderData": [
+                                    {
+                                        "ORDER_DETAILS_ID": "2932",
+                                        "PRIMARY_ORDER_ID": "2965",
+                                        "DISPLAY_PRIMARY_ORDER_ID": "BM-2965",
+                                        "GROCERY_DELIVERY_DATE": "23-6-2025",
+                                        "GROCERY_DELIVERY_SLOT": "Delivery in 30 minutes *",
+                                        "ORDER_STATUS": "Order Delivered",
+                                        "DBOY_ORDER_STATUS": "3",
+                                        "ORDER_TRACK_DETAILS": {
+                                            "1": {
+                                                "order_status": "Order Placed",
+                                                "is_active": 1
+                                            },
+                                            "2": {
+                                                "order_status": "Accepted",
+                                                "is_active": 0
+                                            },
+                                            "3": {
+                                                "order_status": "Shipped",
+                                                "is_active": 0
+                                            },
+                                            "4": {
+                                                "order_status": "Delivered",
+                                                "is_active": 0
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "message": "Please find data",
+                            "statusCode": 200
+                        }
+                        if (dta.status && dta.data) {
+                            // Process order history data
+                            setShowOrderStatus(true);
+                            setorderData(dta.data)
+                        } else {
+                            setShowOrderStatus(false);
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Error fetching recent order history:', error);
+                    });
+            }
+        };
+
+        // Set up focus and blur event listeners
+        const handleFocus = () => {
+            if (isLoggedIn) {
+                // Initial fetch
+                fetchRecentOrderHistory();
+
+                // Set up interval for periodic fetching
+                intervalId = setInterval(fetchRecentOrderHistory, 10000); // 10 seconds
+            }
+        };
+
+        const handleBlur = () => {
+            // Clear interval when screen loses focus
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        };
+
+        // Add event listeners
+        const focusSubscription = navigation.addListener('focus', handleFocus);
+        const blurSubscription = navigation.addListener('blur', handleBlur);
+
+        // Initial setup if already focused and logged in
+        if (isLoggedIn) {
+            fetchRecentOrderHistory();
+            intervalId = setInterval(fetchRecentOrderHistory, 10000); // 10 seconds
+        }
+
+        // Cleanup function
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            focusSubscription();
+            blurSubscription();
+        };
+    }, [isLoggedIn, navigation])
 
     useEffect(() => {
         pinCode && getHomePageData()
@@ -437,8 +549,8 @@ function HomeScreen(props) {
             <StatusBar style="light"
                 backgroundColor="#3b006a"
             /> */}
-            {/* <GroceryHomeScreen /> */}
-            <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
+
+            {/* <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', justifyContent: 'space-between', flexDirection: 'row', paddingVertical: 15 }}>
                 <TouchableOpacity
                     onPress={handlePincodePress}
                     style={{ flexDirection: 'row', alignSelf: 'center', flex: .25, justifyContent: 'center', height: '100%', }}
@@ -479,7 +591,7 @@ function HomeScreen(props) {
                         />
                     </TouchableOpacity>
                 </View>
-            </View>
+            </View> */}
             <PTRView
                 style={{ flex: .94, }}
                 onRefresh={handleRefresh}
@@ -493,7 +605,7 @@ function HomeScreen(props) {
                 placeholder="Search by Keyword"
                 style={{ borderWidth: 1, borderColor: textColor, paddingVertical: 10, marginHorizontal: 10, borderRadius: 5, paddingHorizontal: 10, color: textColor, marginTop: 15 }} />
              */}
-                    {topBannerData && <TouchableOpacity
+                    {/* {topBannerData && <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => handleBannerPress(topBannerData, topBannerData.redirection_type)}
                         style={{ width: '100%', height: topBannerCalculatedHeight, marginBottom: 7 }}>
@@ -501,8 +613,15 @@ function HomeScreen(props) {
                             source={{ uri: topBannerData.image_url }}
                             style={{ width: '100%', height: '100%', resizeMode: "center" }}
                         />
-                    </TouchableOpacity>}
-
+                    </TouchableOpacity>} */}
+                    <GroceryHomeScreen
+                        pinCode={pinCode}
+                        appHeaderColor={appHeaderColor}
+                        address={address}
+                        handlePincodePress={handlePincodePress}
+                        handleUserPress={handleUserPress}
+                        handleSearchPress={handleSearchPress}
+                    />
                     <SliderComponent
                         navigation={navigation}
                         bannerData={bannerData}
@@ -644,13 +763,29 @@ function HomeScreen(props) {
                     </ScrollView>}
                 </ScrollView >
             </PTRView>
-            {/* <OrderStatusBottomSheet
+            <OrderStatusBottomSheet
+                orderdta={orderdta}
                 visible={showOrderStatus}
-                onClose={() => setShowOrderStatus(false)}
+                onClose={() => {
+                    setShowOrderStatus(false);
+                    // Call API to close recent order history
+                    fetch(server+'close_recent_order_history', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            "is_hide_track_order": true,
+                            "primary_order_id": orderdta?.PRIMARY_ORDER_ID
+                        })
+                    })
+                    .then(response => response.json())
+                    .catch(error => console.error('Error closing order history:', error));
+                }}
                 orderId="BM-3498"
                 deliveryTime="Delivery in 19 minutes*"
                 currentStatus="Order Placed"
-            /> */}
+            />
         </View >
 
     )
@@ -663,8 +798,9 @@ const mapStateToProps = (state) => {
     return {
         isLoading: state.loader.isLoading,
         pinCode: state.pinCode.pincode,
-        address: state?.pinCode?.address || "Location"
-
+        address: state?.pinCode?.address || "Location",
+        appHeaderColor: state.appHeaderColor.appHeaderColor,
+        isLoggedIn: state.auth.isLoggedIn
         //isLoading: true
 
     }

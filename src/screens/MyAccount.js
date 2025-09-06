@@ -17,6 +17,7 @@ function AccountScreen(props) {
     const [userData, setuserData] = useState(null)
 
     useEffect(() => {
+        alert("Hello 1")
         getUserData()
     }, [])
     const getUserData = async () => {
@@ -31,16 +32,18 @@ function AccountScreen(props) {
                 navigation={props.navigation}
                 name={"My Account"}
             /> */}
-            <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', flexDirection: 'row', paddingVertical: 15, justifyContent: 'center' }}>
-                <Ionicons
-                    onPress={() => {
-                        navigation.goBack()
-                    }}
-                    style={{ position: 'absolute', left: 10, alignSelf: 'center' }}
-                    name="ios-chevron-back-outline"
-                    size={40}
-                    color={whiteTxtColor} />
-                <View style={{ alignSelf: 'center', justifyContent: 'center', }}>
+            <View style={{ flex: .06, width: "100%", backgroundColor: '#3b006a', flexDirection: 'row', paddingVertical: 15, }}>
+                <TouchableOpacity
+                style={{alignSelf:'center'}}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Image
+                        source={require('../../assets/icons/back.png')}
+                        style={{ width: 32, height: 32, resizeMode: 'contain', tintColor: '#FFFFFF', alignSelf: 'center', marginLeft: 10 }}
+                    />
+                </TouchableOpacity>
+
+                <View style={{ alignSelf: 'center', justifyContent: 'center', marginLeft: 100 }}>
                     <Text style={{ fontFamily: 'Poppins-SemiBold', alignSelf: 'center', color: 'white', fontSize: 20 }}>Hello, {userData?.USER_NAME}</Text>
                 </View>
 
@@ -95,9 +98,9 @@ function AccountScreen(props) {
                             <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'center' }}>{"Orders"}</Text>
 
                         </View>
-                        <Entypo
-                            style={{ marginLeft: 10, alignSelf: 'center' }}
-                            name="chevron-right" size={32} color={allCategoryPink} />
+                       <Image
+                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
+                            source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ padding: 10 }}>
@@ -112,9 +115,9 @@ function AccountScreen(props) {
                             <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'center' }}>{"Profile"}</Text>
 
                         </View>
-                        <Entypo
-                            style={{ marginLeft: 10, alignSelf: 'center' }}
-                            name="chevron-right" size={32} color={allCategoryPink} />
+                        <Image
+                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
+                            source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ padding: 10 }}>
@@ -129,9 +132,9 @@ function AccountScreen(props) {
                             <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'center' }}>{"Address"}</Text>
 
                         </View>
-                        <Entypo
-                            style={{ marginLeft: 10, alignSelf: 'center' }}
-                            name="chevron-right" size={32} color={allCategoryPink} />
+                         <Image
+                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
+                            source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ padding: 10 }}>
@@ -146,9 +149,9 @@ function AccountScreen(props) {
                             <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'center' }}>{"About & Legal Policies"}</Text>
 
                         </View>
-                        <Entypo
-                            style={{ marginLeft: 10, alignSelf: 'center' }}
-                            name="chevron-right" size={32} color={allCategoryPink} />
+                        <Image
+                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
+                            source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ padding: 10 }}>
@@ -163,9 +166,9 @@ function AccountScreen(props) {
                             <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'center' }}>{"Need Help?"}</Text>
 
                         </View>
-                        <Entypo
-                            style={{ marginLeft: 10, alignSelf: 'center' }}
-                            name="chevron-right" size={32} color={allCategoryPink} />
+                      <Image
+                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
+                            source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={{ padding: 10 }}>

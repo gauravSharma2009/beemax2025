@@ -301,16 +301,18 @@ export default function App() {
     }
   }
 
+  // return(<View style={{backgroundColor:'red', width:'100%', height:'100%'}}></View>)
  
   return (
     <Provider store={store}>
-      <NavigationContainer>{<GestureHandlerRootView style={{ width: '100%', height: '100%', }}>
-        {/* <Navigator /> */}
-        <View style={{width:'100%',height:'100%'}}>
+      <NavigationContainer>{
+        <GestureHandlerRootView style={{ width: '100%', height: '100%', backgroundColor:'red'}}>
+        <View style={{width:'100%',height:'100%', backgroundColor:'red'}}>
           <Navigator />
         </View>
 
-      </GestureHandlerRootView>}</NavigationContainer>
+      </GestureHandlerRootView>
+      }</NavigationContainer>
       {false && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
         <View style={{ width: '80%', backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
           <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>

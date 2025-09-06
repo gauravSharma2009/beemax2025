@@ -42,7 +42,7 @@ function OrdersScreen(props) {
             redirect: 'follow'
         };
 
-        fetch("https://www.beemax.in/demo/dynamic1/rest/api/cancel_items", requestOptions)
+        fetch(server+"cancel_items", requestOptions)
             .then(response => response.json())
             .then(result => {
                 console.log(result)

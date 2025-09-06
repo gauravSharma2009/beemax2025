@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,57 +7,95 @@ import {
   Dimensions,
   TouchableOpacity,
   PanResponder,
+  Image,
 } from 'react-native';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-const BOTTOM_SHEET_HEIGHT = 300;
+const BOTTOM_SHEET_HEIGHT = 200;
 
 const OrderStatusBottomSheet = ({
   visible,
   onClose,
   orderId,
   deliveryTime,
+  orderdta,
   currentStatus = 'Order Placed', // 'Order Placed', 'Accepted', 'Shipped', 'Delivered'
 }) => {
   const translateY = useRef(new Animated.Value(BOTTOM_SHEET_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
-  const statusSteps = [
-    {
-      id: 'placed',
-      label: 'Order Placed',
-      icon: '✓',
-      status: 'completed'
-    },
-    {
-      id: 'accepted',
-      label: 'Accepted',
-      icon: '✓',
-      status: getCurrentStepStatus('Accepted', currentStatus)
-    },
-    {
-      id: 'shipped',
-      label: 'Shipped',
-      icon: '🚚',
-      status: getCurrentStepStatus('Shipped', currentStatus)
-    },
-    {
-      id: 'delivered',
-      label: 'Delivered',
-      icon: '📦',
-      status: getCurrentStepStatus('Delivered', currentStatus)
+  const [data, setData] = useState(null)
+  useEffect(() => {
+    if (orderdta && orderdta?.aRecentOrderData && Array.isArray(orderdta?.aRecentOrderData) && orderdta.aRecentOrderData.length > 0) {
+      setData(orderdta?.aRecentOrderData[0])
     }
-  ];
+  }, [orderdta])
 
-  function getCurrentStepStatus(stepName, currentStatus) {
-    const statusOrder = ['Order Placed', 'Accepted', 'Shipped', 'Delivered'];
-    const currentIndex = statusOrder.indexOf(currentStatus);
-    const stepIndex = statusOrder.indexOf(stepName);
-    
-    if (stepIndex <= currentIndex) return 'completed';
-    if (stepIndex === currentIndex + 1) return 'active';
-    return 'pending';
-  }
+  // Generate status steps from ORDER_TRACK_DETAILS
+  const generateStatusSteps = () => {
+    if (!data || !data.ORDER_TRACK_DETAILS) return [];
+
+    const trackDetails = data.ORDER_TRACK_DETAILS;
+    const steps = [];
+
+    // Order is important: 1=Order Placed, 2=Accepted, 3=Shipped, 4=Delivered
+    const orderKeys = ['1', '2', '3', '4'];
+
+    // Find the active step
+    let activeStepIndex = -1;
+    for (let i = orderKeys.length - 1; i >= 0; i--) {
+      const key = orderKeys[i];
+      if (trackDetails[key] && trackDetails[key].is_active === 1) {
+        activeStepIndex = i;
+        break;
+      }
+    }
+
+    // Create steps array
+    orderKeys.forEach((key, index) => {
+      if (trackDetails[key]) {
+        let status = 'pending';
+
+        // If this step is active or any previous step is active, mark as completed
+        if (index <= activeStepIndex) {
+          status = 'completed';
+        }
+        // If this is the next step after active, mark as active
+        else if (index === activeStepIndex + 1) {
+          status = 'active';
+        }
+
+        steps.push({
+          id: key,
+          label: trackDetails[key].order_status,
+          status: status,
+          iconSource: getIconSource(key, status)
+        });
+      }
+    });
+
+    return steps;
+  };
+
+  // Get appropriate icon based on step and status
+  const getIconSource = (stepId, status) => {
+    if (status === 'completed') {
+      return require('../../assets/check.png');
+    }
+
+    switch (stepId) {
+      case '2': // Accepted
+        return require('../../assets/accepted.png');
+      case '3': // Shipped
+        return require('../../assets/shipped.png');
+      case '4': // Delivered
+        return require('../../assets/deliver.png');
+      default:
+        return null;
+    }
+  };
+
+  const statusSteps = generateStatusSteps();
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -121,7 +159,7 @@ const OrderStatusBottomSheet = ({
   const renderStatusIcon = (step, index) => {
     const isCompleted = step.status === 'completed';
     const isActive = step.status === 'active';
-    
+
     return (
       <View style={[
         styles.statusIconContainer,
@@ -129,7 +167,15 @@ const OrderStatusBottomSheet = ({
         isActive && styles.activeIcon,
       ]}>
         {isCompleted ? (
-          <Text style={styles.checkIcon}>✓</Text>
+          <Image
+            source={require('../../assets/check.png')}
+            style={styles.statusImage}
+          />
+        ) : step.iconSource ? (
+          <Image
+            source={step.iconSource}
+            style={styles.statusImage}
+          />
         ) : (
           <View style={[
             styles.pendingDot,
@@ -141,33 +187,25 @@ const OrderStatusBottomSheet = ({
   };
 
   const renderConnectorLine = (index) => {
-    if (index === statusSteps.length - 1) return null;
-    
-    const currentStep = statusSteps[index];
-    const isCompleted = currentStep.status === 'completed';
-    
-    return (
-      <View style={[
-        styles.connectorLine,
-        isCompleted && styles.completedLine,
-      ]} />
-    );
+    // This function is no longer used for vertical lines
+    // Horizontal connectors are now rendered directly in the JSX
+    return null;
   };
 
   if (!visible) return null;
 
   return (
     <View style={styles.container}>
-      <Animated.View 
+      <Animated.View
         style={[styles.backdrop, { opacity: backdropOpacity }]}
       >
-        <TouchableOpacity 
-          style={styles.backdropTouch} 
+        <TouchableOpacity
+          style={styles.backdropTouch}
           onPress={hideBottomSheet}
           activeOpacity={1}
         />
       </Animated.View>
-      
+
       <Animated.View
         style={[
           styles.bottomSheet,
@@ -177,40 +215,50 @@ const OrderStatusBottomSheet = ({
       >
         {/* Handle bar */}
         <View style={styles.handleBar} />
-        
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.title}>Order Placed</Text>
-            <Text style={styles.orderId}>Order ID ({orderId})</Text>
+            <Text style={styles.orderId}>Order ID ({data?.DISPLAY_PRIMARY_ORDER_ID})</Text>
             <TouchableOpacity onPress={hideBottomSheet} style={styles.closeButton}>
               <Text style={styles.closeIcon}>✕</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.deliveryInfo}>
             <Text style={styles.deliveryLabel}>Delivery slot:</Text>
-            <Text style={styles.deliveryTime}>{deliveryTime}</Text>
+            <Text style={styles.deliveryTime}>{data?.GROCERY_DELIVERY_SLOT}</Text>
           </View>
         </View>
 
-        {/* Status Progress */}
+        {/* Status Progress - Horizontal Layout */}
         <View style={styles.statusContainer}>
-          {statusSteps.map((step, index) => (
-            <View key={step.id} style={styles.statusStep}>
-              <View style={styles.statusRow}>
-                {renderStatusIcon(step, index)}
-                <Text style={[
-                  styles.statusLabel,
-                  step.status === 'completed' && styles.completedLabel,
-                  step.status === 'active' && styles.activeLabel,
-                ]}>
+          <View style={styles.horizontalStatusRow}>
+            {statusSteps.map((step, index) => (
+              <View key={step.id} style={styles.horizontalStatusStep}>
+                <View style={styles.statusIconWrapper}>
+                  {renderStatusIcon(step, index)}
+                  {index < statusSteps.length - 1 && (
+                    <View style={[
+                      styles.horizontalConnectorLine,
+                      step.status === 'completed' && styles.completedLine,
+                    ]} />
+                  )}
+                </View>
+                <Text 
+                  numberOfLines={2}
+                  style={[
+                    styles.horizontalStatusLabel,
+                    step.status === 'completed' && styles.completedLabel,
+                    step.status === 'active' && styles.activeLabel,
+                  ]}
+                >
                   {step.label}
                 </Text>
               </View>
-              {renderConnectorLine(index)}
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
       </Animated.View>
     </View>
@@ -287,7 +335,7 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     fontSize: 20,
-    color: '#9CA3AF',
+    color: '#000000',
     fontWeight: '300',
   },
   deliveryInfo: {
@@ -308,13 +356,22 @@ const styles = StyleSheet.create({
   statusContainer: {
     flex: 1,
   },
-  statusStep: {
-    marginBottom: 8,
+  horizontalStatusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: 8,
   },
-  statusRow: {
+  horizontalStatusStep: {
+    alignItems: 'center',
+    width: '25%', // For 4 steps
+  },
+  statusIconWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
+    marginBottom: 8,
+    width: '100%',
   },
   statusIconContainer: {
     width: 40,
@@ -323,7 +380,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
     borderWidth: 2,
     borderColor: '#E5E7EB',
   },
@@ -363,17 +419,36 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     fontWeight: '600',
   },
-  connectorLine: {
-    position: 'absolute',
-    left: 19,
-    top: 48,
-    width: 2,
-    height: 24,
+  horizontalConnectorLine: {
+    width: SCREEN_WIDTH * 0.12, // Adjust based on screen width
+    height: 2,
     backgroundColor: '#E5E7EB',
-    zIndex: -1,
+    position: 'absolute',
+    right: -SCREEN_WIDTH * 0.06,
+    top: 20,
   },
   completedLine: {
     backgroundColor: '#10B981',
+  },
+  horizontalStatusLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  statusImage: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  horizontalStatusLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 8,
+    width: '100%',
   },
 });
 
