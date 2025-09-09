@@ -6,12 +6,13 @@ import { currency } from './strings';
 import { storeData } from './asyncStore';
 
 const ProductItem = (props) => {
-    const { getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor =productBorderColor } = props
+    const { 
+        getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor = productBorderColor, showOffer = true,imageWidth =100 } = props
     const { inventory, in_stock } = item
     console.log("inventory  :  ", inventory)
     //  return null
     return (
-        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white' , borderRadius:borderRadius}}>
+        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white', borderRadius: borderRadius }}>
             <TouchableOpacity
                 onPress={() => {
                     storeData("clickedItem", JSON.stringify(item))
@@ -22,7 +23,7 @@ const ProductItem = (props) => {
                 key={"product" + index}
                 style={{ borderColor: borderColor, borderRadius: 8, borderWidth: 2, width: Dimensions.get('window').width * .45, marginLeft: 10, paddingBottom: 10 }}>
                 <Image
-                    style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
+                    style={{ width: imageWidth, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
                     source={{ uri: item?.image_first }}
                 />
                 <Text
@@ -47,7 +48,7 @@ const ProductItem = (props) => {
 
 
                 </View>
-                <ImageBackground
+                {showOffer && <ImageBackground
                     style={{ width: 35, height: 35, position: 'absolute', right: 5, top: 5, alignItems: 'center', justifyContent: 'center' }}
                     source={require('../../assets/discount-bg.png')}
                 >
@@ -55,7 +56,7 @@ const ProductItem = (props) => {
                         style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
                     >{item.discount_percentage + '%' + "\nOFF"}</Text>
 
-                </ImageBackground>
+                </ImageBackground>}
 
                 <View style={{ position: 'absolute', bottom: 5, right: !item.qty_added_in_cart || Number(item.qty_added_in_cart) === 0 ? -2 : 8, }}>
 

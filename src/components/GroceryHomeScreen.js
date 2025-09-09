@@ -17,13 +17,13 @@ import ProductItem from '../common/ProductItem';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
+const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
   const [searchText, setSearchText] = useState('');
   const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
   const [quantities, setQuantities] = useState({});
   const [deliveryTime, setDeliveryTime] = useState("")
 
- 
+
   const fetchDeliveryTime = async () => {
     try {
       const url = server + 'quickdeliverybypincode/' + pinCode
@@ -248,6 +248,8 @@ const GroceryHomeScreen = ({handleProductPress, optionalBannerData, appHeaderCol
                 {optionalBannerData.offer_pro_info.map((product, index) => (
                   <View style={{ flexDirection: 'row' }}>
                     <ProductItem
+                      imageWidth={170}
+                      showOffer={false}
                       key={'product_details' + index}
                       item={product}
                       borderRadius={10}

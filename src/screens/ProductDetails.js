@@ -401,7 +401,7 @@ function ProductDetailsScreen(props) {
                     color={whiteTxtColor} /> */}
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 10 ,marginTop:10}}
+                    style={{ marginLeft: 10, marginTop: 10 }}
                 >
                     <Image
                         source={require('../../assets/icons/back.png')}
@@ -571,7 +571,7 @@ function ProductDetailsScreen(props) {
                         {pincodeMessage?.availability.toLowerCase() === 'no' ? <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: "red", alignSelf: 'flex-end' }}>Delivery not available in your area.</Text> : null}
 
                     </View> : null}
-{console.log("productDetails[0]  :  ", productDetails[0].specification)}
+                    {console.log("productDetails[0]  :  ", productDetails[0].specification)}
 
                     <Accordion
                         changeLoadingState={changeLoadingState}
@@ -592,7 +592,7 @@ function ProductDetailsScreen(props) {
                             >{"Related Products"}</Text>
 
                             <View style={{ flexDirection: 'row', marginRight: 3, justifyContent: 'center' }}>
-                                <Rating
+                                {/* <Rating
                                     type='custom'
                                     ratingCount={5}
                                     imageSize={15}
@@ -600,7 +600,11 @@ function ProductDetailsScreen(props) {
                                     onFinishRating={(rating) => setRating(rating)}
                                     startingValue={Number(productDetails[0].average_rating)}
                                     style={{ alignSelf: 'center', marginLeft: 10 }}
-                                />
+                                /> */}
+
+                                <View style={{ backgroundColor: 'green', borderRadius: 5, marginRight: 5 , justifyContent:'center', paddingHorizontal:10,}}>
+                                    <Text style={{ fontSize: 18, color: '#FFFFFF', margin: 5 , textAlign:'center'}}>★  {productDetails[0].average_rating}</Text>
+                                </View>
                                 <Text style={{ fontSize: 16, alignSelf: 'center', color: textColor, fontFamily: 'Poppins-Regular' }}>{`(${reviews?.length || 0} Reviews)`}</Text>
                             </View>
                         </View>
