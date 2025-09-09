@@ -405,19 +405,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   horizontalConnectorLine: {
-    width: SCREEN_WIDTH * 0.12, // Adjust based on screen width
-    height: 2,
+    width: SCREEN_WIDTH * 0.13, // Reduced from 0.12 to 0.13 (smaller)
+    height: 6, // Increased from 2 to 6 (thicker)
     backgroundColor: '#E5E7EB',
     position: 'absolute',
-    right: -SCREEN_WIDTH * 0.06,
-    top: 20,
+    right: -SCREEN_WIDTH * 0.065, // Adjusted from 0.06 to 0.065
+    top: 19, // Adjusted slightly to center the thicker line
   },
   completedLine: {
     backgroundColor: '#10B981',
   },
   horizontalStatusLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Poppins-SemiBold',
     color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 8,

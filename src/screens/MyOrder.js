@@ -12,6 +12,7 @@ import { changeLoadingState } from "../actions/loadingAction";
 import { server } from "../common/apiConstant";
 import { TouchableOpacity } from "react-native";
 import { setPopup } from "../actions/message";
+import OrderStepper from "../common/OrderStepper";
 function OrdersScreen(props) {
     const { navigation, changeLoadingState, setPopup } = props
     const [orderList, setOrderList] = useState([])
@@ -76,7 +77,7 @@ function OrdersScreen(props) {
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)
-                // console.log(JSON.stringify(result))
+                console.log(JSON.stringify(result))
                 if (result && result.status) {
                     setOrderList(result.data)
                 } else {
@@ -188,6 +189,12 @@ function OrdersScreen(props) {
                             <Text style={{ alignSelf: 'center', color: item.ORDER_STATUS === 'Pending' ? allCategoryPink : "gray" }}>Cancel</Text></TouchableOpacity>
                         <Text style={{ flex: .8, alignSelf: 'center', marginLeft: 10, fontSize: 11, fontFamily: 'Poppins-SemiBold', color: 'gray' }}>Order that have already shipped can not be cancelled</Text>
                     </View> : null}
+
+                    {/* Order Stepper Component */}
+                    {item.ORDER_TRACK_DETAILS && (
+                        <OrderStepper orderTrackDetails={item.ORDER_TRACK_DETAILS} />
+                    )}
+                    
                     <View style={{ width: '100%', height: 5, backgroundColor: categorySaperator, marginVertical: 10 }}></View>
 
                 </View>)}
