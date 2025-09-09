@@ -12,15 +12,18 @@ import {
 } from 'react-native';
 import { pinCode } from '../reducer/pincode';
 import { server } from '../common/apiConstant';
+import ProductItem from '../common/ProductItem';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({ appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
+const GroceryHomeScreen = ({handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
   const [searchText, setSearchText] = useState('');
+  const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
   const [quantities, setQuantities] = useState({});
   const [deliveryTime, setDeliveryTime] = useState("")
 
+ 
   const fetchDeliveryTime = async () => {
     try {
       const url = server + 'quickdeliverybypincode/' + pinCode
@@ -216,7 +219,52 @@ const GroceryHomeScreen = ({ appHeaderColor, address, handlePincodePress, handle
       </View>
 
       <View style={{ ...styles.content, backgroundColor: appHeaderColor }} >
-        <View style={styles.promoBanner}>
+        {console.log("optionalBannerData", optionalBannerData)}
+        {optionalBannerData && optionalBannerData?.offer_banner && <View style={styles.bannerContainer}>
+          <Image
+            source={{ uri: optionalBannerData?.offer_banner }}
+            style={{
+              width: SCREEN_WIDTH,
+              height: undefined,
+              aspectRatio: bannerAspectRatio,
+              resizeMode: 'cover'
+            }}
+            onLoad={(event) => {
+              const { width, height } = event.nativeEvent.source;
+              if (width && height) {
+                setBannerAspectRatio(width / height);
+              }
+            }}
+          />
+
+          {/* Horizontal ScrollView for products - positioned over the image */}
+          {optionalBannerData?.offer_pro_info && optionalBannerData.offer_pro_info.length > 0 && (
+            <View style={styles.productsOverlay}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalScrollContent}
+              >
+                {optionalBannerData.offer_pro_info.map((product, index) => (
+                  <View style={{ flexDirection: 'row' }}>
+                    <ProductItem
+                      key={'product_details' + index}
+                      item={product}
+                      borderRadius={10}
+                      borderColor={'white'}
+                      index={index}
+                      onPress={handleProductPress}
+                    />
+                    <View style={{ width: 15, backgroundColor: 'transparent', height: 10 }}></View>
+                  </View>
+
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+        </View>}
+        {/* <View style={styles.promoBanner}>
           <View style={styles.promoContent}>
             <Text style={styles.promoTitle}>Weekend</Text>
             <Text style={styles.promoSubtitle}>TWISTERS</Text>
@@ -226,7 +274,7 @@ const GroceryHomeScreen = ({ appHeaderColor, address, handlePincodePress, handle
             <Text style={styles.promoEmoji}>🧁</Text>
             <Text style={styles.promoEmoji2}>🍰</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Products Grid */}
         {/* <ScrollView horizontal={true}>
@@ -288,8 +336,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     // flex: 1,
     opacity: 0.9,
-    marginLeft:-5,
-    marginRight:10
+    marginLeft: -5,
+    marginRight: 10
   },
   dropdownIcon: {
     color: '#ffffff',
@@ -319,11 +367,11 @@ const styles = StyleSheet.create({
   },
   promoBanner: {
     backgroundColor: '#8B5CF6',
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 24,
     borderRadius: 16,
-    padding: 20,
+    // padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',
@@ -497,6 +545,22 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     minWidth: 20,
     textAlign: 'center',
+  },
+  bannerContainer: {
+    position: 'relative',
+  },
+  productsOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingVertical: 10,
+    // backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background for better visibility
+  },
+  horizontalScrollContent: {
+    paddingHorizontal: 15,
+    paddingRight: 20,
   },
 });
 

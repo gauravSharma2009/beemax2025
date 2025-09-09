@@ -179,6 +179,7 @@ function ProductListingScreen(props) {
     }
 
     const getProductList = async () => {
+        // alert("Hello")
         var myHeaders = new Headers();
         myHeaders.append("Cookie", "ci_session=9f68c961b84071779a964257631bb46d9322eb23");
 
@@ -309,7 +310,7 @@ function ProductListingScreen(props) {
         <View style={{ flex: 1, backgroundColor: whiteTxtColor }}>
             <Header
                 navigation={navigation}
-                name={item?.title}
+                name={item?.title || item?.category_title}
                 search={true}
             />
             {/* <PTRView

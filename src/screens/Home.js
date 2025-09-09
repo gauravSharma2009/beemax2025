@@ -31,6 +31,8 @@ function HomeScreen(props) {
     const [bannerDataHeight, setbannerDataHeight] = useState(null)
     const [topCategoryData, setTopCategoryData] = useState(null)
     const [homeCategoryProduct, setHomeCategoryProdycts] = useState([])
+    const [optionalBannerData, setOptionalBannerData] = useState(null)
+
     const [aTSNData, setAstnData] = useState([])
 
 
@@ -268,6 +270,7 @@ function HomeScreen(props) {
                     }
 
                     setbannerData(result?.data?.aBannerData)
+                    setOptionalBannerData(result?.data?.offerBannerOptionalPro)
                     setTopCategoryData([
                         // ...[{
                         //     "id": "-1",
@@ -538,7 +541,9 @@ function HomeScreen(props) {
 
     // Memoized navigation handlers for header
     const handlePincodePress = useCallback(() => navigation.navigate("PincodePage"), [navigation])
-    const handleSearchPress = useCallback(() => navigation.navigate("ProductSearchPage"), [navigation])
+    // const handleSearchPress = useCallback(() => navigation.navigate("ProductSearchPage"), [navigation])
+    const handleSearchPress = useCallback(() => navigation.navigate("AutoSuggestSearchPage"), [navigation])
+
     const handleUserPress = useCallback(() => navigation.navigate("UserScreen"), [navigation])
 
     // console.log("aTSNData  :  ", aTSNData)
@@ -616,9 +621,11 @@ function HomeScreen(props) {
                         />
                     </TouchableOpacity>} */}
                     <GroceryHomeScreen
+                        optionalBannerData={optionalBannerData}
                         pinCode={pinCode}
                         appHeaderColor={appHeaderColor}
                         address={address}
+                        handleProductPress={handleProductPress}
                         handlePincodePress={handlePincodePress}
                         handleUserPress={handleUserPress}
                         handleSearchPress={handleSearchPress}

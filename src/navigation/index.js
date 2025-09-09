@@ -28,6 +28,7 @@ import CustomModal from "../common/CustomModal";
 import { setPopup } from "../actions/message";
 import ProductSearchPage from "../screens/Search";
 import Cms from "../screens/CmsPage";
+import AutoSuggestSearchPage from "../screens/AutoSuggestSearchPage";
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,7 @@ function NavigatorScreen(props) {
                     <Stack.Screen name="OtpVerifyFlow" component={OTPVerify} />
                     <Stack.Screen name="UserScreen" component={UserNavigator} />
                     <Stack.Screen name="ProductSearchPage" component={ProductSearchPage} />
+                    <Stack.Screen name="AutoSuggestSearchPage" component={AutoSuggestSearchPage} />
 
 
                 </Stack.Navigator>

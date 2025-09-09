@@ -6,10 +6,12 @@ import { currency } from './strings';
 import { storeData } from './asyncStore';
 
 const ProductItem = (props) => {
-    const { getProductList, changeLoadingState, item, index, navigation, setAction, products } = props
+    const { getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor =productBorderColor } = props
     const { inventory, in_stock } = item
+    console.log("inventory  :  ", inventory)
+    //  return null
     return (
-        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white' }}>
+        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white' , borderRadius:borderRadius}}>
             <TouchableOpacity
                 onPress={() => {
                     storeData("clickedItem", JSON.stringify(item))
@@ -18,7 +20,7 @@ const ProductItem = (props) => {
                     navigation.push("ProductDetails", { product: item })
                 }}
                 key={"product" + index}
-                style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: Dimensions.get('window').width * .45, marginLeft: 10, paddingBottom: 10 }}>
+                style={{ borderColor: borderColor, borderRadius: 8, borderWidth: 2, width: Dimensions.get('window').width * .45, marginLeft: 10, paddingBottom: 10 }}>
                 <Image
                     style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
                     source={{ uri: item?.image_first }}
