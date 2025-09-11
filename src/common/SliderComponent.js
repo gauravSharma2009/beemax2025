@@ -1,15 +1,16 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Image, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, Image, Dimensions, TouchableOpacity, FlatList } from 'react-native';
 // import Carousel from 'react-native-snap-carousel';
 import FastImage from 'react-native-fast-image'
 
 const SliderComponent = (props) => {
     const { navigation, bannerData } = props;
-    const carouselRef = useRef(null);
+    const flatListRef = useRef(null);
     const screenWidth = Dimensions.get('window').width;
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Your list of images
-    const images = [
+    // Use bannerData prop or fallback to default images
+    const images = bannerData && bannerData.length > 0 ? bannerData : [
         {
             "id": "1",
             "title": "Banner 1",
@@ -37,14 +38,21 @@ const SliderComponent = (props) => {
     ];
 
     useEffect(() => {
-        // Start auto-scrolling after 2 seconds
-        const timer = setTimeout(() => {
-            carouselRef.current?.snapToNext();
-        }, 2000);
+        if (images.length > 1) {
+            const timer = setInterval(() => {
+                setCurrentIndex(prevIndex => {
+                    const nextIndex = (prevIndex + 1) % images.length;
+                    flatListRef.current?.scrollToIndex({
+                        index: nextIndex,
+                        animated: true,
+                    });
+                    return nextIndex;
+                });
+            }, 3000); // Auto-scroll every 3 seconds
 
-        // Clear the timer on component unmount
-        return () => clearTimeout(timer);
-    }, []);
+            return () => clearInterval(timer);
+        }
+    }, [images.length]);
 
     const renderItem = ({ item }) => (
         <TouchableOpacity
@@ -56,7 +64,7 @@ const SliderComponent = (props) => {
 
             }}
             style={{ width: screenWidth, height: 180, padding: 3 }}>
-            {/* <FastImage
+            <FastImage
                 style={{ width: screenWidth, height: 180 }}
                 source={{
                     uri: item.image_url,
@@ -64,13 +72,36 @@ const SliderComponent = (props) => {
                     priority: FastImage.priority.normal,
                 }}
                 resizeMode={FastImage.resizeMode.cover}
-            /> */}
-            <Image source={{ uri: item.image_url }} style={{ flex: 1, borderRadius: 10 }} resizeMode="cover" />
+            />
+            {/* <Image source={{ uri: item.image_url }} style={{ flex: 1, borderRadius: 10 }} resizeMode="cover" /> */}
         </TouchableOpacity>
     );
 
+    const onScrollEnd = (event) => {
+        const contentOffset = event.nativeEvent.contentOffset;
+        const viewSize = event.nativeEvent.layoutMeasurement;
+        const pageNum = Math.floor(contentOffset.x / viewSize.width);
+        setCurrentIndex(pageNum);
+    };
+
     return (
-       <View>Hello Text</View>
+        <View style={{ height: 180 }}>
+            <FlatList
+                ref={flatListRef}
+                data={images}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => item.id || index.toString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={onScrollEnd}
+                getItemLayout={(data, index) => ({
+                    length: screenWidth,
+                    offset: screenWidth * index,
+                    index,
+                })}
+            />
+        </View>
     );
 };
 

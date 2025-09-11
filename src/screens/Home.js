@@ -621,6 +621,7 @@ function HomeScreen(props) {
                         />
                     </TouchableOpacity>} */}
                     <GroceryHomeScreen
+                        navigation={navigation}
                         optionalBannerData={optionalBannerData}
                         pinCode={pinCode}
                         appHeaderColor={appHeaderColor}
@@ -630,10 +631,10 @@ function HomeScreen(props) {
                         handleUserPress={handleUserPress}
                         handleSearchPress={handleSearchPress}
                     />
-                    <SliderComponent
+                    {!optionalBannerData?.offer_banner && <SliderComponent
                         navigation={navigation}
                         bannerData={bannerData}
-                    />
+                    />}
 
                     <View style={{ marginTop: 10, marginBottom: 10 }}>
                         {aTSNData && aTSNData?.length > 0 && aTSNData?.map((item, index) => {

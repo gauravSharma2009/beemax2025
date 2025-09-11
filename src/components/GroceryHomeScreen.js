@@ -13,11 +13,12 @@ import {
 import { pinCode } from '../reducer/pincode';
 import { server } from '../common/apiConstant';
 import ProductItem from '../common/ProductItem';
+import FastImage from 'react-native-fast-image';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
+const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
   const [searchText, setSearchText] = useState('');
   const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
   const [quantities, setQuantities] = useState({});
@@ -58,38 +59,6 @@ const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderCo
     pinCode && fetchDeliveryTime()
   }, [pinCode])
 
-  const products = [
-    {
-      id: 1,
-      name: 'Plum Indian 250 g',
-      weight: '250 g',
-      rating: 4,
-      originalPrice: 149,
-      discountedPrice: 69,
-      discount: '54% OFF',
-      image: 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=200&h=200&fit=crop',
-    },
-    {
-      id: 2,
-      name: 'Plum Indian 250 g',
-      weight: '250 g',
-      rating: 4,
-      originalPrice: 149,
-      discountedPrice: 69,
-      discount: '54% OFF',
-      image: 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=200&h=200&fit=crop',
-    },
-    {
-      id: 3,
-      name: 'Plum Indian 250 g',
-      weight: '250 g',
-      rating: 4,
-      originalPrice: 149,
-      discountedPrice: 69,
-      discount: '54% OFF',
-      image: 'https://images.unsplash.com/photo-1571055107559-3e67626fa8be?w=200&h=200&fit=crop',
-    },
-  ];
 
   const updateQuantity = (productId, change) => {
     setQuantities(prev => ({
@@ -141,41 +110,15 @@ const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderCo
     );
   };
 
-  const renderProductCard = (product) => (
-    <View key={product.id} style={styles.productCard}>
-      <View style={styles.productImageContainer}>
-        <Image source={{ uri: product.image }} style={styles.productImage} />
-      </View>
-
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingNumber}>{product.rating}</Text>
-        {renderStars(product.rating)}
-      </View>
-
-      <Text style={styles.productWeight}>{product.weight}</Text>
-      <Text style={styles.productName}>{product.name}</Text>
-
-      <View style={styles.discountBadge}>
-        <Text style={styles.discountText}>{product.discount}</Text>
-      </View>
-
-      <View style={styles.priceContainer}>
-        <Text style={styles.originalPrice}>₹{product.originalPrice}</Text>
-        <Text style={styles.discountedPrice}>₹{product.discountedPrice}</Text>
-      </View>
-
-      {renderQuantityControl(product)}
-    </View>
-  );
-
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: appHeaderColor }}>
       {/* Header */}
       <View style={styles.header}>
-        <Image
+        {/* <Image
           style={{ alignSelf: 'flex-start', width: 120, height: 25, resizeMode: 'contain', marginTop: 10 }}
           source={require('../../assets/logo.png')}
-        />
+        /> */}
+        <Text style={{ color: 'white', fontFamily: 'Poppins-Regular', marginTop: 3 }}>beemax.in</Text>
         <View style={styles.headerTop}>
           <Text style={styles.deliveryTime}>{deliveryTime}</Text>
           <TouchableOpacity
@@ -206,7 +149,11 @@ const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderCo
         <TouchableOpacity
           onPress={handleSearchPress}
           style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          {/* <Text style={styles.searchIcon}>🔍</Text> */}
+          <Image
+            source={require('../../assets/search-gray.png')}
+            style={{ width: 24, height: 24, marginRight: 12 }}
+          />
           <TextInput
             editable={false}
             style={styles.searchInput}
@@ -219,23 +166,39 @@ const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderCo
       </View>
 
       <View style={{ ...styles.content, backgroundColor: appHeaderColor }} >
-        {console.log("optionalBannerData", optionalBannerData)}
         {optionalBannerData && optionalBannerData?.offer_banner && <View style={styles.bannerContainer}>
-          <Image
-            source={{ uri: optionalBannerData?.offer_banner }}
-            style={{
-              width: SCREEN_WIDTH,
-              height: undefined,
-              aspectRatio: bannerAspectRatio,
-              resizeMode: 'cover'
-            }}
-            onLoad={(event) => {
-              const { width, height } = event.nativeEvent.source;
-              if (width && height) {
-                setBannerAspectRatio(width / height);
+          <TouchableOpacity
+            onPress={() => {
+              console.log("optionalBannerData  :  ", optionalBannerData)
+
+              alert("hello")
+              if (optionalBannerData?.offer_redirection_type === 'category') {
+                navigation.navigate("ProductListing", { item: { optionalBannerData, redirection_id: optionalBannerData?.offer_redirection_id }, from: 'banner' })
+              } else if (optionalBannerData?.offer_redirection_type === 'page') {
+                navigation.navigate("CmsPage", { item: optionalBannerData, from: 'banner' })
+              } else {
+                navigation.navigate("ProductDetails", { product: { ...optionalBannerData, redirection_id: optionalBannerData?.offer_redirection_id }, from: 'banner' })
               }
+              console.log("optionalBannerData  :  ", optionalBannerData)
             }}
-          />
+          >
+
+            <FastImage
+              source={{ uri: optionalBannerData?.offer_banner }}
+              style={{
+                width: SCREEN_WIDTH,
+                height: undefined,
+                aspectRatio: bannerAspectRatio,
+                resizeMode: 'cover'
+              }}
+              onLoad={(event) => {
+                const { width, height } = event.nativeEvent.source;
+                if (width && height) {
+                  setBannerAspectRatio(width / height);
+                }
+              }}
+            />
+          </TouchableOpacity>
 
           {/* Horizontal ScrollView for products - positioned over the image */}
           {optionalBannerData?.offer_pro_info && optionalBannerData.offer_pro_info.length > 0 && (
@@ -248,16 +211,20 @@ const GroceryHomeScreen = ({ handleProductPress, optionalBannerData, appHeaderCo
                 {optionalBannerData.offer_pro_info.map((product, index) => (
                   <View style={{ flexDirection: 'row' }}>
                     <ProductItem
-                      imageWidth={170}
-                      showOffer={false}
+                      discountPosition={-7}
+                      navigation={navigation}
+                      imageHeight={130}
+                      cardWidth={.35}
+                      imageWidth={190}
+                      showOffer={true}
                       key={'product_details' + index}
                       item={product}
-                      borderRadius={10}
+                      borderRadius={5}
                       borderColor={'white'}
                       index={index}
                       onPress={handleProductPress}
                     />
-                    <View style={{ width: 15, backgroundColor: 'transparent', height: 10 }}></View>
+                    <View style={{ width: 10, backgroundColor: 'transparent', height: 10 }}></View>
                   </View>
 
                 ))}
@@ -303,10 +270,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   deliveryTime: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -330,7 +297,7 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: 'row',
     // alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 7,
     paddingHorizontal: 0
   },
   locationText: {
@@ -350,7 +317,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 6,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },

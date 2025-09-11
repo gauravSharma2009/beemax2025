@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { View, FlatList, Image, StyleSheet } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { allCategoryPink } from './colours';
 
 const ImageSlider = ({ images, openModal }) => {
@@ -24,7 +25,13 @@ const ImageSlider = ({ images, openModal }) => {
     }, [currentPage, images.length]);
 
     const renderImage = ({ item }) => {
-        return <Image source={item} style={styles.image} />;
+        return (
+            <FastImage 
+                source={item} 
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.contain}
+            />
+        );
     };
 
     const renderPageIndicator = () => {
@@ -35,9 +42,10 @@ const ImageSlider = ({ images, openModal }) => {
                     style={{ width: '100%', height: 200, }}
 
                 >
-                    <Image
-                        style={{ width: '100%', height: 200, resizeMode: 'contain', padding: 10 }}
+                    <FastImage
+                        style={{ width: '100%', height: 200, padding: 10 }}
                         source={{ uri: images[currentPage] }}
+                        resizeMode={FastImage.resizeMode.contain}
                     />
                 </TouchableOpacity>
 

@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { View, Text, TouchableOpacity, ImageBackground, Image, Dimensions } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import AddButton from './AddButton';
 import { mrpColor, productBorderColor, textColor, whiteTxtColor } from "../common/colours"
 import { currency } from './strings';
 import { storeData } from './asyncStore';
 
-const ProductItem = (props) => {
-    const { 
-        getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor = productBorderColor, showOffer = true,imageWidth =100 } = props
+const ProductItem = memo((props) => {
+    const {
+        getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor = productBorderColor, showOffer = true, imageWidth = 100, cardWidth = .45, imageHeight = 160,
+    discountPosition= 5 } = props
     const { inventory, in_stock } = item
     console.log("inventory  :  ", inventory)
     //  return null
     return (
-        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white', borderRadius: borderRadius }}>
+        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white', borderRadius: borderRadius, }}>
             <TouchableOpacity
                 onPress={() => {
                     storeData("clickedItem", JSON.stringify(item))
@@ -21,10 +23,18 @@ const ProductItem = (props) => {
                     navigation.push("ProductDetails", { product: item })
                 }}
                 key={"product" + index}
-                style={{ borderColor: borderColor, borderRadius: 8, borderWidth: 2, width: Dimensions.get('window').width * .45, marginLeft: 10, paddingBottom: 10 }}>
-                <Image
-                    style={{ width: imageWidth, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
+                style={{ borderColor: borderColor, borderRadius: 8, borderWidth: 2, width: Dimensions.get('window').width * cardWidth, marginLeft: 10, paddingBottom: 10 }}>
+                {/* <Image
+                    style={{ width: imageWidth, height: imageHeight, resizeMode: 'contain', alignSelf: 'center' }}
                     source={{ uri: item?.image_first }}
+                /> */}
+                <FastImage
+                    style={{ width: imageWidth, height: imageHeight, alignSelf: 'center' }}
+                    source={{
+                        uri: item?.image_first,
+                        priority: FastImage.priority.normal,
+                    }}
+                    resizeMode={FastImage.resizeMode.contain}
                 />
                 <Text
                     numberOfLines={2}
@@ -49,7 +59,7 @@ const ProductItem = (props) => {
 
                 </View>
                 {showOffer && <ImageBackground
-                    style={{ width: 35, height: 35, position: 'absolute', right: 5, top: 5, alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 35, height: 35, position: 'absolute', right: discountPosition, top: discountPosition, alignItems: 'center', justifyContent: 'center' }}
                     source={require('../../assets/discount-bg.png')}
                 >
                     <Text
@@ -97,6 +107,6 @@ const ProductItem = (props) => {
             }
         </View>
     );
-};
+});
 
 export default ProductItem;

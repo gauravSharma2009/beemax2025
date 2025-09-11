@@ -572,13 +572,13 @@ function ProductDetailsScreen(props) {
 
                     </View> : null}
                     {console.log("productDetails[0]  :  ", productDetails[0].specification)}
-
+                    <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : {productDetails[0]?.weight} g</Text>
                     <Accordion
                         changeLoadingState={changeLoadingState}
                         product={product}
                         reviews={reviews}
                         data={[
-                            { type: "web", title: 'About Product', content: `${productDetails[0].description} <br/>${productDetails[0].specification}` },
+                            { type: "web", title: 'About Product', content: `Description<br/>${productDetails[0].description} <br/>Specification<br/>${productDetails[0].specification}` },
                             // { type: 'web', title: 'Specification', content: productDetails[0].specification },
                             // { type: 'review', title: 'Review', content: productDetails[0].specification },
                         ]}
@@ -587,9 +587,15 @@ function ProductDetailsScreen(props) {
                 {relatedProducts && relatedProducts.length > 0 &&
                     <View style={{ width: '100%', backgroundColor: whiteTxtColor, marginTop: 0 }}>
                         <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
-                            <Text
-                                style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 10, marginTop: 10 }}
-                            >{"Related Products"}</Text>
+                            <View style={{ flexDirection: 'row' }}>
+                                <Text
+                                    style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 10, alignSelf: 'center', marginRight: 10 }}
+                                >{"Related Products"}</Text>
+                                <View style={{ height: 30, backgroundColor: 'green', borderRadius: 5, marginRight: 5, justifyContent: 'center', paddingHorizontal: 5, }}>
+                                    <Text style={{ fontSize: 14, color: '#FFFFFF', margin: 5, textAlign: 'center' }}>★  {Number(productDetails[0].average_rating).toFixed(1)}</Text>
+                                </View>
+                            </View>
+
 
                             <View style={{ flexDirection: 'row', marginRight: 3, justifyContent: 'center' }}>
                                 {/* <Rating
@@ -602,9 +608,7 @@ function ProductDetailsScreen(props) {
                                     style={{ alignSelf: 'center', marginLeft: 10 }}
                                 /> */}
 
-                                <View style={{ backgroundColor: 'green', borderRadius: 5, marginRight: 5 , justifyContent:'center', paddingHorizontal:10,}}>
-                                    <Text style={{ fontSize: 18, color: '#FFFFFF', margin: 5 , textAlign:'center'}}>★  {productDetails[0].average_rating}</Text>
-                                </View>
+
                                 <Text style={{ fontSize: 16, alignSelf: 'center', color: textColor, fontFamily: 'Poppins-Regular' }}>{`(${reviews?.length || 0} Reviews)`}</Text>
                             </View>
                         </View>
