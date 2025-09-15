@@ -137,7 +137,7 @@ function HomeScreen(props) {
                         if (result.status && result.data) {
                             // Process order history data
                             setShowOrderStatus(true);
-                            setorderData(dta.data)
+                            setorderData(result.data)
                         } else {
                             setShowOrderStatus(false);
                         }
