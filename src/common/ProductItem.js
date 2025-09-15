@@ -9,8 +9,8 @@ import { storeData } from './asyncStore';
 const ProductItem = memo((props) => {
     const {
         getProductList, changeLoadingState, item, index, navigation, setAction, products, borderRadius = 0, borderColor = productBorderColor, showOffer = true, imageWidth = 100, cardWidth = .45, imageHeight = 160,
-    discountPosition= 5 } = props
-    const { inventory, in_stock } = item
+        discountPosition = 5, discontPostionTop = 5, } = props
+    const { inventory, in_stock, product_size } = item
     console.log("inventory  :  ", inventory)
     //  return null
     return (
@@ -36,6 +36,7 @@ const ProductItem = memo((props) => {
                     }}
                     resizeMode={FastImage.resizeMode.contain}
                 />
+                <Text style={{ fontSize: 14, color: '#d0d0d0' }}>{product_size}</Text>
                 <Text
                     numberOfLines={2}
                     style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 5, marginLeft: 5 }}>{item.title}</Text>
@@ -59,7 +60,7 @@ const ProductItem = memo((props) => {
 
                 </View>
                 {showOffer && <ImageBackground
-                    style={{ width: 35, height: 35, position: 'absolute', right: discountPosition, top: discountPosition, alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 35, height: 35, position: 'absolute', right: discountPosition, top: discontPostionTop, alignItems: 'center', justifyContent: 'center' }}
                     source={require('../../assets/discount-bg.png')}
                 >
                     <Text

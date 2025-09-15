@@ -1126,9 +1126,14 @@ function CartScreen(props) {
 
                 {/* <View style={{ width: '100%', height: 10, marginVertical: 10, backgroundColor: categorySaperator }}></View> */}
                 <View style={{ justifyContent: 'center', marginTop: 50, alignSelf: 'center' }}>
-                    <AntDesign style={{ alignSelf: 'center' }}
+                    {/* <AntDesign style={{ alignSelf: 'center' }}
 
-                        name="checkcircleo" size={120} color={coupanGreen} />
+                        name="checkcircleo" size={120} color={coupanGreen} /> */}
+                        <Image
+                            resizeMode={'center'}
+                            style={{ height: 100, width: 100, alignSelf: 'center', resizeMode: 'contain', marginTop: '40%' }}
+                            source={require('../../assets/succ.png')}
+                        />
                     <Text style={{ fontSize: 40, alignSelf: 'center', color: coupanGreen, fontFamily: 'Poppins-Regular' }}>Thank you!</Text>
                     <Text style={{ fontSize: 20, alignSelf: 'center', color: textColor, fontFamily: 'Poppins-Regular' }}>Order No. {orderNumber}</Text>
                     <TouchableOpacity

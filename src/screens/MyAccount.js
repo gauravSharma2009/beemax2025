@@ -17,7 +17,7 @@ function AccountScreen(props) {
     const [userData, setuserData] = useState(null)
 
     useEffect(() => {
-        alert("Hello 1")
+        // alert("Hello 1")
         getUserData()
     }, [])
     const getUserData = async () => {

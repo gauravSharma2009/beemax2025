@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-const BOTTOM_SHEET_HEIGHT = 300;
+const BOTTOM_SHEET_HEIGHT = 220;
 
 const OrderStatusBottomSheet = ({
   visible,
@@ -315,13 +315,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   closeButton: {
-    padding: 4,
+    // padding: 4,
     marginLeft: 10,
+    backgroundColor:'#F1F1F1',
+    width:40, height:40, borderRadius:20,
+    alignItems:'center', justifyContent:'center'
   },
   closeIcon: {
     fontSize: 20,
     color: '#000000',
     fontWeight: '300',
+    alignSelf:'center'
   },
   deliveryInfo: {
     flexDirection: 'row',
@@ -374,7 +378,7 @@ const styles = StyleSheet.create({
   },
   activeIcon: {
     backgroundColor: '#ffffff',
-    borderColor: '#3B82F6',
+    borderColor: '#F1F1F1',
     borderWidth: 3,
   },
   checkIcon: {

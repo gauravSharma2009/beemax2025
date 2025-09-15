@@ -465,7 +465,7 @@ function HomeScreen(props) {
                     onPress={() => onPress(product)}
                     style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
                     <Image
-                        style={{ width: 100, height: 160, resizeMode: 'contain', alignSelf: 'center' }}
+                        style={{ width: 130, height: 200, resizeMode: 'contain', alignSelf: 'center' }}
                         source={{ uri: product.image_first }}
                     />
 
@@ -630,6 +630,9 @@ function HomeScreen(props) {
                         handlePincodePress={handlePincodePress}
                         handleUserPress={handleUserPress}
                         handleSearchPress={handleSearchPress}
+                        getProductList={getHomePageData}
+                        changeLoadingState={changeLoadingState}
+                        setAction={undefined}
                     />
                     {!optionalBannerData?.offer_banner && <SliderComponent
                         navigation={navigation}
@@ -652,6 +655,8 @@ function HomeScreen(props) {
                                         {console.log("Inside the loop", item?.aTSNData[0]?.products)}
                                         {item?.aTSNData[0].products?.map((product, index) =>
                                             <ProductItem
+                                                imageHeight={130}
+                                                imageWidth={200}
                                                 key={'product_details' + index}
                                                 product={product}
                                                 index={index}

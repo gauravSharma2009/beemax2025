@@ -133,7 +133,7 @@ function OrdersScreen(props) {
                                 <Text
                                     style={{ fontFamily: 'Poppins-SemiBold', color: textColor }}>{"QTY:"}<Text style={{ fontFamily: "Poppins-SemiBold" }}> {sellerItem.qty}</Text></Text>
                             </View>
-                            <View style={{ flexDirection: 'row', }}>
+                            {/* <View style={{ flexDirection: 'row', }}>
                                 <Text
                                     style={{ alignSelf: 'center', fontFamily: 'Poppins-SemiBold', color: textColor }}>{"Order Status:"}
                                 </Text>
@@ -160,7 +160,7 @@ function OrdersScreen(props) {
                                         {sellerItem.item_status}</Text>
                                 </View>
 
-                            </View>
+                            </View> */}
 
 
                         </View>

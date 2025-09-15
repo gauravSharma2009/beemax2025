@@ -18,7 +18,7 @@ import FastImage from 'react-native-fast-image';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode }) => {
+const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction }) => {
   const [searchText, setSearchText] = useState('');
   const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
   const [quantities, setQuantities] = useState({});
@@ -171,7 +171,7 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
             onPress={() => {
               console.log("optionalBannerData  :  ", optionalBannerData)
 
-              alert("hello")
+              // alert("hello")
               if (optionalBannerData?.offer_redirection_type === 'category') {
                 navigation.navigate("ProductListing", { item: { optionalBannerData, redirection_id: optionalBannerData?.offer_redirection_id }, from: 'banner' })
               } else if (optionalBannerData?.offer_redirection_type === 'page') {
@@ -192,8 +192,9 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
                 resizeMode: 'cover'
               }}
               onLoad={(event) => {
-                const { width, height } = event.nativeEvent.source;
-                if (width && height) {
+                const source = event.nativeEvent?.source;
+                if (source && source.width && source.height) {
+                  const { width, height } = source;
                   setBannerAspectRatio(width / height);
                 }
               }}
@@ -210,12 +211,14 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
               >
                 {optionalBannerData.offer_pro_info.map((product, index) => (
                   <View style={{ flexDirection: 'row' }}>
+                    {console.log("product  :  ", product)}
                     <ProductItem
                       discountPosition={-7}
+                      discontPostionTop={-15}
                       navigation={navigation}
                       imageHeight={130}
                       cardWidth={.35}
-                      imageWidth={190}
+                      imageWidth={200}
                       showOffer={true}
                       key={'product_details' + index}
                       item={product}
@@ -223,6 +226,9 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
                       borderColor={'white'}
                       index={index}
                       onPress={handleProductPress}
+                      getProductList={getProductList}
+                      changeLoadingState={changeLoadingState}
+                      setAction={setAction}
                     />
                     <View style={{ width: 10, backgroundColor: 'transparent', height: 10 }}></View>
                   </View>
@@ -274,7 +280,7 @@ const styles = StyleSheet.create({
   },
   deliveryTime: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins-Black',
     color: '#ffffff',
   },
   profileButton: {
@@ -327,7 +333,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 19,
     color: '#374151',
   },
   content: {

@@ -65,7 +65,7 @@ const SliderComponent = (props) => {
             }}
             style={{ width: screenWidth, height: 180, padding: 3 }}>
             <FastImage
-                style={{ width: screenWidth, height: 180 }}
+                style={{ width: screenWidth-10, height: 180 , borderRadius: 15 , alignSelf:'center',}}
                 source={{
                     uri: item.image_url,
                     //headers: { Authorization: 'someAuthToken' },

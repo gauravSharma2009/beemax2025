@@ -28,7 +28,7 @@ function AboutUsScreen(props) {
         fetch(`${server}cmspages`, requestOptions)
             .then(response => response.json())
             .then(result => {
-                // console.log("result  : ", JSON.stringify(result))
+                 console.log("result about us : ", JSON.stringify(result))
                 if (result && result.status) {
                     setData(result.data)
                     setAboutUsDesc(result.data?.aAboutUs[0]?.DESCRIPTION)
