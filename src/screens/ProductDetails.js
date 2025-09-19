@@ -593,10 +593,13 @@ function ProductDetailsScreen(props) {
                         <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
                             <View style={{ flexDirection: 'row' }}>
                                 <Text
-                                    style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 10, alignSelf: 'center', marginRight: 10 }}
+                                    style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 10, alignSelf: 'center', marginRight: 10, marginTop: 5 }}
                                 >{"Related Products"}</Text>
-                                <View style={{ height: 35, backgroundColor: 'green', borderRadius: 5, marginRight: 5, justifyContent: 'center', paddingHorizontal: 5, }}>
-                                    <Text style={{ fontSize: 20, color: '#FFFFFF', marginHorizontal: 5, textAlign: 'center' }}>★  <Text style={{ fontSize: 16 }}>{Number(productDetails[0].average_rating).toFixed(1)}</Text></Text>
+                                <View style={{ backgroundColor: '#056e48', borderRadius: 5, justifyContent: 'center', paddingHorizontal: 5, alignSelf: 'center', flexDirection:'row', paddingVertical:3 }}>
+                                    <Image
+                                        source={require('../../assets/star.png')}
+                                        style={{ width: 20, height: 20 }} />
+                                    <Text style={{ fontSize: 20, color: '#FFFFFF', marginHorizontal: 5, textAlign: 'center' }}><Text style={{ fontSize: 16 }}>{Number(productDetails[0].average_rating).toFixed(1)}</Text></Text>
                                 </View>
                             </View>
 
