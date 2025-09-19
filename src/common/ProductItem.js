@@ -81,7 +81,11 @@ const ProductItem = memo((props) => {
                     />
                 </View>
             </TouchableOpacity>
-            {in_stock === "0" || parseInt(inventory) < 1 &&
+            {console.log("in_stock  :  ", in_stock)}
+                        {console.log("in_stock  2 :  ",  in_stock === "0" || parseInt(inventory) < 1)}
+            {console.log("in_stock  3  :  ",  parseInt(inventory))}
+
+            {(in_stock === "0" || parseInt(inventory) < 1) &&
                 <View
 
                     key={"blur" + index}

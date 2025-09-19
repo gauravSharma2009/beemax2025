@@ -450,25 +450,26 @@ function CartScreen(props) {
 
                         </View>
                     </View>
-
-                    <View style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row', flex: .75, }}>
+                    <View style={{flex: .75,}}>
+                        <Text
+                            numberOfLines={2}
+                            style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 11, width: '100%',marginLeft:10 }}>{item.title}</Text>
+                             <View style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row',  }}>
 
                         <View style={{ alignSelf: 'flex-start', marginLeft: 10, marginBottom: 10, flex: .7 }}>
-                            <Text
-                                numberOfLines={2}
-                                style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 11, width: '50%' }}>{item.title}</Text>
+
                             <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{currency}</Text>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{item.selling_price}</Text>
                             </View>
-                            <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
+                            {/* <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>Current MRP Price {currency}</Text>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Medium', color: textColor, alignSelf: 'flex-end' }}>{item.mrp_price}</Text>
-                            </View>
+                            </View> */}
                         </View>
                         <AddButton
                             isAddBlocked={parseFloat(item?.free_deal_on) >= parseFloat(totalAmount)}
@@ -487,6 +488,8 @@ function CartScreen(props) {
                         />
 
                     </View>
+                    </View>
+                   
                 </View>
             </View>
 
@@ -926,7 +929,7 @@ function CartScreen(props) {
                 />
                 {freeDealData && freeDealData.length > 0 ?
                     <View style={{ marginTop: 15, alignItems: 'center', flexDirection: 'row', paddingVertical: 10, paddingHorizontal: 10 }}>
-                        <View style={{ borderRadius: 7, backgroundColor: coupanGreen, paddingHorizontal: 15, paddingVertical: 10 }}>
+                        <View style={{ borderRadius: 7, backgroundColor: coupanGreen, paddingHorizontal: 15, paddingVertical: 4 }}>
                             <Text style={{ color: '#ffffff', fontSize: 16, fontFamily: 'Poppins-Medium' }}>Great Deals</Text>
                         </View>
                         <Text style={{ marginLeft: 5, fontSize: 18, fontFamily: 'Poppins-Medium' }}>Limited-Time Offer</Text>
@@ -1129,11 +1132,11 @@ function CartScreen(props) {
                     {/* <AntDesign style={{ alignSelf: 'center' }}
 
                         name="checkcircleo" size={120} color={coupanGreen} /> */}
-                        <Image
-                            resizeMode={'center'}
-                            style={{ height: 100, width: 100, alignSelf: 'center', resizeMode: 'contain', marginTop: '40%' }}
-                            source={require('../../assets/succ.png')}
-                        />
+                    <Image
+                        resizeMode={'center'}
+                        style={{ height: 100, width: 100, alignSelf: 'center', resizeMode: 'contain', marginTop: '40%' }}
+                        source={require('../../assets/succ.png')}
+                    />
                     <Text style={{ fontSize: 40, alignSelf: 'center', color: coupanGreen, fontFamily: 'Poppins-Regular' }}>Thank you!</Text>
                     <Text style={{ fontSize: 20, alignSelf: 'center', color: textColor, fontFamily: 'Poppins-Regular' }}>Order No. {orderNumber}</Text>
                     <TouchableOpacity
