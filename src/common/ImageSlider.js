@@ -39,11 +39,10 @@ const ImageSlider = ({ images, openModal }) => {
             <View>
                 <TouchableOpacity
                     onPress={() => openModal(true)}
-                    style={{ width: '100%', height: 200, }}
-
+                    style={{ width: '100%', height: 260, }}
                 >
                     <FastImage
-                        style={{ width: '100%', height: 200, padding: 10 }}
+                        style={{ width: '100%', height: 260, padding: 10 }}
                         source={{ uri: images[currentPage] }}
                         resizeMode={FastImage.resizeMode.contain}
                     />
@@ -68,7 +67,7 @@ const ImageSlider = ({ images, openModal }) => {
 
     return (
         <View style={styles.container}>
-            <FlatList
+            {/* <FlatList
                 ref={flatlistRef}
                 data={images}
                 renderItem={renderImage}
@@ -80,7 +79,7 @@ const ImageSlider = ({ images, openModal }) => {
                     const pageIndex = Math.floor(contentOffset.x / layoutMeasurement.width);
                     setCurrentPage(pageIndex);
                 }}
-            />
+            /> */}
             {renderPageIndicator()}
         </View>
     );

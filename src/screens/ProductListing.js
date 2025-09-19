@@ -356,6 +356,8 @@ function ProductListingScreen(props) {
                         <ProductItem
                             products={products}
                             navigation={navigation}
+                            imageHeight={130}
+                                                imageWidth={200}
                             getProductList={getProductList}
                             changeLoadingState={changeLoadingState}
                             item={item}

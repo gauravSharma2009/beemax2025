@@ -22,14 +22,13 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { textColor } from "../common/colours";
 import OTPVerify from "../screens/OTPVerifyNew";
-import { SafeAreaView } from "react-native";
 import { StatusBar } from "react-native"
 import CustomModal from "../common/CustomModal";
 import { setPopup } from "../actions/message";
 import ProductSearchPage from "../screens/Search";
 import Cms from "../screens/CmsPage";
 import AutoSuggestSearchPage from "../screens/AutoSuggestSearchPage";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,51 +37,43 @@ const Tab = createBottomTabNavigator();
 function NavigatorScreen(props) {
     const { isLoading, message, status, open, setPopup, appHeaderColor } = props
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={{
-                width: '100%', height: '100%', backgroundColor: appHeaderColor,
-                // paddingBottom: Platform.OS === 'ios' ? 0 : 25, paddingTop: Platform.OS === 'ios' ? 0 : 42
-
-            }}>
-                <StatusBar style="light"
-                    backgroundColor={appHeaderColor}
-                />
-                <View style={{ width: '100%', height: '100%' }}>
-                    <Stack.Navigator
-                        screenOptions={{
-                            headerShown: false
-                        }}
-                    >
-                        <Stack.Screen name="Tabs" component={MyTabs} />
-                        <Stack.Screen name="ProductListing" component={ProductListing} />
-                        <Stack.Screen name="ProductDetails" component={ProductDetails} />
-                        <Stack.Screen name="CmsPage" component={Cms} />
-                        <Stack.Screen name="Cart" component={Cart} />
-                        <Stack.Screen name="LoginScreen" component={CartLogin} />
-                        <Stack.Screen name="MyAddress" component={Address} />
-                        <Stack.Screen name="LoginFlow" component={LoginWithOTPNew} />
-                        <Stack.Screen name="OtpVerifyFlow" component={OTPVerify} />
-                        <Stack.Screen name="UserScreen" component={UserNavigator} />
-                        <Stack.Screen name="ProductSearchPage" component={ProductSearchPage} />
-                        <Stack.Screen name="AutoSuggestSearchPage" component={AutoSuggestSearchPage} />
-
-
-                    </Stack.Navigator>
-                    {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                        <ActivityIndicator
-                            size={50}
-                            color="green"
-                        />
-
-                    </View>}
-                    <CustomModal
-                        visible={open}
-                        status={status}
-                        message={message}
-                        closeModal={() => setPopup({ message: "", status: "", open: false })} />
-                </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+        <SafeAreaView style={{
+            flex: 1, 
+            backgroundColor: appHeaderColor,
+        }}>
+         
+            <View style={{ flex: 1 }}>
+                <Stack.Navigator
+                    screenOptions={{
+                        headerShown: false
+                    }}
+                >
+                    <Stack.Screen name="Tabs" component={MyTabs} />
+                    <Stack.Screen name="ProductListing" component={ProductListing} />
+                    <Stack.Screen name="ProductDetails" component={ProductDetails} />
+                    <Stack.Screen name="CmsPage" component={Cms} />
+                    <Stack.Screen name="Cart" component={Cart} />
+                    <Stack.Screen name="LoginScreen" component={CartLogin} />
+                    <Stack.Screen name="MyAddress" component={Address} />
+                    <Stack.Screen name="LoginFlow" component={LoginWithOTPNew} />
+                    <Stack.Screen name="OtpVerifyFlow" component={OTPVerify} />
+                    <Stack.Screen name="UserScreen" component={UserNavigator} />
+                    <Stack.Screen name="ProductSearchPage" component={ProductSearchPage} />
+                    <Stack.Screen name="AutoSuggestSearchPage" component={AutoSuggestSearchPage} />
+                </Stack.Navigator>
+                {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator
+                        size={50}
+                        color="green"
+                    />
+                </View>}
+                <CustomModal
+                    visible={open}
+                    status={status}
+                    message={message}
+                    closeModal={() => setPopup({ message: "", status: "", open: false })} />
+            </View>
+        </SafeAreaView>
     );
 }
 

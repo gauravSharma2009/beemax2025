@@ -68,6 +68,8 @@ const ProductSearch = (props) => {
             getProductList={fetchProducts}
             changeLoadingState={changeLoadingState}
             item={item}
+            imageHeight={130}
+                                                imageWidth={200}
             index={index}
         />
     );

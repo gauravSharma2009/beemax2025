@@ -297,7 +297,7 @@ function HomeScreen(props) {
                     }
                     console.log("setting data : ", [result?.data?.aTSNData])
                     setHomeCategoryProdycts(result?.data?.aHomeCategoryProductsDetails)
-                    setAstnData([{ heading: "Try Something New", aTSNData: [result?.data?.aTSNData] }])
+                    setAstnData([{ heading: result?.data?.aTSNData?.heading, aTSNData: [result?.data?.aTSNData] }])
                     if (result?.data?.aBannerBottomImageDetails && result?.data?.aBannerBottomImageDetails.length > 0) {
                         let w = 954; let h = 270
 
@@ -460,18 +460,19 @@ function HomeScreen(props) {
     // Memoized Product Item Component
     const ProductItem = useMemo(() => {
         return React.memo(({ product, index, onPress, onAddToCart }) => (
-            <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 5 }}>
+            <View key={'product_details' + index} style={{ paddingTop: 15, paddingRight: 0 }}>
                 <TouchableOpacity
                     onPress={() => onPress(product)}
                     style={{ borderColor: productBorderColor, borderRadius: 8, borderWidth: 2, width: 154, marginLeft: 10, paddingBottom: 10 }}>
                     <Image
-                        style={{ width: 130, height: 200, resizeMode: 'contain', alignSelf: 'center' }}
+                        style={{ width: 200, height: 130, resizeMode: 'contain', alignSelf: 'center' }}
                         source={{ uri: product.image_first }}
                     />
 
                     <Text
                         numberOfLines={2}
-                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 10, marginLeft: 5 }}>{product.title}</Text>
+                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 3, marginLeft: 5 }}>{product.title}</Text>
+                    <Text style={{ fontSize: 14, color: '#d0d0d0' }}>{product?.product_size}</Text>
 
                     <View style={{ flexDirection: 'row', marginTop: 5, }}>
                         <Text
@@ -724,6 +725,8 @@ function HomeScreen(props) {
                                         <ProductItem
                                             key={'product_details' + index}
                                             product={product}
+                                            imageHeight={130}
+                                                imageWidth={200}
                                             index={index}
                                             onPress={handleProductPress}
                                         />

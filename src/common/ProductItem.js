@@ -14,7 +14,7 @@ const ProductItem = memo((props) => {
     console.log("inventory  :  ", inventory)
     //  return null
     return (
-        <View style={{ paddingTop: 15, paddingRight: 5, backgroundColor: 'white', borderRadius: borderRadius, }}>
+        <View style={{ paddingTop: 15, paddingRight: 10, backgroundColor: 'white', borderRadius: borderRadius, }}>
             <TouchableOpacity
                 onPress={() => {
                     storeData("clickedItem", JSON.stringify(item))
@@ -36,10 +36,10 @@ const ProductItem = memo((props) => {
                     }}
                     resizeMode={FastImage.resizeMode.contain}
                 />
-                <Text style={{ fontSize: 14, color: '#d0d0d0' }}>{product_size}</Text>
                 <Text
                     numberOfLines={2}
                     style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 5, marginLeft: 5 }}>{item.title}</Text>
+                <Text style={{ fontSize: 14, color: '#d0d0d0' }}>{product_size}</Text>
 
                 <View style={{ flexDirection: 'row', marginTop: 5, }}>
                     <Text

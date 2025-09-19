@@ -605,6 +605,8 @@ function ProductDetailsScreen(props) {
                                     getProductList={getProductDetails}
                                     changeLoadingState={changeLoadingState}
                                     item={item}
+                                    imageHeight={130}
+                                                imageWidth={200}
                                     index={index}
                                 />
                                 // <View style={{ paddingTop: 15, paddingRight: 5 }}>

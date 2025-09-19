@@ -567,7 +567,7 @@ function ProductDetailsScreen(props) {
                     </View> : null}
                     {console.log("productDetails[0]  :  ", productDetails[0].specification)}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : <Text style={{ color: '#C1C1C1' }}>{productDetails[0]?.weight}g</Text></Text>
+                        <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : <Text style={{ color: '#C1C1C1' }}>{productDetails[0]?.product_size}</Text></Text>
 
                         <AddButton
                             callBack={getProductDetails}
@@ -627,6 +627,9 @@ function ProductDetailsScreen(props) {
                                     getProductList={getProductDetails}
                                     changeLoadingState={changeLoadingState}
                                     item={item}
+                                    imageHeight={130}
+                                    // cardWidth={.35}
+                                    imageWidth={200}
                                     index={index}
                                 />
                                 // <View style={{ paddingTop: 15, paddingRight: 5 }}>

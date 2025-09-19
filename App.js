@@ -4,8 +4,7 @@ import { Provider } from 'react-redux';
 import store from './src/store/configureStore';
 
 import { NavigationContainer } from "@react-navigation/native";
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Navigator from "./src/navigation";
 import { Linking, Platform, Text, TouchableOpacity, PermissionsAndroid } from "react-native";
 import 'react-native-get-random-values';
@@ -162,7 +161,7 @@ export default function App() {
       .then((response) => response.json())
       .then((result) => {
         if (result && result?.data && result?.data?.appHeaderBackground) {
-            store.dispatch(changeAppHeaderColorState(result?.data?.appHeaderBackground?.color))
+          store.dispatch(changeAppHeaderColorState(result?.data?.appHeaderBackground?.color))
         }
       })
       .catch((error) => console.error(error));
@@ -303,44 +302,47 @@ export default function App() {
   }
 
   // return(<View style={{backgroundColor:'red', width:'100%', height:'100%'}}></View>)
- 
+
   return (
-    <Provider store={store}>
-      <NavigationContainer>{
-        <GestureHandlerRootView style={{ width: '100%', height: '100%'}}>
-        <View style={{width:'100%',height:'100%'}}>
-          <Navigator />
-        </View>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <NavigationContainer>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaView style={{ flex: 1 }}>
+              <Navigator />
+            </SafeAreaView>
+          </GestureHandlerRootView>
+        </NavigationContainer>
+        {false && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
+          <View style={{ width: '80%', backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
+            <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>
+            <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Regular", fontSize: 14, marginTop: 10 }}>{"There are new feature available,\nPlease update your app."}</Text>
+            <View style={{ width: '100%', height: 1, backgroundColor: '#d0d0d0', marginTop: 20 }}></View>
+            <View style={{ width: '100%', justifyContent: 'space-evenly', flexDirection: 'row', marginTop: 10 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  // const link = 'itms-apps://apps.apple.com/id/app/halojasa/id1492671277?l=id';
+                  const link = redirectUrl;
 
-      </GestureHandlerRootView>
-      }</NavigationContainer>
-      {false && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
-        <View style={{ width: '80%', backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
-          <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>
-          <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Regular", fontSize: 14, marginTop: 10 }}>{"There are new feature available,\nPlease update your app."}</Text>
-          <View style={{ width: '100%', height: 1, backgroundColor: '#d0d0d0', marginTop: 20 }}></View>
-          <View style={{ width: '100%', justifyContent: 'space-evenly', flexDirection: 'row', marginTop: 10 }}>
-            <TouchableOpacity
-              onPress={() => {
-                // const link = 'itms-apps://apps.apple.com/id/app/halojasa/id1492671277?l=id';
-                const link = redirectUrl;
-
-                Linking.canOpenURL(link).then(supported => {
-                  supported && Linking.openURL(link);
-                }, (err) => console.log(err));
-              }}
-            >
-              <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Update</Text>
-            </TouchableOpacity>
-            {appInfo?.force_update === "0" && <TouchableOpacity
-              onPress={() => { setShowUpdate(false) }}
-            >
-              <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Cancel</Text>
-            </TouchableOpacity>}
+                  Linking.canOpenURL(link).then(supported => {
+                    supported && Linking.openURL(link);
+                  }, (err) => console.log(err));
+                }}
+              >
+                <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Update</Text>
+              </TouchableOpacity>
+              {appInfo?.force_update === "0" && <TouchableOpacity
+                onPress={() => { setShowUpdate(false) }}
+              >
+                <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 15, color: '#007AFF' }}>Cancel</Text>
+              </TouchableOpacity>}
+            </View>
           </View>
-        </View>
-      </View>}
-    </Provider>
+        </View>}
+      </Provider>
+
+    </SafeAreaProvider>
+
   );
 }
 //https://expo.dev/accounts/gaurav.sharma
