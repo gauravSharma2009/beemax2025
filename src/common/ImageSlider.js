@@ -39,10 +39,10 @@ const ImageSlider = ({ images, openModal }) => {
             <View>
                 <TouchableOpacity
                     onPress={() => openModal(true)}
-                    style={{ width: '100%', height: 260, }}
+                    style={{ width: '100%', height: 350, }}
                 >
                     <FastImage
-                        style={{ width: '100%', height: 260, padding: 10 }}
+                        style={{ width: '100%', height: 350, padding: 10 }}
                         source={{ uri: images[currentPage] }}
                         resizeMode={FastImage.resizeMode.contain}
                     />
