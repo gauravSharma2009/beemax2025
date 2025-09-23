@@ -128,7 +128,7 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
               {/* <Text style={styles.profileIconText}>👤</Text> */}
               <Image
                 source={require('../../assets/user_circle.png')}
-                style={{ width: 32, height: 32, resizeMode: 'contain' }}
+                style={{ width: 28, height: 28, resizeMode: 'contain' }}
               />
             </View>
           </TouchableOpacity>
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   deliveryTime: {
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: 'Poppins-Black',
     color: '#ffffff',
   },
   profileButton: {
-    padding: 4,
+    padding: 0,
   },
   profileIcon: {
     width: 32,

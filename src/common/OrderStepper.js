@@ -6,6 +6,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import { allCategoryPink } from './colours';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -17,7 +18,31 @@ const OrderStepper = ({ orderTrackDetails }) => {
     const trackDetails = orderTrackDetails;
     const steps = [];
 
-    // Order is important: 1=Order Placed, 2=Accepted, 3=Shipped, 4=Delivered
+    // Check if order is cancelled (status 5)
+    const isCancelled = trackDetails['5'] && trackDetails['5'].is_active === 1;
+
+    if (isCancelled) {
+      // If cancelled, show only Order Placed and Cancelled
+      if (trackDetails['1']) {
+        steps.push({
+          id: '1',
+          label: trackDetails['1'].order_status,
+          status: 'completed',
+          iconSource: require('../../assets/check.png')
+        });
+      }
+      
+      steps.push({
+        id: '5',
+        label: trackDetails['5'].order_status,
+        status: 'cancelled',
+        iconSource: require('../../assets/cancel.png') // You may need to add this icon
+      });
+
+      return steps;
+    }
+
+    // Normal flow: 1=Order Placed, 2=Accepted, 3=Shipped, 4=Delivered
     const orderKeys = ['1', '2', '3', '4'];
 
     // Find the active step
@@ -75,20 +100,28 @@ const OrderStepper = ({ orderTrackDetails }) => {
   };
 
   const statusSteps = generateStatusSteps();
+  const isCancelledOrder = statusSteps.some(s => s.status === 'cancelled');
 
   const renderStatusIcon = (step, index) => {
     const isCompleted = step.status === 'completed';
     const isActive = step.status === 'active';
+    const isCancelled = step.status === 'cancelled';
 
     return (
       <View style={[
         styles.statusIconContainer,
         isCompleted && styles.completedIcon,
         isActive && styles.activeIcon,
+        isCancelled && styles.cancelledIcon,
       ]}>
         {isCompleted ? (
           <Image
             source={require('../../assets/check.png')}
+            style={styles.statusImage}
+          />
+        ) : isCancelled ? (
+          <Image
+            source={step.iconSource}
             style={styles.statusImage}
           />
         ) : step.iconSource ? (
@@ -120,7 +153,9 @@ const OrderStepper = ({ orderTrackDetails }) => {
               {index < statusSteps.length - 1 && (
                 <View style={[
                   styles.horizontalConnectorLine,
-                  step.status === 'completed' && styles.completedLine,
+                  isCancelledOrder && styles.cancelledConnectorLine,
+                  step.status === 'completed' && !isCancelledOrder && styles.completedLine,
+                  isCancelledOrder && styles.cancelledLine,
                 ]} />
               )}
             </View>
@@ -130,6 +165,7 @@ const OrderStepper = ({ orderTrackDetails }) => {
                 styles.horizontalStatusLabel,
                 step.status === 'completed' && styles.completedLabel,
                 step.status === 'active' && styles.activeLabel,
+                step.status === 'cancelled' && styles.cancelledLabel,
               ]}
             >
               {step.label}
@@ -154,7 +190,7 @@ const styles = StyleSheet.create({
   },
   horizontalStatusStep: {
     alignItems: 'center',
-    width: '25%', // For 4 steps
+    flex: 1, // Dynamic width based on number of steps
   },
   statusIconWrapper: {
     flexDirection: 'row',
@@ -182,6 +218,10 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
     borderWidth: 3,
   },
+  cancelledIcon: {
+    backgroundColor: allCategoryPink,
+    borderColor: allCategoryPink,
+  },
   pendingDot: {
     width: 12,
     height: 12,
@@ -199,6 +239,10 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     fontWeight: '600',
   },
+  cancelledLabel: {
+    color: allCategoryPink,
+    fontWeight: '600',
+  },
   horizontalConnectorLine: {
     width: SCREEN_WIDTH * 0.13, // Reduced from 0.15 to 0.13 (smaller)
     height: 6, // Increased from 4 to 6 (thicker)
@@ -207,8 +251,15 @@ const styles = StyleSheet.create({
     right: -SCREEN_WIDTH * 0.065, // Adjusted from 0.075 to 0.065
     top: 19, // Adjusted slightly to center the thicker line
   },
+  cancelledConnectorLine: {
+    width: SCREEN_WIDTH * 0.41, // Even wider to properly connect 2 steps
+    right: -SCREEN_WIDTH * 0.176, // Adjusted positioning for wider line
+  },
   completedLine: {
     backgroundColor: '#10B981',
+  },
+  cancelledLine: {
+    backgroundColor: allCategoryPink,
   },
   horizontalStatusLabel: {
     fontSize: 14,

@@ -37,11 +37,13 @@ const Tab = createBottomTabNavigator();
 function NavigatorScreen(props) {
     const { isLoading, message, status, open, setPopup, appHeaderColor } = props
     return (
-        <SafeAreaView style={{
-            flex: 1, 
-            backgroundColor: appHeaderColor,
+        <View style={{
+            flex: 1,
+            // backgroundColor: appHeaderColor,
         }}>
-         
+            <StatusBar style="light"
+                backgroundColor={appHeaderColor}
+            />
             <View style={{ flex: 1 }}>
                 <Stack.Navigator
                     screenOptions={{
@@ -73,7 +75,7 @@ function NavigatorScreen(props) {
                     message={message}
                     closeModal={() => setPopup({ message: "", status: "", open: false })} />
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 

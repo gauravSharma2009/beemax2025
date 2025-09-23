@@ -92,7 +92,7 @@ const ProductItem = memo((props) => {
                     style={{
                         height: '100%',
                         //borderColor: productBorderColor, 
-                        width: Dimensions.get('window').width * .45,
+                        width: Dimensions.get('window').width * cardWidth,
                         marginLeft: 10,
                         backgroundColor: '#ffffffaa',
                         borderColor: "transparent",

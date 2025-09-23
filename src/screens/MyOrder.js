@@ -77,7 +77,7 @@ function OrdersScreen(props) {
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)
-                console.log(JSON.stringify(result))
+                console.log("userorderlist :  ",JSON.stringify(result))
                 if (result && result.status) {
                     setOrderList(result.data)
                 } else {

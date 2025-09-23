@@ -453,12 +453,12 @@ function ProductDetailsScreen(props) {
                     </View> */}
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row', }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                             <Text
-                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', }}
+                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', alignSelf:'center'}}
                             >{currency}</Text>
                             <Text
-                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
+                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2, alignSelf:'center' }}
                             >{productDetails[0].selling_price}</Text>
                             {/* <Text
                                 style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', marginLeft: 10, textDecorationLine: 'line-through',
@@ -467,12 +467,19 @@ function ProductDetailsScreen(props) {
                             <Text
                                 style={{
                                     fontSize: 18, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 2, textDecorationLine: 'line-through',
-                                    textDecorationStyle: 'solid', marginLeft: 10
+                                    textDecorationStyle: 'solid', marginLeft: 10, alignSelf:'center'
                                 }}
                             >{currency} {productDetails[0].mrp_price}</Text>
                             {/* {productDetails[0].discount_percentage && <Text
                             style={{ fontSize: 16, color: offColor, fontFamily: 'Poppins-Regular', marginLeft: 5, marginBottom: 5 }}
                         >{productDetails[0].discount_percentage + "% OFF"}</Text>} */}
+
+                            <View style={{ backgroundColor: '#056e48', borderRadius: 5, justifyContent: 'center', paddingHorizontal: 5, alignSelf: 'center', flexDirection: 'row', paddingVertical: 3 , marginLeft:10}}>
+                                <Image
+                                    source={require('../../assets/star.png')}
+                                    style={{ width: 20, height: 20 }} />
+                                <Text style={{ fontSize: 20, color: '#FFFFFF', marginHorizontal: 5, textAlign: 'center' }}><Text style={{ fontSize: 16 }}>{Number(productDetails[0].average_rating).toFixed(1)}</Text></Text>
+                            </View>
                         </View>
 
                     </View>
@@ -567,7 +574,7 @@ function ProductDetailsScreen(props) {
                     </View> : null}
                     {console.log("productDetails[0]  :  ", productDetails[0].specification)}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : <Text style={{ color: '#C1C1C1' }}>{productDetails[0]?.product_size}</Text></Text>
+                        <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : <Text style={{ color: mrpColor }}>{productDetails[0]?.product_size}</Text></Text>
 
                         <AddButton
                             callBack={getProductDetails}
@@ -595,12 +602,7 @@ function ProductDetailsScreen(props) {
                                 <Text
                                     style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 10, alignSelf: 'center', marginRight: 10, marginTop: 5 }}
                                 >{"Related Products"}</Text>
-                                <View style={{ backgroundColor: '#056e48', borderRadius: 5, justifyContent: 'center', paddingHorizontal: 5, alignSelf: 'center', flexDirection:'row', paddingVertical:3 }}>
-                                    <Image
-                                        source={require('../../assets/star.png')}
-                                        style={{ width: 20, height: 20 }} />
-                                    <Text style={{ fontSize: 20, color: '#FFFFFF', marginHorizontal: 5, textAlign: 'center' }}><Text style={{ fontSize: 16 }}>{Number(productDetails[0].average_rating).toFixed(1)}</Text></Text>
-                                </View>
+
                             </View>
 
 
