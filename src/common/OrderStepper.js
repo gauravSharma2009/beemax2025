@@ -122,7 +122,7 @@ const OrderStepper = ({ orderTrackDetails }) => {
         ) : isCancelled ? (
           <Image
             source={step.iconSource}
-            style={styles.statusImage}
+            style={styles.cancelledStatusImage}
           />
         ) : step.iconSource ? (
           <Image
@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#E5E7EB',
+    zIndex: 2, // Ensure icons are above the connector line
   },
   completedIcon: {
     backgroundColor: '#10B981',
@@ -250,6 +251,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -SCREEN_WIDTH * 0.065, // Adjusted from 0.075 to 0.065
     top: 19, // Adjusted slightly to center the thicker line
+    zIndex: 1, // Ensure connector line is behind the icons
   },
   cancelledConnectorLine: {
     width: SCREEN_WIDTH * 0.41, // Even wider to properly connect 2 steps
@@ -272,6 +274,11 @@ const styles = StyleSheet.create({
   statusImage: {
     width: 24,
     height: 24,
+    resizeMode: 'contain',
+  },
+  cancelledStatusImage: {
+    width: 18,
+    height: 18,
     resizeMode: 'contain',
   },
 });

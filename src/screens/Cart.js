@@ -53,6 +53,8 @@ function CartScreen(props) {
 
     const [instantDelivery, setInstantDelivery] = useState(false)
     const [instantDeliveryText, setInstantDeliveryTxt] = useState(null)
+    const [showInstantDelivery, setShowInstantDelivery] = useState(false)
+
     const [isCodAvailable, setIsCodAvailable] = useState(true)
     const [isShippingAvailable, setIsShippingAvailable] = useState(true)
     const [loadingData, setIsLoading] = useState(true)
@@ -306,7 +308,7 @@ function CartScreen(props) {
             .then(result => {
 
                 changeLoadingState(false)
-                // console.log("result.data  :  ", JSON.stringify(result.data))
+                console.log("result.data cart  :  ", JSON.stringify(result.data))
                 if (result && result.data && result.data.aCartItemDetails) {
                     setIsCodAvailable(result.data.isCodAvailable)
                     setIsShippingAvailable(result.data.isShippingAvailable)
@@ -338,6 +340,9 @@ function CartScreen(props) {
 
                     setOffersList(result.data.aCouponOffersList)
                     setInstantDeliveryTxt(result.data.instantDelivery)
+                    // setShowInstantDelivery(false)
+                    setShowInstantDelivery(result.data.instantDeliveryStatus)
+
                     if (result.data.aShippingDetails) {
                         console.log("result.data.aShippingDetails.shipping_charge  :  ", result.data.aShippingDetails.shipping_charge)
                         setShippingAmount(Number(result.data.aShippingDetails.shipping_charge))
@@ -450,46 +455,46 @@ function CartScreen(props) {
 
                         </View>
                     </View>
-                    <View style={{flex: .75,}}>
+                    <View style={{ flex: .75, }}>
                         <Text
                             numberOfLines={2}
-                            style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 11, width: '100%',marginLeft:10 }}>{item.title}</Text>
-                             <View style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row',  }}>
+                            style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 11, width: '100%', marginLeft: 10 }}>{item.title}</Text>
+                        <View style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: 'row', }}>
 
-                        <View style={{ alignSelf: 'flex-start', marginLeft: 10, marginBottom: 10, flex: .7 }}>
+                            <View style={{ alignSelf: 'flex-start', marginLeft: 10, marginBottom: 10, flex: .7 }}>
 
-                            <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
-                                <Text
-                                    style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{currency}</Text>
-                                <Text
-                                    style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{item.selling_price}</Text>
-                            </View>
-                            {/* <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
+                                <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
+                                    <Text
+                                        style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{currency}</Text>
+                                    <Text
+                                        style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{item.selling_price}</Text>
+                                </View>
+                                {/* <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>Current MRP Price {currency}</Text>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Medium', color: textColor, alignSelf: 'flex-end' }}>{item.mrp_price}</Text>
                             </View> */}
-                        </View>
-                        <AddButton
-                            isAddBlocked={parseFloat(item?.free_deal_on) >= parseFloat(totalAmount)}
-                            // isAddedToCart={false}
-                            freeDealAddedToCart={item?.isAddedTOCart}
-                            style={{
-                                flex: .3,
-                                alignSelf: 'flex-end',
-                                backgroundColor: parseFloat(item?.free_deal_on) <= parseFloat(totalAmount) ? allCategoryPink : '#d0d0d0'
-                            }}
-                            callBack={getCartData}
-                            changeLoadingState={changeLoadingState}
-                            addItem={addItem}
-                            minusItem={minusItem}
-                            item={{ ...item, qty_added_in_cart: item.QTY }}
-                        />
+                            </View>
+                            <AddButton
+                                isAddBlocked={parseFloat(item?.free_deal_on) >= parseFloat(totalAmount)}
+                                // isAddedToCart={false}
+                                freeDealAddedToCart={item?.isAddedTOCart}
+                                style={{
+                                    flex: .3,
+                                    alignSelf: 'flex-end',
+                                    backgroundColor: parseFloat(item?.free_deal_on) <= parseFloat(totalAmount) ? allCategoryPink : '#d0d0d0'
+                                }}
+                                callBack={getCartData}
+                                changeLoadingState={changeLoadingState}
+                                addItem={addItem}
+                                minusItem={minusItem}
+                                item={{ ...item, qty_added_in_cart: item.QTY }}
+                            />
 
+                        </View>
                     </View>
-                    </View>
-                   
+
                 </View>
             </View>
 
@@ -1019,7 +1024,7 @@ function CartScreen(props) {
 
                 {addresses && addresses.length > 0 && !isShippingAvailable && <Text style={{ marginTop: 10, justifyContent: 'center', alignSelf: 'center', fontSize: 18, fontFamily: 'Poppins-SemiBold', color: allCategoryPink }}>Sorry We are not delivering here</Text>}
 
-                {instantDeliveryText && <TouchableOpacity
+                {instantDeliveryText && showInstantDelivery == '1' && <TouchableOpacity
                     onPress={() => setInstantDelivery(true)}
                     style={{
                         ...{
