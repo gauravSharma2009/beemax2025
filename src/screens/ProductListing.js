@@ -151,7 +151,8 @@ function ProductListingScreen(props) {
         };
         changeLoadingState(true)
         const uniqueId = await getData("uniqueId")
-        console.log("URL list by category: ", `${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${product.page}/${uniqueId}`)
+        console.log("From where: " , from)
+        console.log("URL list by category: ", `${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${product.page}/${uniqueId}${from && from === 'AutoSuggestSearchPage' ? `?product_id=${item.product_id}` : ""}`)
         fetch(`${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${product.page}/${uniqueId}`, requestOptions)
             .then(response => response.json())
             .then(result => {
@@ -190,12 +191,13 @@ function ProductListingScreen(props) {
         };
         changeLoadingState(true)
         const uniqueId = await getData("uniqueId")
-        console.log("URL list by category: ", `${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${pageCount}/${uniqueId}`)
-        fetch(`${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${pageCount}/${uniqueId}`, requestOptions)
+        console.log("URL list by category: ", `${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${pageCount}/${uniqueId}${from && from === 'AutoSuggestSearchPage' ? `/${item.product_id}` : ""}`)
+        fetch(`${server}${productlistbycategoryid}${from && from === 'banner' ? item.redirection_id : item.id}/${pinCode}/${pageCount}/${uniqueId}${from && from === 'AutoSuggestSearchPage' ? `/${item.product_id}` : ""}`, requestOptions)
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)
                 setChangeCart(changeCart + 1)
+                 console.log("URL list by category: ",result?.data)
                 if (result?.data?.aProductListData && result?.data?.aProductListData.length === 0) {
                     setIsEndReached(true);
                 } else {

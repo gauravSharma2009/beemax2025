@@ -102,6 +102,7 @@ const AutoSuggestSearch = (props) => {
             const data = await response.json();
 
             if (data.status && data.data && data.data.aSuggestedCatListData) {
+                console.log("data.data.aSuggestedCatListData  :  ", data.data.aSuggestedCatListData)
                 setSuggestions(data.data.aSuggestedCatListData);
                 setShowSuggestions(true);
             } else {
@@ -127,7 +128,7 @@ const AutoSuggestSearch = (props) => {
         setShowSuggestions(false);
         // Save the selected suggestion to recent searches
         saveSearchToStorage(item.category_title);
-        navigation.navigate("ProductListing", { item: { ...item, id: item.category_id } })
+        navigation.navigate("ProductListing", { item: { ...item, id: item.category_id }, from : "AutoSuggestSearchPage" })
 
     };
 
@@ -154,7 +155,9 @@ const AutoSuggestSearch = (props) => {
             // defaultSource={require('./placeholder-icon.png')} // Add a placeholder image
             />
             <View style={styles.suggestionTextContainer}>
-                <Text style={styles.suggestionNameText}>{item.name || "N/A"}</Text>
+                <Text style={styles.suggestionNameText}
+                numberOfLines={1}
+                >{item.product_title || "N/A"}</Text>
                 <Text style={styles.suggestionCategoryText}>in {item.category_title}</Text>
             </View>
             <Image
@@ -337,6 +340,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
         marginBottom: 2,
+
     },
     suggestionCategoryText: {
         fontSize: 14,

@@ -176,7 +176,10 @@ function CartScreen(props) {
 
 
     const addItem = (qty, item) => {
-        // console.log("item : ", item)
+        if (qty > parseInt(item?.inventory)) {
+            alert("Cart quantity can't be more than available inventory.")
+            return
+        }
         // return
         addToCart({ product: item, qty: 1 })
     }
