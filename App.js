@@ -6,7 +6,7 @@ import store from './src/store/configureStore';
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Navigator from "./src/navigation";
-import { Linking, Platform, Text, TouchableOpacity, PermissionsAndroid } from "react-native";
+import { Linking, Platform, Text, TouchableOpacity, PermissionsAndroid, Dimensions, Image } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { getData, storeData } from "./src/common/asyncStore";
@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { changePinCodeState, changeAddressState } from "./src/actions/pincodeAction";
 import { server } from "./src/common/apiConstant";
 import { changeAppHeaderColorState } from "./src/actions/appHeaderColorAction";
+import FastImage from 'react-native-fast-image';
 // import SplashScreen from "react-native-splash-screen";
 
 // Define the config
@@ -32,6 +33,8 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [iosVersion, setIosVersion] = useState("1.0.1");
   const [androidVersion, setAndroidVersion] = useState("1.0.1");
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashImageUrl, setSplashImageUrl] = useState(null);
 
   useEffect(() => {
     const getUniqueId = async () => {
@@ -77,6 +80,8 @@ export default function App() {
   useEffect(() => {
     getAppInformation()
     getAppHeaderColor()
+    getSplashBanner()
+    // alert("Hello")
   }, [])
   const [appInfo, setAppInfo] = useState({})
   const [redirectUrl, setRedirectUrl] = useState("")
@@ -165,6 +170,42 @@ export default function App() {
         }
       })
       .catch((error) => console.error(error));
+  }
+
+  const getSplashBanner = async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Cookie", "ci_session=b85c4e741fb5381ba7db99de1c8cb392db4b2d09");
+
+    const requestOptions = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+    
+    fetch(`${server}app_splash_banner`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log("splash banner result: ", result);
+        if (result && result?.status && result?.data && result?.data?.appSplashBanner) {
+          setSplashImageUrl(result?.data?.appSplashBanner?.file_url);
+          // Hide splash after 5 seconds
+          setTimeout(() => {
+           setShowSplash(false);
+          }, 5000);
+        } else {
+          // If API fails, hide splash after 2 seconds
+          setTimeout(() => {
+            setShowSplash(false);
+          }, 2000);
+        }
+      })
+      .catch((error) => {
+        console.error("Splash banner error:", error);
+        // If API fails, hide splash after 2 seconds
+        setTimeout(() => {
+          setShowSplash(false);
+        }, 2000);
+      });
   }
 
   const extractPincodeFromAddress = (address) => {
@@ -303,6 +344,29 @@ export default function App() {
 
   // return(<View style={{backgroundColor:'red', width:'100%', height:'100%'}}></View>)
 
+  // Show splash screen
+  if (showSplash) {
+    return (
+      <View style={{ 
+        flex: 1, 
+        width: Dimensions.get('window').width, 
+        height: Dimensions.get('window').height,
+        backgroundColor: '#ffffff'
+      }}>
+        
+          <Image
+            source={{ uri: splashImageUrl }}
+            style={{ 
+              width: '100%', 
+              height: '100%' 
+            }}
+            resizeMode='cover'
+              cachePolicy="memory" // or "memory", "disk", "none"
+          />
+        </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <Provider store={store}>
@@ -313,7 +377,7 @@ export default function App() {
             </SafeAreaView>
           </GestureHandlerRootView>
         </NavigationContainer>
-        {false && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
+        {showUpdate && <View style={{ width: '100%', height: '100%', backgroundColor: '#000000aa', position: 'absolute', justifyContent: 'center', alignItems: "center" }}>
           <View style={{ width: '80%', backgroundColor: '#ffffff', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 10 }}>
             <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Medium", fontSize: 16 }}>New version available</Text>
             <Text style={{ width: '100%', textAlign: 'center', fontFamily: "Poppins-Regular", fontSize: 14, marginTop: 10 }}>{"There are new feature available,\nPlease update your app."}</Text>

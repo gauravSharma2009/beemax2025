@@ -12,6 +12,7 @@ const ProductItem = memo((props) => {
         discountPosition = 5, discontPostionTop = 5, } = props
     const { inventory, in_stock, product_size } = item
     console.log("inventory  :  ", inventory)
+    
     //  return null
     return (
         <View style={{ paddingTop: 15, paddingRight: 10, backgroundColor: 'white', borderRadius: borderRadius, }}>

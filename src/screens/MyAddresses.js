@@ -150,6 +150,31 @@ function AddressScreen(props) {
             });
     }
 
+    // Function to geocode address and get latitude and longitude
+    const geocodeAddress = async (addressStr, cityStr, stateStr, pinStr) => {
+        try {
+            const fullAddress = `${addressStr}, ${cityStr}, ${stateStr}, ${pinStr}`;
+            const encodedAddress = encodeURIComponent(fullAddress);
+            const API_KEY = 'AIzaSyDHhmAsz97YrEw-8xqToaNzgs72yeL-i6k';
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${API_KEY}`);
+            const data = await response.json();
+
+            if (data.status === 'OK' && data.results && data.results.length > 0) {
+                const location = data.results[0].geometry.location;
+                return {
+                    latitude: location.lat,
+                    longitude: location.lng
+                };
+            } else {
+                console.log('Geocoding failed:', data.status);
+                return { latitude: null, longitude: null };
+            }
+        } catch (error) {
+            console.log('Error geocoding address:', error);
+            return { latitude: null, longitude: null };
+        }
+    };
+
     const saveAddress = async (id) => {
         const loginData = await getData("loginData")
         const userData = JSON.parse(loginData)
@@ -204,6 +229,10 @@ function AddressScreen(props) {
             setError({})
         }
 
+        // Get coordinates from address
+        const stateName = stateList.find(s => s.id === state.id)?.state_name || '';
+        const coordinates = await geocodeAddress(address, city, stateName, pinCode);
+
         if (edit) {
             var myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
@@ -220,7 +249,9 @@ function AddressScreen(props) {
                 "pincode": pinCode,
                 "landmark": landmark,
                 "alternate_phone": altPhone,
-                "address_type": type
+                "address_type": type,
+                "latitude": coordinates?.latitude,
+                "longitude": coordinates?.longitude
             });
             // {
             //     "id":"7",
@@ -294,7 +325,9 @@ function AddressScreen(props) {
             "pincode": pinCode,
             "landmark": landmark,
             "alternate_phone": altPhone,
-            "address_type": type
+            "address_type": type,
+            "latitude": coordinates.latitude,
+            "longitude": coordinates.longitude
         });
 
         var requestOptions = {

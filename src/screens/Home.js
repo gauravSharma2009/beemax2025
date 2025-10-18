@@ -471,8 +471,8 @@ function HomeScreen(props) {
 
                     <Text
                         numberOfLines={2}
-                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 3, marginLeft: 5 }}>{product.title}</Text>
-                    <Text style={{ fontSize: 14, color: '#d0d0d0' }}>{product?.product_size}</Text>
+                        style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 3, marginLeft: 3 }}>{product.title}</Text>
+                    <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', }}>{product?.product_size}</Text>
 
                     <View style={{ flexDirection: 'row', marginTop: 5, }}>
                         <Text
@@ -490,16 +490,7 @@ function HomeScreen(props) {
                             style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
                         >{product.selling_price}</Text>
                     </View>
-                    <ImageBackground
-                        style={{ width: 35, height: 35, position: 'absolute', right: -10, top: -10, alignItems: 'center', justifyContent: 'center' }}
-                        source={require('../../assets/discount-bg.png')}
-                    >
-                        <Text
-                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
-                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
-                    </ImageBackground>
-
-                    <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
+                     <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
                         <AddButton
                             callBack={getHomePageData}
                             changeLoadingState={changeLoadingState}
@@ -507,7 +498,43 @@ function HomeScreen(props) {
                             item={product}
                         />
                     </View>
+                 
+
+                   
                 </TouchableOpacity>
+                {(product?.in_stock === "0" || parseInt(product?.inventory) < 1) &&
+                <View
+
+                    key={"blur" + index}
+                    style={{
+                        height: '100%',
+                        //borderColor: productBorderColor, 
+                        width: "90%",
+                        marginLeft: 10,
+                        backgroundColor: '#ffffffaa',
+                        borderColor: "transparent",
+                        borderRadius: 8, borderWidth: 2,
+                        //backgroundColor: 'red',
+                        // paddingBottom: 10,
+                        // /padd
+                        marginTop: 15,
+                        position: 'absolute',
+                        justifyContent: 'center'
+                    }}>
+                    <View style={{ backgroundColor: textColor, borderRadius: 7, paddingHorizontal: 15, paddingVertical: 8 }}>
+                        <Text style={{ color: '#ffffff', fontFamily: 'Poppins-Bold', fontSize: 12, alignSelf: 'center' }}>Out of Stock</Text>
+                    </View>
+
+                </View>
+            }
+               <ImageBackground
+                        style={{ width: 35, height: 35, position: 'absolute', right: -5, top: -0, alignItems: 'center', justifyContent: 'center' }}
+                        source={require('../../assets/discount-bg.png')}
+                    >
+                        <Text
+                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
+                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
+                    </ImageBackground>
             </View>
         ))
     }, [])
@@ -786,6 +813,11 @@ function HomeScreen(props) {
                 onClose={() => {
                     setShowOrderStatus(false);
                     // Call API to close recent order history
+                    console.log("Hiding bottom : ", server + 'close_recent_order_history')
+                    console.log("Body daya : ", JSON.stringify({
+                            "is_hide_track_order": true,
+                            "primary_order_id": orderdta?.aRecentOrderData?.[0]?.PRIMARY_ORDER_ID
+                        }))
                     fetch(server + 'close_recent_order_history', {
                         method: 'POST',
                         headers: {
@@ -796,12 +828,14 @@ function HomeScreen(props) {
                             "primary_order_id": orderdta?.PRIMARY_ORDER_ID
                         })
                     })
-                        .then(response => response.json())
+                        .then(response => response.json()).then(data => {
+                            console.log("Response hiding: ", data)
+                        })
                         .catch(error => console.error('Error closing order history:', error));
                 }}
-                orderId="BM-3498"
-                deliveryTime="Delivery in 19 minutes*"
-                currentStatus="Order Placed"
+                // orderId="BM-3498"
+                // deliveryTime="Delivery in 19 minutes*"
+                // currentStatus="Order Placed"
             />
         </View >
 

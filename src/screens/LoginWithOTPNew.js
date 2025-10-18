@@ -17,10 +17,16 @@ const OTPLoginScreen = (props) => {
     // const validatePhoneNumber = () => {
     //     setValidNumber(phoneInput.isValidNumber());
     // };
+
+    
     useEffect(() => {
         if (phoneNumber && phoneNumber.length === 10) {
+                    console.log("phoneNumber  :  ", phoneNumber)
+
             setValidNumber(true)
         } else {
+                    console.log("phoneNumber 2 :  ", phoneNumber)
+
             setValidNumber(false)
         }
     }, [phoneNumber])
@@ -103,12 +109,18 @@ const OTPLoginScreen = (props) => {
                         Please enter a valid phone number
                     </Text>
                 )}
-                <Button
+                {!validNumber && <Button
                     title="LOGIN"
                     buttonStyle={styles.buttonStyle}
                     onPress={handleLogin}
                     disabled={!validNumber}
-                />
+                />}
+                 {validNumber && <Button
+                    title="LOGIN"
+                    buttonStyle={styles.buttonStyle}
+                    onPress={handleLogin}
+                    // disabled={!validNumber}
+                />}
             </View>
         </View>
     );

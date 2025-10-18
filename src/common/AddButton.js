@@ -206,19 +206,19 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: allCategoryPink,
         borderRadius: 8,
-        paddingHorizontal: 10,
+        paddingHorizontal: 6,
         // paddingVertical: 8,
-        width: 80,
+        width: 75,
         height: 37,
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
-        marginRight: 10
+        marginRight: 6
     },
     addButton: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: 'Poppins-Regular'
 
     },
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     },
     minusButton: {
         borderRadius: 8,
-        paddingHorizontal: 8,
+        paddingHorizontal: 6,
         paddingVertical: 4,
         marginRight: 8,
         fontFamily: 'Poppins-Regular'
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     },
     plusButton: {
         borderRadius: 8,
-        paddingHorizontal: 8,
+        paddingHorizontal: 6,
         paddingVertical: 4,
         marginLeft: 8,
         fontFamily: 'Poppins-Regular'
@@ -244,12 +244,12 @@ const styles = StyleSheet.create({
     },
     quantityText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: 'Poppins-Regular'
 
     },
     quantity: {
-        fontSize: 16,
+        fontSize: 14,
         color: '#fff',
         fontFamily: 'Poppins-Regular'
     },
