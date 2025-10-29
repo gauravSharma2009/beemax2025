@@ -24,8 +24,9 @@ function Header(props) {
                 style={{ alignItems: 'center' }}
                 onPress={() => {
                     storeData("clickedItem", "")
+     navigation.navigate("AutoSuggestSearchPage")
 
-                    navigation.navigate("ProductSearchPage")
+                  //  navigation.navigate("ProductSearchPage")
                 }}
             >
                 <Image

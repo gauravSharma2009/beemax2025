@@ -412,7 +412,10 @@ function ProductDetailsScreen(props) {
                 <View style={{ flexDirection: 'row', alignSelf: 'center', flex: .2, justifyContent: 'flex-end' }}>
                     <TouchableOpacity
                         style={{ alignItems: 'center' }}
-                        onPress={() => navigation.navigate("ProductSearchPage")}
+                        onPress={() =>      navigation.navigate("AutoSuggestSearchPage")
+
+                          //  navigation.navigate("ProductSearchPage")
+                        }
                     >
                         <Image
                             style={{ width: 20, height: 20, alignSelf: 'center', marginRight: 5 }}

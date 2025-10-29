@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "563543191883",
+    "project_id": "beemax-b26f9",
+    "storage_bucket": "beemax-b26f9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563543191883:android:654aa8c8d9a48c631ff8ce",
+        "android_client_info": {
+          "package_name": "com.webinfosys.ecommerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPwF756dMM-9KBnpfWiJWfH9btdhrfyZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

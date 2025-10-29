@@ -43,7 +43,7 @@ function AccountScreen(props) {
                     />
                 </TouchableOpacity>
 
-                <View style={{ alignSelf: 'center', justifyContent: 'center', marginLeft: 100 }}>
+                <View style={{ alignSelf: 'center', justifyContent: 'center', marginLeft: 10 }}>
                     <Text style={{ fontFamily: 'Poppins-SemiBold', alignSelf: 'center', color: 'white', fontSize: 20 }}>Hello, {userData?.USER_NAME}</Text>
                 </View>
 

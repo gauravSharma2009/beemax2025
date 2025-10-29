@@ -2,7 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export const storeData = (key, value) => {
-  //  console.log('Values to save', key + ' : ' + value);
+    console.log('Values to save', key + ' : ' + value);
+        console.log('getting notification', key + ' : ' + value);
+
     AsyncStorage.setItem(key, value);
 }
 

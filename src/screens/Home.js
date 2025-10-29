@@ -49,8 +49,27 @@ function HomeScreen(props) {
     const [showOrderStatus, setShowOrderStatus] = useState(false)
     const [orderdta, setorderData] = useState(null)
 
+    useEffect(() => {
+      
+    },[])
+  const getNotificationData = async () => {
+    console.log("getting notification 1")
+            const notificationData = await getData("notification");
+                console.log("getting notification 2", notificationData)
 
+            if (notificationData) {
+                    console.log("getting notification 3")
 
+                const notif = JSON.parse(notificationData);
+                    console.log("getting notification 4")
+
+                if (notif?.cagtegory_id) {
+                        console.log("getting notification 5")
+
+                    alert("hello : ", notif?.cagtegory_id)
+                }
+            }
+        }
     const AUTO_SCROLL_INTERVAL = 2000; // 5 seconds
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -70,6 +89,8 @@ function HomeScreen(props) {
             setCurrentPage(0)
             getHomePageData()
             storeData("clickedItem", "")
+                    getNotificationData();
+
         });
 
         return unsubscribe;
@@ -490,7 +511,7 @@ function HomeScreen(props) {
                             style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2 }}
                         >{product.selling_price}</Text>
                     </View>
-                     <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
+                    <View style={{ position: 'absolute', bottom: 5, right: !product.qty_added_in_cart || Number(product.qty_added_in_cart) === 0 ? -2 : 8, }}>
                         <AddButton
                             callBack={getHomePageData}
                             changeLoadingState={changeLoadingState}
@@ -498,43 +519,43 @@ function HomeScreen(props) {
                             item={product}
                         />
                     </View>
-                 
 
-                   
+
+
                 </TouchableOpacity>
                 {(product?.in_stock === "0" || parseInt(product?.inventory) < 1) &&
-                <View
+                    <View
 
-                    key={"blur" + index}
-                    style={{
-                        height: '100%',
-                        //borderColor: productBorderColor, 
-                        width: "90%",
-                        marginLeft: 10,
-                        backgroundColor: '#ffffffaa',
-                        borderColor: "transparent",
-                        borderRadius: 8, borderWidth: 2,
-                        //backgroundColor: 'red',
-                        // paddingBottom: 10,
-                        // /padd
-                        marginTop: 15,
-                        position: 'absolute',
-                        justifyContent: 'center'
-                    }}>
-                    <View style={{ backgroundColor: textColor, borderRadius: 7, paddingHorizontal: 15, paddingVertical: 8 }}>
-                        <Text style={{ color: '#ffffff', fontFamily: 'Poppins-Bold', fontSize: 12, alignSelf: 'center' }}>Out of Stock</Text>
+                        key={"blur" + index}
+                        style={{
+                            height: '100%',
+                            //borderColor: productBorderColor, 
+                            width: "90%",
+                            marginLeft: 10,
+                            backgroundColor: '#ffffffaa',
+                            borderColor: "transparent",
+                            borderRadius: 8, borderWidth: 2,
+                            //backgroundColor: 'red',
+                            // paddingBottom: 10,
+                            // /padd
+                            marginTop: 15,
+                            position: 'absolute',
+                            justifyContent: 'center'
+                        }}>
+                        <View style={{ backgroundColor: textColor, borderRadius: 7, paddingHorizontal: 15, paddingVertical: 8 }}>
+                            <Text style={{ color: '#ffffff', fontFamily: 'Poppins-Bold', fontSize: 12, alignSelf: 'center' }}>Out of Stock</Text>
+                        </View>
+
                     </View>
-
-                </View>
-            }
-               <ImageBackground
-                        style={{ width: 35, height: 35, position: 'absolute', right: -5, top: -0, alignItems: 'center', justifyContent: 'center' }}
-                        source={require('../../assets/discount-bg.png')}
-                    >
-                        <Text
-                            style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
-                        >{product.discount_percentage + '%' + "\nOFF"}</Text>
-                    </ImageBackground>
+                }
+                <ImageBackground
+                    style={{ width: 35, height: 35, position: 'absolute', right: -5, top: -0, alignItems: 'center', justifyContent: 'center' }}
+                    source={require('../../assets/discount-bg.png')}
+                >
+                    <Text
+                        style={{ alignSelf: 'center', textAlign: 'center', fontSize: 8, color: whiteTxtColor, fontFamily: 'Poppins-Regular', }}
+                    >{product.discount_percentage + '%' + "\nOFF"}</Text>
+                </ImageBackground>
             </View>
         ))
     }, [])
@@ -753,7 +774,7 @@ function HomeScreen(props) {
                                             key={'product_details' + index}
                                             product={product}
                                             imageHeight={130}
-                                                imageWidth={200}
+                                            imageWidth={200}
                                             index={index}
                                             onPress={handleProductPress}
                                         />
@@ -815,9 +836,9 @@ function HomeScreen(props) {
                     // Call API to close recent order history
                     console.log("Hiding bottom : ", server + 'close_recent_order_history')
                     console.log("Body daya : ", JSON.stringify({
-                            "is_hide_track_order": true,
-                            "primary_order_id": orderdta?.aRecentOrderData?.[0]?.PRIMARY_ORDER_ID
-                        }))
+                        "is_hide_track_order": true,
+                        "primary_order_id": orderdta?.aRecentOrderData?.[0]?.PRIMARY_ORDER_ID
+                    }))
                     fetch(server + 'close_recent_order_history', {
                         method: 'POST',
                         headers: {
@@ -825,7 +846,7 @@ function HomeScreen(props) {
                         },
                         body: JSON.stringify({
                             "is_hide_track_order": true,
-                            "primary_order_id": orderdta?.PRIMARY_ORDER_ID
+                            "primary_order_id": orderdta?.aRecentOrderData?.[0]?.PRIMARY_ORDER_ID
                         })
                     })
                         .then(response => response.json()).then(data => {
@@ -833,9 +854,9 @@ function HomeScreen(props) {
                         })
                         .catch(error => console.error('Error closing order history:', error));
                 }}
-                // orderId="BM-3498"
-                // deliveryTime="Delivery in 19 minutes*"
-                // currentStatus="Order Placed"
+            // orderId="BM-3498"
+            // deliveryTime="Delivery in 19 minutes*"
+            // currentStatus="Order Placed"
             />
         </View >
 

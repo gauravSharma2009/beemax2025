@@ -20,6 +20,10 @@ import { changeAppHeaderColorState } from "./src/actions/appHeaderColorAction";
 import FastImage from 'react-native-fast-image';
 // import SplashScreen from "react-native-splash-screen";
 
+// Import Firebase modules
+import messaging from '@react-native-firebase/messaging';
+import { requestUserPermission, getFirebaseToken, subscribeToTopic, handleForegroundMessages } from './src/utils/firebaseNotifications';
+
 // Define the config
 const config = {
   useSystemColorMode: false,
@@ -132,6 +136,69 @@ export default function App() {
       }
     }
   }, [appInfo])
+
+  // Firebase notification setup
+  useEffect(() => {
+    const setupFirebase = async () => {
+      try {
+        // Request notification permissions
+        const permissionStatus = await requestUserPermission();
+        console.log('Notification permission status:', permissionStatus);
+
+        if (permissionStatus === 'granted') {
+          // Get the Firebase token
+          const token = await getFirebaseToken();
+          if (token) {
+            console.log('FCM Token:', token);
+            
+            // Subscribe to all topics
+            await subscribeToTopic('All');
+            console.log('Subscribed to All topic');
+          }
+
+          // Handle foreground messages
+          const unsubscribe = handleForegroundMessages();
+          
+          // Handle notification interactions
+          const unsubscribeNotificationOpened = messaging().onNotificationOpenedApp(remoteMessage => {
+            console.log('Notification caused app to open from background state:', remoteMessage.notification);
+          });
+
+          const unsubscribeMessage = messaging().onMessage(async remoteMessage => {
+            console.log('Notification caused Received message in foreground:', remoteMessage);
+          });
+
+          // Handle app opened from terminated state by notification
+          const initialNotification = await messaging().getInitialNotification();
+          if (initialNotification) {
+            console.log('Notification caused app to open from quit state:', initialNotification.notification);
+          }
+
+          // Cleanup function to unsubscribe when component unmounts
+          return () => {
+            unsubscribe();
+            unsubscribeNotificationOpened();
+            unsubscribeMessage();
+          };
+        }
+      } catch (error) {
+        console.error('Error setting up Firebase:', error);
+      }
+    };
+
+    setupFirebase();
+
+    // Listen for token refresh
+    const unsubscribeTokenRefresh = messaging().onTokenRefresh(token => {
+      console.log('Firebase token refreshed:', token);
+      // You might want to send this new token to your server here
+    });
+
+    // Cleanup token refresh listener when component unmounts
+    return () => {
+      unsubscribeTokenRefresh();
+    };
+  }, []);
   const getAppInformation = async () => {
     const myHeaders = new Headers();
     myHeaders.append("Cookie", "ci_session=b85c4e741fb5381ba7db99de1c8cb392db4b2d09");
