@@ -50,26 +50,24 @@ function HomeScreen(props) {
     const [orderdta, setorderData] = useState(null)
 
     useEffect(() => {
-      
-    },[])
-  const getNotificationData = async () => {
-    console.log("getting notification 1")
-            const notificationData = await getData("notification");
-                console.log("getting notification 2", notificationData)
 
-            if (notificationData) {
-                    console.log("getting notification 3")
-
-                const notif = JSON.parse(notificationData);
-                    console.log("getting notification 4")
-
-                if (notif?.cagtegory_id) {
-                        console.log("getting notification 5")
-
-                    alert("hello : ", notif?.cagtegory_id)
-                }
+    }, [])
+    const getNotificationData = async () => {
+        const notificationData = await getData("notification");
+        if (notificationData) {
+            const notif = JSON.parse(notificationData);
+            if (notif?.category_id) {
+                // Navigate to ProductListing with category_id
+                navigation.navigate("ProductListing", {
+                    item: {
+                        id: notif.category_id
+                    }
+                });
+                // Clear the notification data after processing
+                storeData("notification", "");
             }
         }
+    }
     const AUTO_SCROLL_INTERVAL = 2000; // 5 seconds
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -89,7 +87,8 @@ function HomeScreen(props) {
             setCurrentPage(0)
             getHomePageData()
             storeData("clickedItem", "")
-                    getNotificationData();
+            // alert("calling notification data")
+            getNotificationData();
 
         });
 

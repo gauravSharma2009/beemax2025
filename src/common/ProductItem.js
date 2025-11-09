@@ -40,7 +40,7 @@ const ProductItem = memo((props) => {
                 <Text
                     numberOfLines={2}
                     style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 5, marginLeft: 5 }}>{item.title}</Text>
-                <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold' }}>{product_size}</Text>
+                <Text style={{ marginLeft: 5,fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold' }}>{product_size}</Text>
 
                 <View style={{ flexDirection: 'row', marginTop: 5, }}>
                     <Text

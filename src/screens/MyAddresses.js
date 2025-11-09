@@ -397,7 +397,7 @@ function AddressScreen(props) {
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)
-
+console.log(`my addressed : ${server}useraddresslist/${userData?.USER_ID}`,JSON.stringify(result))
                 if (result && result.status) {
                     setAddresses(result.data)
                 } else {

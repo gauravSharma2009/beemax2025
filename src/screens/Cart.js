@@ -472,12 +472,12 @@ function CartScreen(props) {
                                     <Text
                                         style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{item.selling_price}</Text>
                                 </View>
-                                {/* <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
+                                <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
                                 <Text
-                                    style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>Current MRP Price {currency}</Text>
+                                    style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>MRP Price {currency}</Text>
                                 <Text
                                     style={{ fontFamily: 'Poppins-Medium', color: textColor, alignSelf: 'flex-end' }}>{item.mrp_price}</Text>
-                            </View> */}
+                            </View>
                             </View>
                             <AddButton
                                 isAddBlocked={parseFloat(item?.free_deal_on) >= parseFloat(totalAmount)}

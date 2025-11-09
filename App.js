@@ -150,18 +150,23 @@ export default function App() {
           const token = await getFirebaseToken();
           if (token) {
             console.log('FCM Token:', token);
-            
+
             // Subscribe to all topics
             await subscribeToTopic('All');
+            // await subscribeToTopic('Test');
             console.log('Subscribed to All topic');
           }
 
           // Handle foreground messages
           const unsubscribe = handleForegroundMessages();
-          
+
           // Handle notification interactions
           const unsubscribeNotificationOpened = messaging().onNotificationOpenedApp(remoteMessage => {
-            console.log('Notification caused app to open from background state:', remoteMessage.notification);
+            console.log('Notification caused app to open from background state:', remoteMessage);
+            // Store notification data to handle redirect after navigation is ready
+            if (remoteMessage?.data?.category_id) {
+              storeData("notification", JSON.stringify(remoteMessage.data));
+            }
           });
 
           const unsubscribeMessage = messaging().onMessage(async remoteMessage => {
@@ -171,7 +176,11 @@ export default function App() {
           // Handle app opened from terminated state by notification
           const initialNotification = await messaging().getInitialNotification();
           if (initialNotification) {
-            console.log('Notification caused app to open from quit state:', initialNotification.notification);
+            console.log('Notification caused app to open from quit state:', initialNotification);
+            // Store notification data to handle redirect after navigation is ready
+            if (initialNotification?.data?.category_id) {
+              storeData("notification", JSON.stringify(initialNotification.data));
+            }
           }
 
           // Cleanup function to unsubscribe when component unmounts
@@ -248,7 +257,7 @@ export default function App() {
       headers: myHeaders,
       redirect: "follow"
     };
-    
+
     fetch(`${server}app_splash_banner`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
@@ -257,7 +266,7 @@ export default function App() {
           setSplashImageUrl(result?.data?.appSplashBanner?.file_url);
           // Hide splash after 5 seconds
           setTimeout(() => {
-           setShowSplash(false);
+            setShowSplash(false);
           }, 5000);
         } else {
           // If API fails, hide splash after 2 seconds
@@ -414,23 +423,23 @@ export default function App() {
   // Show splash screen
   if (showSplash) {
     return (
-      <View style={{ 
-        flex: 1, 
-        width: Dimensions.get('window').width, 
+      <View style={{
+        flex: 1,
+        width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
         backgroundColor: '#ffffff'
       }}>
-        
-          <Image
-            source={{ uri: splashImageUrl }}
-            style={{ 
-              width: '100%', 
-              height: '100%' 
-            }}
-            resizeMode='cover'
-              cachePolicy="memory" // or "memory", "disk", "none"
-          />
-        </View>
+
+        <Image
+          source={{ uri: splashImageUrl }}
+          style={{
+            width: '100%',
+            height: '100%'
+          }}
+          resizeMode='cover'
+          cachePolicy="memory" // or "memory", "disk", "none"
+        />
+      </View>
     );
   }
 
