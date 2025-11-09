@@ -4,7 +4,7 @@ import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 import { changeLoadingState } from "../actions/loadingAction"
 import { getData } from "../common/asyncStore"
-import { allCategoryPink, buttonBgColor, categorySaperator, coupanGreen, textColor, textInputColor, whiteTxtColor } from "../common/colours"
+import { allCategoryPink, buttonBgColor, categorySaperator, coupanGreen, offPurpleColor, textColor, textInputColor, whiteTxtColor } from "../common/colours"
 import { currency } from "../common/strings"
 import Header from '../components/Header'
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -473,11 +473,11 @@ function CartScreen(props) {
                                         style={{ fontFamily: 'Poppins-Bold', color: textColor, alignSelf: 'flex-start', fontSize: 22 }}>{item.selling_price}</Text>
                                 </View>
                                 <View style={{ flexDirection: "row", alignSelf: 'flex-start' }}>
-                                <Text
-                                    style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>MRP Price {currency}</Text>
-                                <Text
-                                    style={{ fontFamily: 'Poppins-Medium', color: textColor, alignSelf: 'flex-end' }}>{item.mrp_price}</Text>
-                            </View>
+                                    <Text
+                                        style={{ fontFamily: 'Poppins-Regular', color: textColor, alignSelf: 'flex-end' }}>MRP Price {currency}</Text>
+                                    <Text
+                                        style={{ fontFamily: 'Poppins-Medium', color: textColor, alignSelf: 'flex-end' }}>{item.mrp_price}</Text>
+                                </View>
                             </View>
                             <AddButton
                                 isAddBlocked={parseFloat(item?.free_deal_on) >= parseFloat(totalAmount)}
@@ -535,6 +535,10 @@ function CartScreen(props) {
                     </View>}
                 </View>
                 <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end', flexDirection: 'row', flex: .4, justifyContent: 'flex-end', }}>
+
+                    {item?.inventory == 0 && <View style={{marginBottom:7,marginRight:5,paddingHorizontal:5, paddingVertical:2, borderWidth: 1, borderRadius: 5, borderColor: offPurpleColor }}>
+                        <Text style={{color: offPurpleColor, fontSize:12}}>Available {item?.inventory} Unit(s)</Text>
+                    </View>}
                     <AddButton
                         isAddedToCart={true}
                         style={{ alignSelf: 'flex-end' }}

@@ -97,7 +97,7 @@ const AddButtonCMP = (props) => {
     const handleAdd = () => {
         //return;
         // alert("hello"+isAddBlocked)
-        if(isAddBlocked){
+        if (isAddBlocked) {
             return
         }
         addItem ? addItem(quantity + 1, item) : addToCart({ product: item, qty: 1, type: 'add' })
@@ -168,9 +168,9 @@ const AddButtonCMP = (props) => {
             !item.qty_added_in_cart || Number(item.qty_added_in_cart) === 0 ?
                 <TouchableOpacity
                     onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}
-                    style={[styles.button, { backgroundColor: item.in_stock === "0" || parseInt(item.inventory) < 1 ? "#E5E5E5" : allCategoryPink, borderColor: allCategoryPink, borderWidth: 1 }, style, { maxHeight: 35 }]} 
-                    // onPress={handleAdd}
-                    >
+                    style={[styles.button, { backgroundColor: item.in_stock === "0" || parseInt(item.inventory) < 1 ? "#E5E5E5" : allCategoryPink, borderColor: allCategoryPink, borderWidth: 1 }, style, { maxHeight: 35 }]}
+                // onPress={handleAdd}
+                >
                     <Text style={[styles.addButton, { color: whiteTxtColor }]}>Add</Text>
                 </TouchableOpacity> :
                 <View style={[styles.quantityContainer, { backgroundColor: item.in_stock === "0" || parseInt(item.inventory) < 1 ? "#E5E5E5" : allCategoryPink, borderRadius: 5 }, style, { maxHeight: 35 }]}>
@@ -189,7 +189,7 @@ const AddButtonCMP = (props) => {
                     <Text style={styles.addButton}>Add</Text>
                 ) : (
                     <View style={styles.quantityContainer}>
-                        <TouchableOpacity style={styles.minusButton} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 || quantity <= 0 ? null : handleMinus}>
+                        <TouchableOpacity style={styles.minusButton} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 || quantity <= 0 ? handleMinus : handleMinus}>
                             <Text style={styles.quantityText}>-</Text>
                         </TouchableOpacity>
                         <Text style={styles.quantity}>{'' + item.qty_added_in_cart ? Number(item.qty_added_in_cart) : 0}</Text>
