@@ -492,7 +492,7 @@ function HomeScreen(props) {
                     <Text
                         numberOfLines={2}
                         style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 3, marginLeft: 3 }}>{product.title}</Text>
-                    <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', }}>{product?.product_size}</Text>
+                    <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft:5}}>{product?.product_size}</Text>
 
                     <View style={{ flexDirection: 'row', marginTop: 5, }}>
                         <Text

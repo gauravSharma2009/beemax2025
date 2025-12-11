@@ -36,7 +36,7 @@ const ImageSlider = ({ images, openModal }) => {
 
     const renderPageIndicator = () => {
         return (
-            <View>
+            <View style={{marginLeft:-10}}>
                 <TouchableOpacity
                     onPress={() => openModal(true)}
                     style={{ width: '100%', height: 350, }}
@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     },
     image: {
         width: '100%',
+        backgroundColor:'red'
     },
     pageIndicatorContainer: {
         flexDirection: 'row',

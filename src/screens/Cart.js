@@ -176,7 +176,8 @@ function CartScreen(props) {
 
 
     const addItem = (qty, item) => {
-        if (qty > parseInt(item?.inventory)) {
+        // alert(String(item?.inventory) + String(item?.QTY))
+        if (item?.QTY >= parseInt(item?.inventory)) {
             alert("Cart quantity can't be more than available inventory.")
             return
         }
@@ -536,8 +537,8 @@ function CartScreen(props) {
                 </View>
                 <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end', flexDirection: 'row', flex: .4, justifyContent: 'flex-end', }}>
 
-                    {item?.inventory == 0 && <View style={{marginBottom:7,marginRight:5,paddingHorizontal:5, paddingVertical:2, borderWidth: 1, borderRadius: 5, borderColor: offPurpleColor }}>
-                        <Text style={{color: offPurpleColor, fontSize:12}}>Available {item?.inventory} Unit(s)</Text>
+                    {Number(item?.inventory) <= Number(item?.QTY) && <View style={{ marginBottom: 7, marginRight: 5, paddingHorizontal: 5, paddingVertical: 2, borderWidth: 1, borderRadius: 5, borderColor: offPurpleColor }}>
+                        <Text style={{ color: offPurpleColor, fontSize: 12 }}>Available {item?.inventory} Unit(s)</Text>
                     </View>}
                     <AddButton
                         isAddedToCart={true}

@@ -1,19 +1,23 @@
 import messaging from '@react-native-firebase/messaging';
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform, PermissionsAndroid } from 'react-native';
 
-// Request notification permissions for iOS
+// Request notification permissions
 export const requestUserPermission = async () => {
   if (Platform.OS === 'android') {
-    // For Android, notifications are enabled by default
-    return 'granted';
+    // For Android API 33+, we need to request POST_NOTIFICATIONS permission
+    if (Platform.Version >= 33) {
+      const permission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      return permission === PermissionsAndroid.RESULTS.GRANTED ? 'granted' : 'denied';
+    } else {
+      // For Android API 32 and below, notifications are enabled by default
+      return messaging.AuthorizationStatus.AUTHORIZED;
+    }
   } else {
     // For iOS, we need to request permission
     const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    return enabled ? 'granted' : 'denied';
+    return authStatus;
   }
 };
 

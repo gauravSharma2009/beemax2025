@@ -1,11 +1,13 @@
 import React from "react";
-import { Text } from "react-native";
+import { Dimensions, Text } from "react-native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Categories from "../screens/Categories";
 import Offers from "../screens/Offers";
 import Cart from "../screens/Cart";
 import Account from "../screens/Account";
+// import { StatusBar } from 'react-native-bars';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeStack from "./HomeNavigator";
 import CategoriesStack from "./CategoriesNavigator";
@@ -36,15 +38,29 @@ const Tab = createBottomTabNavigator();
 
 function NavigatorScreen(props) {
     const { isLoading, message, status, open, setPopup, appHeaderColor } = props
+    const insets = useSafeAreaInsets();
+    const hasNotch = insets.top > 20 || insets.bottom > 0;
+
     return (
         <View style={{
             flex: 1,
             // backgroundColor: appHeaderColor,
         }}>
-            <StatusBar style="light"
+            {!hasNotch && <StatusBar style="light"
                 backgroundColor={appHeaderColor}
-            />
-            <View style={{ flex: 1 }}>
+                translucent={false}  // This is crucial for Android 14+
+
+            />}
+            {hasNotch && <View style={{ height: hasNotch ? insets.top : 0, backgroundColor: appHeaderColor }}></View>}
+            {/* <SafeAreaView style={{ flex: 1 }}> */}
+
+
+            {/* <StatusBar
+                barStyle="light-content"
+                backgroundColor={appHeaderColor}
+                animated={true}
+            /> */}
+            <View style={{ flex: Dimensions.get('window').height - (hasNotch ? insets.top : 0) - (hasNotch ? insets.bottom : 0) }}>
                 <Stack.Navigator
                     screenOptions={{
                         headerShown: false
@@ -75,7 +91,11 @@ function NavigatorScreen(props) {
                     message={message}
                     closeModal={() => setPopup({ message: "", status: "", open: false })} />
             </View>
+            {/* </SafeAreaView> */}
+            {hasNotch && <View style={{ height: hasNotch ? insets.bottom : 0, backgroundColor: "transparent" }}></View>}
+
         </View>
+
     );
 }
 
