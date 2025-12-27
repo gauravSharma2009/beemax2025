@@ -43,7 +43,7 @@ function OrdersScreen(props) {
             redirect: 'follow'
         };
 
-        fetch(server+"cancel_items", requestOptions)
+        fetch(server + "cancel_items", requestOptions)
             .then(response => response.json())
             .then(result => {
                 console.log(result)
@@ -77,7 +77,7 @@ function OrdersScreen(props) {
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)
-                console.log("userorderlist :  ",JSON.stringify(result))
+                console.log("userorderlist :  ", JSON.stringify(result))
                 if (result && result.status) {
                     setOrderList(result.data)
                 } else {
@@ -103,16 +103,27 @@ function OrdersScreen(props) {
                         <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5 }}>{"Order Id:"}<Text style={{ fontFamily: 'Poppins-SemiBold' }}>  {item.DISPLAY_PRIMARY_ORDER_ID}</Text></Text>
                         <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5 }}>{"Ship to:"}<Text style={{ fontFamily: 'Poppins-SemiBold' }}>  {JSON.parse(item.ADDRESS_DATA).name}</Text></Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <Text style={{ flex:.5,fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Date:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_DATE || "N/A"}</Text></Text>
-                            <Text style={{flex:.5, fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Time:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_SLOT || "N/A"}</Text></Text>
+                            <Text style={{ flex: .5, fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Date:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_DATE || "N/A"}</Text></Text>
+                            <Text style={{ flex: .5, fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Time:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_SLOT || "N/A"}</Text></Text>
 
 
                         </View>
+                        {/* <Text
+                            style={{ position: 'absolute', right: 10, top: 10, fontSize: 40 }}
+                        >{">"}</Text> */}
+                        <TouchableOpacity style={{ position: 'absolute', right: 10, top: 10, }}
+                            onPress={() => navigation.navigate("OrderDetails", { item })}
+                        >
+                            <Image
+                                style={{ width: 25, height: 25, tintColor: '#000000' }}
+                                source={require("../../assets/right-arrow.png")}
+                            />
+                        </TouchableOpacity>
 
-                        <MaterialIcons
+                        {/* <MaterialIcons
                             onPress={() => navigation.navigate("OrderDetails", { item })}
                             style={{ position: 'absolute', right: 10, top: 10 }}
-                            name="keyboard-arrow-right" size={30} color="black" />
+                            name="keyboard-arrow-right" size={30} color="black" /> */}
                     </View>
 
                     {/* <View style={{ width: '100%', height: 1, backgroundColor: categorySaperator, marginVertical: 10 }}></View> */}
@@ -194,7 +205,7 @@ function OrdersScreen(props) {
                     {item.ORDER_TRACK_DETAILS && (
                         <OrderStepper orderTrackDetails={item.ORDER_TRACK_DETAILS} />
                     )}
-                    
+
                     <View style={{ width: '100%', height: 5, backgroundColor: categorySaperator, marginVertical: 10 }}></View>
 
                 </View>)}
