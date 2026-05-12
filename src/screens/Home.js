@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Text, View, ScrollView, TouchableOpacity, Image, ImageBackground, Dimensions } from "react-native"
 import { homePageUrl, server } from "../common/apiConstant";
@@ -10,7 +9,7 @@ import { connect } from "react-redux";
 import { changeLoadingState } from "../actions/loadingAction";
 import FastImage from 'react-native-fast-image'
 import PTRView from 'react-native-pull-to-refresh';
-
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 //import { PagerTabIndicator, IndicatorViewPager, PagerTitleIndicator, PagerDotIndicator } from 'rn-viewpager';
 import { FlatList } from "react-native";
 import { NativeScreenNavigationContainer } from "react-native-screens";
@@ -23,6 +22,8 @@ import { setPopup } from "../actions/message";
 import CategoryHome from "../common/CategoryHome";
 import OrderStatusBottomSheet from "../components/OrderStatusBottomSheet";
 import GroceryHomeScreen from "../components/GroceryHomeScreen";
+import CouponPopupBottomSheet from "../components/CouponPopupBottomSheet";
+import { useFocusEffect } from '@react-navigation/native';
 
 function HomeScreen(props) {
     const { navigation, changeLoadingState, pinCode, address, isLoggedIn, changeCartCount, setPopup, appHeaderColor } = props
@@ -32,10 +33,10 @@ function HomeScreen(props) {
     const [topCategoryData, setTopCategoryData] = useState(null)
     const [homeCategoryProduct, setHomeCategoryProdycts] = useState([])
     const [optionalBannerData, setOptionalBannerData] = useState(null)
-
+    const [focusTrigger, setFocusTrigger] = useState(0);
     const [aTSNData, setAstnData] = useState([])
 
-
+const tabBarHeight = useBottomTabBarHeight();
     const [homeCategoryPromotionHeight, setHomeCategoryPromotionHeight] = useState(null)
     const [bannerBottom, setBannerBottom] = useState(null)
     const [bannerBottomHeight, setBannerBottomHeight] = useState(null)
@@ -48,6 +49,14 @@ function HomeScreen(props) {
     const [refreshCounter, setRefreshCounter] = useState(1)
     const [showOrderStatus, setShowOrderStatus] = useState(false)
     const [orderdta, setorderData] = useState(null)
+
+
+    useFocusEffect(
+        useCallback(() => {
+            // Only increment trigger — the component decides whether to show/expand
+            setFocusTrigger(n => n + 1);
+        }, [])
+    );
 
     useEffect(() => {
 
@@ -492,7 +501,7 @@ function HomeScreen(props) {
                     <Text
                         numberOfLines={2}
                         style={{ minHeight: 40, fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginTop: 3, marginLeft: 3 }}>{product.title}</Text>
-                    <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft:5}}>{product?.product_size}</Text>
+                    <Text style={{ fontSize: 14, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 5 }}>{product?.product_size}</Text>
 
                     <View style={{ flexDirection: 'row', marginTop: 5, }}>
                         <Text
@@ -827,7 +836,20 @@ function HomeScreen(props) {
                     </ScrollView>}
                 </ScrollView >
             </PTRView>
+            <CouponPopupBottomSheet
+                navigation={navigation}
+                isLoggedIn={isLoggedIn}
+            />
+
             <OrderStatusBottomSheet
+                visible={showOrderStatus}
+                setShowOrderStatus={setShowOrderStatus}
+                onClose={() => setShowOrderStatus(false)}
+                focusTrigger={focusTrigger}
+                userId={32}  // TODO: replace with actual userId from redux/asyncStore
+                tabBarHeight={0}
+            />
+            {/* <OrderStatusBottomSheet
                 orderdta={orderdta}
                 visible={showOrderStatus}
                 onClose={() => {
@@ -853,10 +875,8 @@ function HomeScreen(props) {
                         })
                         .catch(error => console.error('Error closing order history:', error));
                 }}
-            // orderId="BM-3498"
-            // deliveryTime="Delivery in 19 minutes*"
-            // currentStatus="Order Placed"
-            />
+          
+            /> */}
         </View >
 
     )

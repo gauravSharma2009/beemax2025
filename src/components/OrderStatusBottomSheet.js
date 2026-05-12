@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,432 +6,539 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
-  // PanResponder,
-  Image,
+  ScrollView,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-const BOTTOM_SHEET_HEIGHT = 220;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+const EXPANDED_HEIGHT = 240;
+const MINIMIZED_HEIGHT = 90; // height of the compact white card
+
+const POLL_INTERVAL_MS = 30_000;
+
+/**
+ * OrderStatusBottomSheet
+ *
+ * Props
+ * ─────
+ * visible              {boolean}
+ * setShowOrderStatus   {function}  – parent setState, called true when orders arrive
+ * onClose              {function}  – optional
+ * onDataLoaded         {function}  – optional
+ * focusTrigger         {number}    – increment from useFocusEffect to re-fetch
+ * userId               {string|number}
+ * tabBarHeight         {number}    – height of bottom tab bar (default 60)
+ */
 const OrderStatusBottomSheet = ({
   visible,
+  setShowOrderStatus,
   onClose,
-  orderId,
-  deliveryTime,
-  orderdta,
-  currentStatus = 'Order Placed', // 'Order Placed', 'Accepted', 'Shipped', 'Delivered'
+  onDataLoaded,
+  focusTrigger = 0,
+  userId = 32,
+  tabBarHeight = 60,
 }) => {
-  const translateY = useRef(new Animated.Value(BOTTOM_SHEET_HEIGHT)).current;
-  // const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(EXPANDED_HEIGHT)).current;
 
-  const [data, setData] = useState(null)
-  useEffect(() => {
-    if (orderdta && orderdta?.aRecentOrderData && Array.isArray(orderdta?.aRecentOrderData) && orderdta.aRecentOrderData.length > 0) {
-      setData(orderdta?.aRecentOrderData[0])
-    }
-  }, [orderdta])
+  const [orders, setOrders] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Generate status steps from ORDER_TRACK_DETAILS
-  const generateStatusSteps = () => {
-    if (!data || !data.ORDER_TRACK_DETAILS) return [];
+  // FIX 3: track minimized in a ref so polling never re-expands when user minimized
+  const [isMinimized, setIsMinimized] = useState(false);
+  const isMinimizedRef = useRef(false);
 
-    const trackDetails = data.ORDER_TRACK_DETAILS;
-    const steps = [];
+  const [loading, setLoading] = useState(false);
 
-    // Order is important: 1=Order Placed, 2=Accepted, 3=Shipped, 4=Delivered
-    const orderKeys = ['1', '2', '3', '4'];
-
-    // Find the active step
-    let activeStepIndex = -1;
-    for (let i = orderKeys.length - 1; i >= 0; i--) {
-      const key = orderKeys[i];
-      if (trackDetails[key] && trackDetails[key].is_active === 1) {
-        activeStepIndex = i;
-        break;
-      }
-    }
-
-    // Create steps array
-    orderKeys.forEach((key, index) => {
-      if (trackDetails[key]) {
-        let status = 'pending';
-
-        // If this step is active or any previous step is active, mark as completed
-        if (index <= activeStepIndex) {
-          status = 'completed';
-        }
-        // If this is the next step after active, mark as active
-        else if (index === activeStepIndex + 1) {
-          status = 'active';
-        }
-
-        steps.push({
-          id: key,
-          label: trackDetails[key].order_status,
-          status: status,
-          iconSource: getIconSource(key, status)
-        });
-      }
-    });
-
-    return steps;
-  };
-
-  // Get appropriate icon based on step and status
-  const getIconSource = (stepId, status) => {
-    if (status === 'completed') {
-      return require('../../assets/check.png');
-    }
-
-    switch (stepId) {
-      case '2': // Accepted
-        return require('../../assets/accepted.png');
-      case '3': // Shipped
-        return require('../../assets/shipped.png');
-      case '4': // Delivered
-        return require('../../assets/deliver.png');
-      default:
-        return null;
-    }
-  };
-
-  const statusSteps = generateStatusSteps();
-
-  // const panResponder = PanResponder.create({
-  //   onStartShouldSetPanResponder: (evt, gestureState) => true,
-  //   onMoveShouldSetPanResponder: (evt, gestureState) => {
-  //     return Math.abs(gestureState.dy) > 20;
-  //   },
-  //   onPanResponderMove: (evt, gestureState) => {
-  //     if (gestureState.dy > 0) {
-  //       translateY.setValue(gestureState.dy);
-  //     }
-  //   },
-  //   onPanResponderRelease: (evt, gestureState) => {
-  //     if (gestureState.dy > 100) {
-  //       hideBottomSheet();
-  //     } else {
-  //       showBottomSheet();
-  //     }
-  //   },
-  // });
+  const pollerRef = useRef(null);
+  const scrollRef = useRef(null);
+  const isMounted = useRef(true);
 
   useEffect(() => {
-    if (visible) {
-      showBottomSheet();
-    } else {
-      hideBottomSheet();
-    }
-  }, [visible]);
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      clearInterval(pollerRef.current);
+    };
+  }, []);
 
-  const showBottomSheet = () => {
+  // ── animation helpers ───────────────────────────────────────────────────────
+  const animateTo = useCallback((toValue, callback) => {
     Animated.timing(translateY, {
-      toValue: 0,
+      toValue,
       duration: 300,
       useNativeDriver: true,
-    }).start();
+    }).start(callback);
+  }, [translateY]);
+
+  const expand = useCallback(() => {
+    isMinimizedRef.current = false;
+    setIsMinimized(false);
+    animateTo(0);
+  }, [animateTo]);
+
+  const minimize = useCallback(() => {
+    isMinimizedRef.current = true;
+    setIsMinimized(true);
+    // slide down so only MINIMIZED_HEIGHT peeks above tabBar
+    animateTo(EXPANDED_HEIGHT - MINIMIZED_HEIGHT);
+  }, [animateTo]);
+
+  // ── fetch ───────────────────────────────────────────────────────────────────
+  const fetchOrders = useCallback(async (showLoader = false) => {
+    if (showLoader && isMounted.current) setLoading(true);
+    try {
+      const url = `https://www.staging.beemax.in/rest/api/recent_order_history/${userId}`;
+      console.log('[OrderStatusBottomSheet] fetching:', url);
+      const res = await fetch(url);
+      // const json = await res.json();
+      let json = { "status": true, "data": { "aRecentOrderData": [{ "ORDER_DETAILS_ID": "5964", "PRIMARY_ORDER_ID": "6004", "DISPLAY_PRIMARY_ORDER_ID": "BM-6004", "GROCERY_DELIVERY_DATE": "2026-04-27", "GROCERY_DELIVERY_SLOT": "3:00 PM - 4:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": "0", "DBOY_ID": "19", "DBOY_NAME": "Dinesh patro", "DBOY_MOBILE": "7735297858", "ORDER_STATUS_TEXT": "Order Accepted", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 0 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 1 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": { "id": 19, "name": "Dinesh patro", "mobile": "7735297858" } }, { "ORDER_DETAILS_ID": "5963", "PRIMARY_ORDER_ID": "6003", "DISPLAY_PRIMARY_ORDER_ID": "BM-6003", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "Delivery in 19 minutes *", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }, { "ORDER_DETAILS_ID": "5962", "PRIMARY_ORDER_ID": "6002", "DISPLAY_PRIMARY_ORDER_ID": "BM-6002", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "9:00 PM - 10:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }] }, "message": "Please find data", "statusCode": 200 }
+      if (!isMounted.current) return;
+
+      if (json?.status && json?.data?.aRecentOrderData?.length > 0) {
+        setOrders(json.data.aRecentOrderData);
+        setShowOrderStatus && setShowOrderStatus(true);
+        onDataLoaded && onDataLoaded(json.data);
+        // FIX 3: only expand if user has NOT manually minimized
+        if (!isMinimizedRef.current) {
+          expand();
+        }
+      } else {
+        setOrders([]);
+        animateTo(EXPANDED_HEIGHT); // no orders — hide fully
+      }
+    } catch (e) {
+      console.error('[OrderStatusBottomSheet] fetch error:', e);
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
+  }, [userId, onDataLoaded, expand, animateTo, setShowOrderStatus]);
+
+  // ── focusTrigger ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (focusTrigger > 0) {
+      fetchOrders(orders.length === 0);
+    }
+  }, [focusTrigger]);
+
+  // ── visible: start/stop polling ─────────────────────────────────────────────
+  useEffect(() => {
+    if (visible) {
+      fetchOrders(orders.length === 0);
+      clearInterval(pollerRef.current);
+      pollerRef.current = setInterval(() => fetchOrders(false), POLL_INTERVAL_MS);
+    } else {
+      clearInterval(pollerRef.current);
+    }
+    return () => clearInterval(pollerRef.current);
+  }, [visible]);
+
+  // ── status helpers ──────────────────────────────────────────────────────────
+  const getActiveStepIndex = (trackDetails) => {
+    let idx = -1;
+    for (let i = 3; i >= 0; i--) {
+      if (trackDetails?.[String(i + 1)]?.is_active === 1) { idx = i; break; }
+    }
+    return idx;
   };
 
-  const hideBottomSheet = () => {
-    Animated.timing(translateY, {
-      toValue: BOTTOM_SHEET_HEIGHT,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose && onClose();
-    });
+  const getStatusSteps = (trackDetails) => {
+    if (!trackDetails) return [];
+    const activeIdx = getActiveStepIndex(trackDetails);
+    return ['1', '2', '3', '4'].map((key, index) => {
+      if (!trackDetails[key]) return null;
+      let status = index <= activeIdx ? 'completed' : index === activeIdx + 1 ? 'active' : 'pending';
+      return { id: key, label: trackDetails[key].order_status, status };
+    }).filter(Boolean);
   };
 
-  const renderStatusIcon = (step, index) => {
-    const isCompleted = step.status === 'completed';
-    const isActive = step.status === 'active';
+  const getHeaderText = (order) => {
+    const i = getActiveStepIndex(order.ORDER_TRACK_DETAILS);
+    const texts = [
+      'Your order is placed . . .',
+      'Your order is getting packed . . .',
+      `${order.DBOY_NAME || 'Delivery partner'} is on the way . . .`,
+      'Your order is delivered!',
+    ];
+    return texts[Math.min(Math.max(i, 0), texts.length - 1)];
+  };
+
+  const isShipped = (order) => getActiveStepIndex(order.ORDER_TRACK_DETAILS) >= 2;
+
+  const onScrollEnd = (e) => {
+    setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH));
+  };
+
+  // ── guard ───────────────────────────────────────────────────────────────────
+  if (orders.length === 0) return null;
+
+  // ── minimized card ──────────────────────────────────────────────────────────
+  const renderMiniCard = () => {
+    const order = orders[currentIndex];
+    if (!order) return null;
+    const steps = getStatusSteps(order.ORDER_TRACK_DETAILS);
+    const MINI_ICON = 30;
+    const MINI_CONN = (SCREEN_WIDTH - 64 - MINI_ICON * 4) / 3;
 
     return (
-      <View style={[
-        styles.statusIconContainer,
-        isCompleted && styles.completedIcon,
-        isActive && styles.activeIcon,
-      ]}>
-        {isCompleted ? (
-          <Image
-            source={require('../../assets/check.png')}
-            style={styles.statusImage}
-          />
-        ) : step.iconSource ? (
-          <Image
-            source={step.iconSource}
-            style={styles.statusImage}
-          />
-        ) : (
-          <View style={[
-            styles.pendingDot,
-            isActive && styles.activeDot,
-          ]} />
+      <View style={styles.miniCard}>
+        <View style={styles.miniStepsRow}>
+          {steps.map((step, stepIdx) => {
+            const isCompleted = step.status === 'completed';
+            const isActive = step.status === 'active';
+            return (
+              <View key={step.id} style={styles.miniStepWrapper}>
+                <View style={styles.miniIconRow}>
+                  <View style={[
+                    styles.miniIcon,
+                    { width: MINI_ICON, height: MINI_ICON, borderRadius: MINI_ICON / 2 },
+                    isCompleted && styles.miniIconCompleted,
+                    isActive && styles.miniIconActive,
+                  ]}>
+                    {isCompleted
+                      ? <Text style={styles.miniCheck}>✓</Text>
+                      : isActive
+                        ? <View style={styles.miniActiveDot} />
+                        : <View style={styles.miniPendingDot} />}
+                  </View>
+                  {stepIdx < steps.length - 1 && (
+                    <View style={[
+                      styles.miniConnector,
+                      {
+                        width: MINI_CONN,
+                        right: -(MINI_CONN / 2 + MINI_ICON / 2 - 4),
+                        top: MINI_ICON / 2 - 2.5,
+                      },
+                      isCompleted && styles.miniConnectorDone,
+                    ]} />
+                  )}
+                </View>
+                <Text numberOfLines={1} style={[
+                  styles.miniLabel,
+                  isCompleted && styles.miniLabelDone,
+                  isActive && styles.miniLabelActive,
+                ]}>
+                  {step.label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        {orders.length > 1 && (
+          <View style={styles.miniDotsRow}>
+            {orders.map((_, idx) => (
+              <View key={idx} style={[styles.miniDot, idx === currentIndex && styles.miniDotActive]} />
+            ))}
+          </View>
         )}
       </View>
     );
   };
 
-  const renderConnectorLine = (index) => {
-    // This function is no longer used for vertical lines
-    // Horizontal connectors are now rendered directly in the JSX
-    return null;
-  };
+  // ── expanded order card ─────────────────────────────────────────────────────
+  const renderOrderCard = (order) => {
+    const steps = getStatusSteps(order.ORDER_TRACK_DETAILS);
+    const shipped = isShipped(order);
 
-  if (!visible) return null;
-
-  return (
-    <View style={styles.container}>
-      {/* <Animated.View
-        style={[styles.backdrop, { opacity: backdropOpacity }]}
-      >
-        <TouchableOpacity
-          style={styles.backdropTouch}
-          onPress={hideBottomSheet}
-          activeOpacity={1}
-        />
-      </Animated.View> */}
-
-      <Animated.View
-        style={[
-          styles.bottomSheet,
-          { transform: [{ translateY }] }
-        ]}
-        // {...panResponder.panHandlers}
-      >
-        {/* Handle bar */}
-        <View style={styles.handleBar} />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>Order Placed</Text>
-            <Text style={styles.orderId}>Order ID ({data?.DISPLAY_PRIMARY_ORDER_ID})</Text>
-            <TouchableOpacity onPress={hideBottomSheet} style={styles.closeButton}>
-              <Text style={styles.closeIcon}>✕</Text>
-            </TouchableOpacity>
+    return (
+      <View key={order.PRIMARY_ORDER_ID} style={styles.orderCard}>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.orderIdRow}>
+              <Text style={styles.orderIdLabel}>Order ID - </Text>
+              <Text style={styles.orderIdValue}>{order.DISPLAY_PRIMARY_ORDER_ID}</Text>
+            </View>
+            <Text style={styles.statusText}>{getHeaderText(order)}</Text>
+            {shipped && order.DBOY_NAME ? (
+              <View style={styles.dboyRow}>
+                <Text style={styles.dboyName}>{order.DBOY_NAME}</Text>
+                <Text style={styles.dboyRole}>, is your delivery partner</Text>
+              </View>
+            ) : null}
+            <View style={styles.slotRow}>
+              <Text style={styles.slotLabel}>Delivery slot: </Text>
+              <Text style={styles.slotValue}>{order.GROCERY_DELIVERY_SLOT}</Text>
+            </View>
           </View>
 
-          <View style={styles.deliveryInfo}>
-            <Text style={styles.deliveryLabel}>Delivery slot:</Text>
-            <Text style={styles.deliveryTime}>{data?.GROCERY_DELIVERY_SLOT}</Text>
-          </View>
+          {shipped && order.DBOY_MOBILE ? (
+            <View style={styles.dboyActions}>
+              <TouchableOpacity
+                style={styles.callButton}
+                onPress={() => Linking.openURL(`tel:${order.DBOY_MOBILE}`)}
+              >
+                <Text style={styles.callIcon}>📞</Text>
+              </TouchableOpacity>
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarText}>
+                  {order.DBOY_NAME ? order.DBOY_NAME[0].toUpperCase() : 'D'}
+                </Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
-        {/* Status Progress - Horizontal Layout */}
-        <View style={styles.statusContainer}>
-          <View style={styles.horizontalStatusRow}>
-            {statusSteps.map((step, index) => (
-              <View key={step.id} style={styles.horizontalStatusStep}>
-                <View style={styles.statusIconWrapper}>
-                  {renderStatusIcon(step, index)}
-                  {index < statusSteps.length - 1 && (
-                    <View style={[
-                      styles.horizontalConnectorLine,
-                      step.status === 'completed' && styles.completedLine,
-                    ]} />
+        <View style={styles.stepsRow}>
+          {steps.map((step, stepIdx) => {
+            const isCompleted = step.status === 'completed';
+            const isActive = step.status === 'active';
+            return (
+              <View key={step.id} style={styles.stepWrapper}>
+                <View style={styles.iconAndLine}>
+                  <View style={[
+                    styles.stepIcon,
+                    isCompleted && styles.stepIconCompleted,
+                    isActive && styles.stepIconActive,
+                  ]}>
+                    {isCompleted
+                      ? <Text style={styles.checkMark}>✓</Text>
+                      : isActive
+                        ? <View style={styles.activeDot} />
+                        : <View style={styles.pendingDot} />}
+                  </View>
+                  {stepIdx < steps.length - 1 && (
+                    <View style={[styles.connectorLine, isCompleted && styles.connectorLineDone]} />
                   )}
                 </View>
-                <Text 
-                  numberOfLines={2}
-                  style={[
-                    styles.horizontalStatusLabel,
-                    step.status === 'completed' && styles.completedLabel,
-                    step.status === 'active' && styles.activeLabel,
-                  ]}
-                >
+                <Text numberOfLines={2} style={[
+                  styles.stepLabel,
+                  isCompleted && styles.stepLabelDone,
+                  isActive && styles.stepLabelActive,
+                ]}>
                   {step.label}
                 </Text>
               </View>
-            ))}
-          </View>
+            );
+          })}
         </View>
+      </View>
+    );
+  };
+
+  // ── main render ─────────────────────────────────────────────────────────────
+  return (
+    // FIX 2: no pointerEvents="box-none" — container blocks touches behind it
+    <View style={[styles.outerContainer, { bottom: tabBarHeight }]}>
+      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
+
+        {isMinimized ? (
+          // FIX 1: white card with shadow — not transparent
+          renderMiniCard()
+        ) : (
+          <>
+            <View style={styles.handleBar} />
+
+            <TouchableOpacity style={styles.closeBtnAbsolute} onPress={minimize}>
+              <Text style={styles.closeIcon}>✕</Text>
+            </TouchableOpacity>
+
+            {loading ? (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator color="#059669" />
+              </View>
+            ) : (
+              <>
+                <ScrollView
+                  ref={scrollRef}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={onScrollEnd}
+                  style={styles.pager}
+                  contentContainerStyle={{ width: SCREEN_WIDTH * orders.length }}
+                >
+                  {orders.map((order) => renderOrderCard(order))}
+                </ScrollView>
+
+                {orders.length > 1 && (
+                  <View style={styles.dotsRow}>
+                    {orders.map((_, idx) => (
+                      <View key={idx} style={[styles.dot, idx === currentIndex && styles.dotActive]} />
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </>
+        )}
       </Animated.View>
     </View>
   );
 };
 
+// ── styles ──────────────────────────────────────────────────────────────────────
+const ICON_SIZE = 34;
+const CONNECTOR_WIDTH = (SCREEN_WIDTH - 40 - ICON_SIZE * 4) / 3;
+
 const styles = StyleSheet.create({
-  container: {
+
+  // FIX 2: solid container, no pointerEvents pass-through
+  outerContainer: {
     position: 'absolute',
-    bottom: 0,
-    width: SCREEN_WIDTH,
-    height: BOTTOM_SHEET_HEIGHT,
-    zIndex: 1000,
-  },
-  // backdrop: {
-  //   flex: 1,
-  //   backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  // },
-  // backdropTouch: {
-  //   flex: 1,
-  // },
-  bottomSheet: {
-    position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-    height: BOTTOM_SHEET_HEIGHT,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    zIndex: 9999,
+    elevation: 9999,
   },
+
+  sheet: {
+    height: EXPANDED_HEIGHT,
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 10,
+    overflow: 'visible',
+  },
+
   handleBar: {
-    width: 40,
+    width: 36,
     height: 4,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#D1D5DB',
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  header: {
-    marginBottom: 30,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1F2937',
-    flex: 1,
-  },
-  orderId: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 2,
-    flex: 1,
-  },
-  closeButton: {
-    // padding: 4,
-    marginLeft: 10,
-    backgroundColor:'#F1F1F1',
-    width:40, height:40, borderRadius:20,
-    alignItems:'center', justifyContent:'center'
-  },
-  closeIcon: {
-    fontSize: 20,
-    color: '#000000',
-    fontWeight: '300',
-    alignSelf:'center'
-  },
-  deliveryInfo: {
-    flexDirection: 'row',
+
+  closeBtnAbsolute: {
+    position: 'absolute',
+    top: 18,
+    right: 16,
+    backgroundColor: '#F1F1F1',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
-  deliveryLabel: {
-    fontSize: 16,
-    color: '#374151',
-    fontWeight: '500',
+  closeIcon: { fontSize: 16, color: '#111', fontWeight: '500' },
+
+  // ── FIX 1: minimized white card ─────────────────────────────────────────────
+  miniCard: {
+    position: 'absolute',
+    top: 0,
+    left: 12,
+    right: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  deliveryTime: {
-    fontSize: 16,
-    color: '#059669',
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  statusContainer: {
-    flex: 1,
-  },
-  horizontalStatusRow: {
+  miniStepsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingVertical: 8,
   },
-  horizontalStatusStep: {
-    alignItems: 'center',
-    width: '25%', // For 4 steps
-  },
-  statusIconWrapper: {
+  miniStepWrapper: { alignItems: 'center', width: '25%' },
+  miniIconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
     width: '100%',
-  },
-  statusIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 4,
+  },
+  miniIcon: {
+    backgroundColor: '#F3F4F6',
     borderWidth: 2,
     borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  completedIcon: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+  miniIconCompleted: { backgroundColor: '#10B981', borderColor: '#10B981' },
+  miniIconActive: { backgroundColor: '#fff', borderColor: '#D1D5DB', borderWidth: 2.5 },
+  miniCheck: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  miniActiveDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#3B82F6' },
+  miniPendingDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#D1D5DB' },
+  miniConnector: { position: 'absolute', height: 5, backgroundColor: '#E5E7EB', borderRadius: 3 },
+  miniConnectorDone: { backgroundColor: '#10B981' },
+  miniLabel: { fontSize: 11, color: '#9CA3AF', textAlign: 'center' },
+  miniLabelDone: { color: '#374151', fontWeight: '600' },
+  miniLabelActive: { color: '#1F2937', fontWeight: '600' },
+  miniDotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 5,
   },
-  activeIcon: {
-    backgroundColor: '#ffffff',
-    borderColor: '#F1F1F1',
-    borderWidth: 3,
+  miniDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#D1D5DB' },
+  miniDotActive: { backgroundColor: '#10B981', width: 14, borderRadius: 3 },
+
+  // ── expanded ─────────────────────────────────────────────────────────────────
+  pager: { flex: 1 },
+  orderCard: { width: SCREEN_WIDTH - 40 },
+
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14, paddingRight: 46 },
+  orderIdRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  orderIdLabel: { fontSize: 14, color: '#1F2937', fontWeight: '500' },
+  orderIdValue: { fontSize: 14, color: '#10B981', fontWeight: '700' },
+  statusText: { fontSize: 15, fontWeight: '700', color: '#1F2937', marginBottom: 2 },
+  dboyRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  dboyName: { fontSize: 14, color: '#EF4444', fontWeight: '700' },
+  dboyRole: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  slotRow: { flexDirection: 'row', alignItems: 'center' },
+  slotLabel: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  slotValue: { fontSize: 13, color: '#059669', fontWeight: '700' },
+
+  dboyActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+  callButton: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: '#10B981',
   },
-  checkIcon: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  callIcon: { fontSize: 16 },
+  avatarCircle: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: '#6366F1', alignItems: 'center', justifyContent: 'center',
   },
-  pendingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#D1D5DB',
+  avatarText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+
+  stepsRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  stepWrapper: { alignItems: 'center', width: '25%' },
+  iconAndLine: {
+    flexDirection: 'row', alignItems: 'center',
+    width: '100%', justifyContent: 'center', marginBottom: 6,
   },
-  activeDot: {
-    backgroundColor: '#3B82F6',
+  stepIcon: {
+    width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2,
+    backgroundColor: '#F3F4F6', borderWidth: 2, borderColor: '#E5E7EB',
+    alignItems: 'center', justifyContent: 'center',
   },
-  statusLabel: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#9CA3AF',
-  },
-  completedLabel: {
-    color: '#374151',
-    fontWeight: '600',
-  },
-  activeLabel: {
-    color: '#1F2937',
-    fontWeight: '600',
-  },
-  horizontalConnectorLine: {
-    width: SCREEN_WIDTH * 0.13, // Reduced from 0.12 to 0.13 (smaller)
-    height: 6, // Increased from 2 to 6 (thicker)
-    backgroundColor: '#E5E7EB',
+  stepIconCompleted: { backgroundColor: '#10B981', borderColor: '#10B981' },
+  stepIconActive: { backgroundColor: '#fff', borderColor: '#D1D5DB', borderWidth: 2.5 },
+  checkMark: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  activeDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#3B82F6' },
+  pendingDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#D1D5DB' },
+  connectorLine: {
     position: 'absolute',
-    right: -SCREEN_WIDTH * 0.065, // Adjusted from 0.06 to 0.065
-    top: 19, // Adjusted slightly to center the thicker line
+    right: -(CONNECTOR_WIDTH / 2 + ICON_SIZE / 2 - 4),
+    top: ICON_SIZE / 2 - 3,
+    width: CONNECTOR_WIDTH, height: 6,
+    backgroundColor: '#E5E7EB', borderRadius: 3,
   },
-  completedLine: {
-    backgroundColor: '#10B981',
-  },
-  horizontalStatusLabel: {
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 8,
-    width: '100%',
-  },
-  statusImage: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-  },
+  connectorLineDone: { backgroundColor: '#10B981' },
+  stepLabel: { fontSize: 12, color: '#9CA3AF', textAlign: 'center', lineHeight: 16 },
+  stepLabelDone: { color: '#374151', fontWeight: '600' },
+  stepLabelActive: { color: '#1F2937', fontWeight: '600' },
+
+  dotsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 6, gap: 6 },
+  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#D1D5DB' },
+  dotActive: { backgroundColor: '#10B981', width: 18, borderRadius: 4 },
+
+  loaderContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
 
 export default OrderStatusBottomSheet;
