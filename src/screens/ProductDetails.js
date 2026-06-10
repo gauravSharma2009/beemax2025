@@ -131,9 +131,9 @@ function ProductDetailsScreen(props) {
         };
         changeLoadingState(true)
         const uniqueId = await getData("uniqueId")
-
-        console.log("URLS: ", `${server}productdetailsbyid/${from && from === 'banner' ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`)
-        fetch(`${server}productdetailsbyid/${from && from === 'banner' ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`, requestOptions)
+console.log("from : ", from )
+        console.log("URLS: ", `${server}productdetailsbyid/${from && (from === 'banner' || from === 'coupon') ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`)
+        fetch(`${server}productdetailsbyid/${from && (from === 'banner' || from === 'coupon') ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`, requestOptions)
             .then(response => response.json())
             .then(result => {
                 changeLoadingState(false)

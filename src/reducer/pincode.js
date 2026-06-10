@@ -8,7 +8,7 @@ export function pinCode(state = initialState, action) {
     switch (action.type) {
         case "PIN_CODE": {
              console.log("inside reducer :" + JSON.stringify(action.payload))
-            let pincode = action.payload.pincode;
+            let pincode = 760001;
             return { ...state, pincode }
         }
         case "ADDRESS": {

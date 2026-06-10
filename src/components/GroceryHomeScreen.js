@@ -18,9 +18,10 @@ import FastImage from 'react-native-fast-image';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction }) => {
+const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, topHalfBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction ,offerBannerOptionalPro}) => {
   const [searchText, setSearchText] = useState('');
   const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
+  const [topHalfImageHeight, setTopHalfImageHeight] = useState(SCREEN_WIDTH / 2);
   const [quantities, setQuantities] = useState({});
   const [deliveryTime, setDeliveryTime] = useState("")
 
@@ -165,98 +166,82 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
         </TouchableOpacity>
       </View>
 
-      <View style={{ ...styles.content, backgroundColor: appHeaderColor }} >
-        {optionalBannerData && optionalBannerData?.offer_banner && <View style={styles.bannerContainer}>
+      <View style={{ ...styles.content, backgroundColor: appHeaderColor }}>
+        {/* Top half banner image - full width, no overlay */}
+        {topHalfBannerData?.top_half_banner && (
           <TouchableOpacity
+            activeOpacity={0.9}
             onPress={() => {
-              console.log("optionalBannerData  :  ", optionalBannerData)
-
-              // alert("hello")
-              if (optionalBannerData?.offer_redirection_type === 'category') {
-                navigation.navigate("ProductListing", { item: { optionalBannerData, redirection_id: optionalBannerData?.offer_redirection_id }, from: 'banner' })
-              } else if (optionalBannerData?.offer_redirection_type === 'page') {
-                navigation.navigate("CmsPage", { item: optionalBannerData, from: 'banner' })
+              if (topHalfBannerData?.top_half_redirection_type === 'category') {
+                navigation.navigate("ProductListing", {
+                  item: { id: topHalfBannerData?.top_half_redirection_id },
+                  from: 'banner'
+                });
+              } else if (topHalfBannerData?.top_half_redirection_type === 'page') {
+                navigation.navigate("CmsPage", { item: topHalfBannerData, from: 'banner' });
               } else {
-                navigation.navigate("ProductDetails", { product: { ...optionalBannerData, redirection_id: optionalBannerData?.offer_redirection_id }, from: 'banner' })
+                navigation.navigate("ProductDetails", {
+                  product: { ...topHalfBannerData, redirection_id: topHalfBannerData?.top_half_redirection_id },
+                  from: 'banner'
+                });
               }
-              console.log("optionalBannerData  :  ", optionalBannerData)
             }}
           >
-
             <FastImage
-              source={{ uri: optionalBannerData?.offer_banner }}
-              style={{
-                width: SCREEN_WIDTH,
-                height: undefined,
-                aspectRatio: bannerAspectRatio,
-                resizeMode: 'cover'
-              }}
+              source={{ uri: topHalfBannerData.top_half_banner }}
+              style={{ width: SCREEN_WIDTH, height: topHalfImageHeight }}
+              resizeMode={FastImage.resizeMode.stretch}
               onLoad={(event) => {
-                const source = event.nativeEvent?.source;
-                if (source && source.width && source.height) {
-                  const { width, height } = source;
-                  setBannerAspectRatio(width / height);
+                const { width, height } = event.nativeEvent;
+                if (width && height) {
+                  setTopHalfImageHeight((SCREEN_WIDTH / width) * height);
                 }
               }}
             />
           </TouchableOpacity>
+        )}
 
-          {/* Horizontal ScrollView for products - positioned over the image */}
-          {optionalBannerData?.offer_pro_info && optionalBannerData.offer_pro_info.length > 0 && (
-            <View style={styles.productsOverlay}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalScrollContent}
-              >
-                {optionalBannerData.offer_pro_info.map((product, index) => (
-                  <View style={{ flexDirection: 'row' }}>
-                    {console.log("product  :  ", product)}
-                    <ProductItem
-                      discountPosition={-7}
-                      discontPostionTop={-15}
-                      navigation={navigation}
-                      imageHeight={130}
-                      cardWidth={.35}
-                      imageWidth={200}
-                      showOffer={true}
-                      key={'product_details' + index}
-                      item={product}
-                      borderRadius={5}
-                      borderColor={'white'}
-                      index={index}
-                      onPress={handleProductPress}
-                      getProductList={getProductList}
-                      changeLoadingState={changeLoadingState}
-                      setAction={setAction}
-                    />
-                    <View style={{ width: 10, backgroundColor: 'transparent', height: 10 }}></View>
-                  </View>
-
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-        </View>}
-        {/* <View style={styles.promoBanner}>
-          <View style={styles.promoContent}>
-            <Text style={styles.promoTitle}>Weekend</Text>
-            <Text style={styles.promoSubtitle}>TWISTERS</Text>
-            <Text style={styles.promoDescription}>Not your regular shopping!</Text>
+        {/* Products horizontal scroll — sits below the banner on the same purple background */}
+        {optionalBannerData?.offer_pro_info?.length > 0 && (
+          <View style={{ position: 'relative' }}>
+            {offerBannerOptionalPro?.offer_banner && (
+              <FastImage
+                source={{ uri: offerBannerOptionalPro.offer_banner }}
+                style={StyleSheet.absoluteFill}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            )}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+              style={{ paddingVertical: 10 }}
+            >
+            {optionalBannerData.offer_pro_info.map((product, index) => (
+              <View key={'offer_product_' + index} style={{ flexDirection: 'row' }}>
+                <ProductItem
+                  discountPosition={-7}
+                  discontPostionTop={-15}
+                  navigation={navigation}
+                  imageHeight={130}
+                  cardWidth={.35}
+                  imageWidth={200}
+                  showOffer={true}
+                  item={product}
+                  borderRadius={5}
+                  borderColor={'white'}
+                  index={index}
+                  onPress={handleProductPress}
+                  getProductList={getProductList}
+                  changeLoadingState={changeLoadingState}
+                  setAction={setAction}
+                />
+                <View style={{ width: 10 }} />
+              </View>
+            ))}
+            </ScrollView>
           </View>
-          <View style={styles.promoImageContainer}>
-            <Text style={styles.promoEmoji}>🧁</Text>
-            <Text style={styles.promoEmoji2}>🍰</Text>
-          </View>
-        </View> */}
-
-        {/* Products Grid */}
-        {/* <ScrollView horizontal={true}>
-          {products.map(renderProductCard)}
-          <View style={styles.productCard} />
-        </ScrollView>
-        */}
+        )}
       </View>
     </SafeAreaView>
   );
@@ -520,18 +505,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     minWidth: 20,
     textAlign: 'center',
-  },
-  bannerContainer: {
-    position: 'relative',
-  },
-  productsOverlay: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    paddingVertical: 10,
-    // backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background for better visibility
   },
   horizontalScrollContent: {
     paddingHorizontal: 15,

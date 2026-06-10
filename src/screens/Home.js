@@ -33,8 +33,10 @@ function HomeScreen(props) {
     const [topCategoryData, setTopCategoryData] = useState(null)
     const [homeCategoryProduct, setHomeCategoryProdycts] = useState([])
     const [optionalBannerData, setOptionalBannerData] = useState(null)
+    const [topHalfBannerData, setTopHalfBannerData] = useState(null)
     const [focusTrigger, setFocusTrigger] = useState(0);
     const [aTSNData, setAstnData] = useState([])
+    const[offerBannerOptionalPro, setofferBannerOptionalPro] = useState(null)
 
 const tabBarHeight = useBottomTabBarHeight();
     const [homeCategoryPromotionHeight, setHomeCategoryPromotionHeight] = useState(null)
@@ -85,6 +87,7 @@ const tabBarHeight = useBottomTabBarHeight();
             // setbannerDataHeight(null)
             setLoadingData(true)
             setTopCategoryData(null)
+            setofferBannerOptionalPro(null)
             setHomeCategoryProdycts(null)
             setAstnData(null)
             //setHomeCategoryPromotionHeight(null)
@@ -92,6 +95,7 @@ const tabBarHeight = useBottomTabBarHeight();
             //setBannerBottomHeight(null)
             //setTopBannerHeight(null)
             setTopBannerData(null)
+            setTopHalfBannerData(null)
             setFooterBannerData(null)
             setCurrentPage(0)
             getHomePageData()
@@ -300,6 +304,8 @@ const tabBarHeight = useBottomTabBarHeight();
 
                     setbannerData(result?.data?.aBannerData)
                     setOptionalBannerData(result?.data?.offerBannerOptionalPro)
+                    setTopHalfBannerData(result?.data?.topHalfBannerOptionalPro)
+                    setofferBannerOptionalPro(result?.data?.offerBannerOptionalPro)
                     setTopCategoryData([
                         // ...[{
                         //     "id": "-1",
@@ -586,9 +592,11 @@ const tabBarHeight = useBottomTabBarHeight();
     const handleRefresh = useCallback(() => {
         setbannerData(null)
         setLoadingData(true)
+        setofferBannerOptionalPro(null)
         setTopCategoryData(null)
         setHomeCategoryProdycts(null)
         setTopBannerData(null)
+        setTopHalfBannerData(null)
         setBannerBottom(null)
         setFooterBannerData(null)
         setCurrentPage(0)
@@ -680,6 +688,8 @@ const tabBarHeight = useBottomTabBarHeight();
                     <GroceryHomeScreen
                         navigation={navigation}
                         optionalBannerData={optionalBannerData}
+                        topHalfBannerData={topHalfBannerData}
+                        offerBannerOptionalPro={offerBannerOptionalPro}
                         pinCode={pinCode}
                         appHeaderColor={appHeaderColor}
                         address={address}
@@ -691,7 +701,7 @@ const tabBarHeight = useBottomTabBarHeight();
                         changeLoadingState={changeLoadingState}
                         setAction={undefined}
                     />
-                    {!optionalBannerData?.offer_banner && <SliderComponent
+                    {!topHalfBannerData?.top_half_banner && <SliderComponent
                         navigation={navigation}
                         bannerData={bannerData}
                     />}
@@ -840,13 +850,12 @@ const tabBarHeight = useBottomTabBarHeight();
                 navigation={navigation}
                 isLoggedIn={isLoggedIn}
             />
-
             <OrderStatusBottomSheet
                 visible={showOrderStatus}
                 setShowOrderStatus={setShowOrderStatus}
                 onClose={() => setShowOrderStatus(false)}
                 focusTrigger={focusTrigger}
-                userId={32}  // TODO: replace with actual userId from redux/asyncStore
+                userId={null}  // TODO: replace with actual userId from redux/asyncStore
                 tabBarHeight={0}
             />
             {/* <OrderStatusBottomSheet

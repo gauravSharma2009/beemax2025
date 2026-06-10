@@ -100,6 +100,19 @@ const AddButtonCMP = (props) => {
         if (isAddBlocked) {
             return
         }
+        // max_qty_per_order check: if set, do not allow adding beyond that limit
+        if (item.max_qty_per_order !== null && item.max_qty_per_order !== undefined) {
+            const maxAllowed = Number(item.max_qty_per_order);
+            const currentQty = Number(item.qty_added_in_cart || 0);
+            if (currentQty >= maxAllowed) {
+                store.dispatch(setPopup({
+                    message: `You can only add up to ${maxAllowed} of this item per order.`,
+                    status: "faliure",
+                    open: true
+                }))
+                return
+            }
+        }
         addItem ? addItem(quantity + 1, item) : addToCart({ product: item, qty: 1, type: 'add' })
         setQuantity(quantity + 1);
         setTimeout(() => {

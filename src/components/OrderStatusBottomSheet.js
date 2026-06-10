@@ -10,6 +10,8 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
+import { server } from '../common/apiConstant';
+import { getData } from '../common/asyncStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,7 +39,7 @@ const OrderStatusBottomSheet = ({
   onClose,
   onDataLoaded,
   focusTrigger = 0,
-  userId = 32,
+  // userId = 32,
   tabBarHeight = 60,
 }) => {
   const translateY = useRef(new Animated.Value(EXPANDED_HEIGHT)).current;
@@ -89,11 +91,14 @@ const OrderStatusBottomSheet = ({
   const fetchOrders = useCallback(async (showLoader = false) => {
     if (showLoader && isMounted.current) setLoading(true);
     try {
-      const url = `https://www.staging.beemax.in/rest/api/recent_order_history/${userId}`;
+        const loginData = await getData("loginData")
+              const userData = JSON.parse(loginData)
+      const url = `${server}recent_order_history/${userData?.USER_ID}`;
       console.log('[OrderStatusBottomSheet] fetching:', url);
       const res = await fetch(url);
-      // const json = await res.json();
-      let json = { "status": true, "data": { "aRecentOrderData": [{ "ORDER_DETAILS_ID": "5964", "PRIMARY_ORDER_ID": "6004", "DISPLAY_PRIMARY_ORDER_ID": "BM-6004", "GROCERY_DELIVERY_DATE": "2026-04-27", "GROCERY_DELIVERY_SLOT": "3:00 PM - 4:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": "0", "DBOY_ID": "19", "DBOY_NAME": "Dinesh patro", "DBOY_MOBILE": "7735297858", "ORDER_STATUS_TEXT": "Order Accepted", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 0 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 1 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": { "id": 19, "name": "Dinesh patro", "mobile": "7735297858" } }, { "ORDER_DETAILS_ID": "5963", "PRIMARY_ORDER_ID": "6003", "DISPLAY_PRIMARY_ORDER_ID": "BM-6003", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "Delivery in 19 minutes *", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }, { "ORDER_DETAILS_ID": "5962", "PRIMARY_ORDER_ID": "6002", "DISPLAY_PRIMARY_ORDER_ID": "BM-6002", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "9:00 PM - 10:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }] }, "message": "Please find data", "statusCode": 200 }
+       const json = await res.json();
+       console.log('[OrderStatusBottomSheet] response:', json);
+      //let json = { "status": true, "data": { "aRecentOrderData": [{ "ORDER_DETAILS_ID": "5964", "PRIMARY_ORDER_ID": "6004", "DISPLAY_PRIMARY_ORDER_ID": "BM-6004", "GROCERY_DELIVERY_DATE": "2026-04-27", "GROCERY_DELIVERY_SLOT": "3:00 PM - 4:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": "0", "DBOY_ID": "19", "DBOY_NAME": "Dinesh patro", "DBOY_MOBILE": "7735297858", "ORDER_STATUS_TEXT": "Order Accepted", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 0 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 1 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": { "id": 19, "name": "Dinesh patro", "mobile": "7735297858" } }, { "ORDER_DETAILS_ID": "5963", "PRIMARY_ORDER_ID": "6003", "DISPLAY_PRIMARY_ORDER_ID": "BM-6003", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "Delivery in 19 minutes *", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }, { "ORDER_DETAILS_ID": "5962", "PRIMARY_ORDER_ID": "6002", "DISPLAY_PRIMARY_ORDER_ID": "BM-6002", "GROCERY_DELIVERY_DATE": "2026-04-26", "GROCERY_DELIVERY_SLOT": "9:00 PM - 10:00 PM", "ORDER_STATUS": "Pending", "DBOY_ORDER_STATUS": null, "DBOY_ID": null, "DBOY_NAME": null, "DBOY_MOBILE": null, "ORDER_STATUS_TEXT": "Order Placed", "ORDER_TRACK_DETAILS": { "1": { "order_status": "Order Placed", "is_active": 1 }, "2": { "order_status": "Accepted", "is_active": 0 }, "3": { "order_status": "Shipped", "is_active": 0 }, "4": { "order_status": "Delivered", "is_active": 0 } }, "DELIVERY_BOY": null }] }, "message": "Please find data", "statusCode": 200 }
       if (!isMounted.current) return;
 
       if (json?.status && json?.data?.aRecentOrderData?.length > 0) {
@@ -113,7 +118,7 @@ const OrderStatusBottomSheet = ({
     } finally {
       if (isMounted.current) setLoading(false);
     }
-  }, [userId, onDataLoaded, expand, animateTo, setShowOrderStatus]);
+  }, [ onDataLoaded, expand, animateTo, setShowOrderStatus]);
 
   // ── focusTrigger ────────────────────────────────────────────────────────────
   useEffect(() => {

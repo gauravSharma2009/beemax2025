@@ -63,6 +63,46 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
             });
 
             const result = await response.json();
+            //  let result = {
+            //     "status": true,
+            //     "data": {
+            //         "aPopups": [
+            //             {
+            //                 "popup_id": "1",
+            //                 "popup_name": "newuser 50",
+            //                 "image_url": "https://www.staging.beemax.in/media/uploads/coupon_popup/1777048060_b1.png",
+            //                 "redirection_type": "product",
+            //                 "link_id": "444",
+            //                 "coupon_code": "NEWUSER50",
+            //                 "coupon_discount": "50",
+            //                 "coupon_discount_type": "fixed",
+            //                 "coupon_info": "asadasd",
+            //                 "sticky_on_cart": 1,
+            //                 "valid_upto": "2031-01-24",
+            //                 "user_type": "new"
+            //             },
+            //             {
+            //                 "popup_id": "3",
+            //                 "popup_name": "favorate 50",
+            //                 "image_url": "https://www.staging.beemax.in/media/uploads/coupon_popup/1777048216_b3.png",
+            //                 "redirection_type": "category",
+            //                 "link_id": "44",
+            //                 "coupon_code": "FAVORITE50",
+            //                 "coupon_discount": "50",
+            //                 "coupon_discount_type": "fixed",
+            //                 "coupon_info": "",
+            //                 "sticky_on_cart": 0,
+            //                 "valid_upto": "2031-05-24",
+            //                 "user_type": "all"
+            //             }
+            //         ],
+            //         "user_type": "new",
+            //         "is_new_user": true
+            //     },
+            //     "message": "Applicable popups found",
+            //     "statusCode": 200
+            // }
+
             console.log('[CouponPopup] API response:', result);
 
             if (result?.status && result?.data?.aPopups?.length > 0) {
@@ -86,46 +126,7 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
             }
         } catch (error) {
             console.log('[CouponPopup] Error fetching popups:', error);
-            let result = {
-                "status": true,
-                "data": {
-                    "aPopups": [
-                        {
-                            "popup_id": "1",
-                            "popup_name": "newuser 50",
-                            "image_url": "https://www.staging.beemax.in/media/uploads/coupon_popup/1777048060_b1.png",
-                            "redirection_type": "product",
-                            "link_id": "444",
-                            "coupon_code": "NEWUSER50",
-                            "coupon_discount": "50",
-                            "coupon_discount_type": "fixed",
-                            "coupon_info": "asadasd",
-                            "sticky_on_cart": 1,
-                            "valid_upto": "2031-01-24",
-                            "user_type": "new"
-                        },
-                        {
-                            "popup_id": "3",
-                            "popup_name": "favorate 50",
-                            "image_url": "https://www.staging.beemax.in/media/uploads/coupon_popup/1777048216_b3.png",
-                            "redirection_type": "category",
-                            "link_id": "44",
-                            "coupon_code": "FAVORITE50",
-                            "coupon_discount": "50",
-                            "coupon_discount_type": "fixed",
-                            "coupon_info": "",
-                            "sticky_on_cart": 0,
-                            "valid_upto": "2031-05-24",
-                            "user_type": "all"
-                        }
-                    ],
-                    "user_type": "new",
-                    "is_new_user": true
-                },
-                "message": "Applicable popups found",
-                "statusCode": 200
-            }
-
+           
 
             // if (result?.status && result?.data?.aPopups?.length > 0) {
             //     const { aPopups, is_new_user } = result.data;
@@ -198,15 +199,18 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
 
     // ─── Redirection handler ───────────────────────────────────────────────────
     const handleRedirect = () => {
+        console.log('[CouponPopup] Redirecting user based on popup data:', currentPopup);
+        
         hidePopup(() => {
             if (!currentPopup) return;
             const { redirection_type, link_id } = currentPopup;
-            if (redirection_type === 'product') {
-                navigation.navigate('ProductDetail', { id: link_id });
-            } else if (redirection_type === 'category') {
-                navigation.navigate('ProductListing', { item: { id: link_id } });
+            if (redirection_type === 'category') {
+                navigation.navigate('ProductListing', { item: { id: link_id }, from: 'coupon' });
+            } else if (redirection_type === 'page') {
+                navigation.navigate('CmsPage', { item: currentPopup, from: 'coupon' });
+            } else {
+                navigation.navigate('ProductDetails', { product: { ...currentPopup, redirection_id: link_id }, from: 'coupon' });
             }
-            // add more redirection types here as needed
         });
     };
 
