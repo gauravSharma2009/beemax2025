@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react"
 import {
     Text, View, ScrollView, FlatList, Image, TouchableOpacity,
-    TextInput, Alert
+    TextInput, Alert, Dimensions
 } from "react-native"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
@@ -31,6 +31,10 @@ const isLateNight = () => {
     const h = new Date().getHours();
     return h >= 22 || h < 5; // 10 PM – 5 AM
 };
+
+// Scale fonts down slightly on small / narrow devices so rows don't get messy.
+const SMALL = Dimensions.get('window').width < 360
+const fs = (n) => (SMALL ? n - 1 : n)
 
 function CartScreen(props) {
     const { navigation, changeLoadingState, changeCartCount, setPopup } = props
@@ -273,10 +277,12 @@ function CartScreen(props) {
         }
         setIsLoading(true)
         changeLoadingState(true)
+
+        console.log("Fetching cart data from URL:", url)
         try {
             const res = await fetch(url, { method: 'GET' });
-            // const result = await res.json();
-            const result = { "status": true, "data": { "aCartItemDetails": [{ "CART_ID": "59265", "SELLER_ID": "42", "QTY": "1", "subtotal": "350", "weight": "200", "id": "4735", "title": "ORIGINAL Brand Performance Sports Collar Tshirt Black Colour 1Pc (Medium)", "product_type": "simple", "mrp_price": "999", "selling_price": "350", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772957117_rgtewgt.png", "is_deal_product": "0", "inventory": "4", "in_stock": "1", "product_size": "1Pc (Medium)", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": false }, { "CART_ID": "59267", "SELLER_ID": "42", "QTY": "1", "subtotal": "43", "weight": "50", "id": "4210", "title": "Beemax Fresh Choice Dalchini 50g /Cinnamon", "product_type": "simple", "mrp_price": "65", "selling_price": "43", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1735468748_308.jpg", "is_deal_product": "0", "inventory": "491", "in_stock": "1", "product_size": "1 Pc (50g) ", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": true }, { "CART_ID": "59264", "SELLER_ID": "42", "QTY": "3", "subtotal": "1167", "weight": "600", "id": "4786", "title": "Godrej aer Matic Kit Automatic Room Freshener Violet Valley Bloom 225ml  /Air Freshener", "product_type": "simple", "mrp_price": "625", "selling_price": "389", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772945516_1699168745_Untitled_design_(1)_(1).png", "is_deal_product": "0", "inventory": "0", "in_stock": "0", "product_size": "1 Pack   ", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": false }], "aCouponOffersList": [{ "id": "1", "coupon_code": "NEWUSER50", "discount": "50", "discount_type": "fixed", "customer_type": "new", "min_order_value": "1.00", "used_max_time": "1", "last_order_check": "7", "restricted_products": "", "coupon_info": "Welome New", "sticky_on_cart": 1, "valid_upto": "2031-01-24" }, { "id": "2", "coupon_code": "WELCOME30", "discount": "30", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "399.00", "used_max_time": "1", "last_order_check": "7", "restricted_products": "", "coupon_info": "Welcome Agian", "sticky_on_cart": 0, "valid_upto": "2031-02-24" }, { "id": "3", "coupon_code": "FAVORITE50", "discount": "50", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "999.00", "used_max_time": "10", "last_order_check": "7", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 50 off on orders above", "sticky_on_cart": 0, "valid_upto": "2031-05-24" }, { "id": "4", "coupon_code": "FAVORITE100", "discount": "100", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "999.00", "used_max_time": "10", "last_order_check": "8", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 100 off on orders above", "sticky_on_cart": 0, "valid_upto": "2033-09-20" }, { "id": "5", "coupon_code": "FAVORITE200", "discount": "200", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "1999.00", "used_max_time": "10", "last_order_check": "7", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 200 off on orders above", "sticky_on_cart": 0, "valid_upto": "2032-09-26" }], "aFreeDealsProList": [{ "id": "48669", "title": "Local Tomato 500g", "urlKey": "local-tomato-500g", "free_deal_product": "1", "free_deal_on": "299", "inventory": "14", "in_stock": "1", "mrp_price": "35", "selling_price": "9", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg" }, { "id": "48673", "title": "Colgate MaxFresh Toothpaste 600g (4x150g)", "urlKey": "colgate-maxfresh-toothpaste-600g-4x150g-", "free_deal_product": "1", "free_deal_on": "299", "inventory": "19", "in_stock": "1", "mrp_price": "544", "selling_price": "349", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg" }, { "id": "48674", "title": "Ruchi Golden Keshari Sooji 80g", "urlKey": "ruchi-golden-keshari-sooji-80g", "free_deal_product": "1", "free_deal_on": "299", "inventory": "25", "in_stock": "1", "mrp_price": "10", "selling_price": "5", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png" }, { "id": "48675", "title": "Smiley Face Bouncy Ball 1Pc", "urlKey": "smiley-face-bouncy-ball-1pc", "free_deal_product": "1", "free_deal_on": "299", "inventory": "37", "in_stock": "1", "mrp_price": "35", "selling_price": "10", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg" }, { "id": "48676", "title": "Set Wet Styling Hair Gel 100ml", "urlKey": "set-wet-styling-hair-gel-100ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "50", "in_stock": "1", "mrp_price": "100", "selling_price": "59", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg" }, { "id": "48677", "title": "Lemon ( nimbu )", "urlKey": "lemon-nimbu-", "free_deal_product": "1", "free_deal_on": "299", "inventory": "23", "in_stock": "1", "mrp_price": "23", "selling_price": "9", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png" }, { "id": "48678", "title": "Amul Moti Homogenised Toned Milk 450ml", "urlKey": "amul-moti-homogenised-toned-milk-450ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "40", "in_stock": "1", "mrp_price": "30", "selling_price": "10", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg" }, { "id": "4776", "title": "Godrej aer Matic Kit Automatic Room Freshener Violet Valley Bloom 225ml", "urlKey": "godrej-aer-matic-kit-automatic-room-freshener-violet-valley-bloom-225ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "7", "in_stock": "1", "mrp_price": "625", "selling_price": "375", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_Untitled_design_(1).png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_34.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_Untitled_design_(1).png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796200_1699168745_34.jpg" }, { "id": "4856", "title": "Johnson's Baby Shampoo 50ml", "urlKey": "johnson-s-baby-shampoo-50ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "18", "in_stock": "1", "mrp_price": "70", "selling_price": "45", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323376_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg" }], "aDeliveryTips": { "header": { "title": "Delivery Tip", "description": "A small tip means a lot..." }, "amounts": [{ "id": "1", "amount": "10.00" }, { "id": "2", "amount": "20.00" }, { "id": "3", "amount": "30.00" }] } }, "message": "Please find data", "statusCode": 200 };
+            const result = await res.json();
+            // const result = { "status": true, "data": { "aCartItemDetails": [{ "CART_ID": "59265", "SELLER_ID": "42", "QTY": "1", "subtotal": "350", "weight": "200", "id": "4735", "title": "ORIGINAL Brand Performance Sports Collar Tshirt Black Colour 1Pc (Medium)", "product_type": "simple", "mrp_price": "999", "selling_price": "350", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772957117_rgtewgt.png", "is_deal_product": "0", "inventory": "4", "in_stock": "1", "product_size": "1Pc (Medium)", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": false }, { "CART_ID": "59267", "SELLER_ID": "42", "QTY": "1", "subtotal": "43", "weight": "50", "id": "4210", "title": "Beemax Fresh Choice Dalchini 50g /Cinnamon", "product_type": "simple", "mrp_price": "65", "selling_price": "43", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1735468748_308.jpg", "is_deal_product": "0", "inventory": "491", "in_stock": "1", "product_size": "1 Pc (50g) ", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": true }, { "CART_ID": "59264", "SELLER_ID": "42", "QTY": "3", "subtotal": "1167", "weight": "600", "id": "4786", "title": "Godrej aer Matic Kit Automatic Room Freshener Violet Valley Bloom 225ml  /Air Freshener", "product_type": "simple", "mrp_price": "625", "selling_price": "389", "FIRST_IMAGE": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772945516_1699168745_Untitled_design_(1)_(1).png", "is_deal_product": "0", "inventory": "0", "in_stock": "0", "product_size": "1 Pack   ", "max_qty_per_order": null, "max_qty_per_customer_per_day": null, "is_active": false }], "aCouponOffersList": [{ "id": "1", "coupon_code": "NEWUSER50", "discount": "50", "discount_type": "fixed", "customer_type": "new", "min_order_value": "1.00", "used_max_time": "1", "last_order_check": "7", "restricted_products": "", "coupon_info": "Welome New", "sticky_on_cart": 1, "valid_upto": "2031-01-24" }, { "id": "2", "coupon_code": "WELCOME30", "discount": "30", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "399.00", "used_max_time": "1", "last_order_check": "7", "restricted_products": "", "coupon_info": "Welcome Agian", "sticky_on_cart": 0, "valid_upto": "2031-02-24" }, { "id": "3", "coupon_code": "FAVORITE50", "discount": "50", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "999.00", "used_max_time": "10", "last_order_check": "7", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 50 off on orders above", "sticky_on_cart": 0, "valid_upto": "2031-05-24" }, { "id": "4", "coupon_code": "FAVORITE100", "discount": "100", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "999.00", "used_max_time": "10", "last_order_check": "8", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 100 off on orders above", "sticky_on_cart": 0, "valid_upto": "2033-09-20" }, { "id": "5", "coupon_code": "FAVORITE200", "discount": "200", "discount_type": "fixed", "customer_type": "regular", "min_order_value": "1999.00", "used_max_time": "10", "last_order_check": "7", "restricted_products": "4522,4305,2908", "coupon_info": "Flat 200 off on orders above", "sticky_on_cart": 0, "valid_upto": "2032-09-26" }], "aFreeDealsProList": [{ "id": "48669", "title": "Local Tomato 500g", "urlKey": "local-tomato-500g", "free_deal_product": "1", "free_deal_on": "299", "inventory": "14", "in_stock": "1", "mrp_price": "35", "selling_price": "9", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048338_1761230313_BrowserPreview_tmp_-_2025-10-23T200812.107.jpg" }, { "id": "48673", "title": "Colgate MaxFresh Toothpaste 600g (4x150g)", "urlKey": "colgate-maxfresh-toothpaste-600g-4x150g-", "free_deal_product": "1", "free_deal_on": "299", "inventory": "19", "in_stock": "1", "mrp_price": "544", "selling_price": "349", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1776485902_1750234729_1741667406_43_(1).jpg" }, { "id": "48674", "title": "Ruchi Golden Keshari Sooji 80g", "urlKey": "ruchi-golden-keshari-sooji-80g", "free_deal_product": "1", "free_deal_on": "299", "inventory": "25", "in_stock": "1", "mrp_price": "10", "selling_price": "5", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775045287_green_color_mockup.png" }, { "id": "48675", "title": "Smiley Face Bouncy Ball 1Pc", "urlKey": "smiley-face-bouncy-ball-1pc", "free_deal_product": "1", "free_deal_on": "299", "inventory": "37", "in_stock": "1", "mrp_price": "35", "selling_price": "10", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775047205_61yLqkmcN9L._AC_UF894,1000_QL80_.jpg" }, { "id": "48676", "title": "Set Wet Styling Hair Gel 100ml", "urlKey": "set-wet-styling-hair-gel-100ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "50", "in_stock": "1", "mrp_price": "100", "selling_price": "59", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775048475_1724595128_19.jpg" }, { "id": "48677", "title": "Lemon ( nimbu )", "urlKey": "lemon-nimbu-", "free_deal_product": "1", "free_deal_on": "299", "inventory": "23", "in_stock": "1", "mrp_price": "23", "selling_price": "9", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775108513_1767412745_-lemon_(1).png" }, { "id": "48678", "title": "Amul Moti Homogenised Toned Milk 450ml", "urlKey": "amul-moti-homogenised-toned-milk-450ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "40", "in_stock": "1", "mrp_price": "30", "selling_price": "10", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1775128374_1695482070_36.jpg" }, { "id": "4776", "title": "Godrej aer Matic Kit Automatic Room Freshener Violet Valley Bloom 225ml", "urlKey": "godrej-aer-matic-kit-automatic-room-freshener-violet-valley-bloom-225ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "7", "in_stock": "1", "mrp_price": "625", "selling_price": "375", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_Untitled_design_(1).png", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_34.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796199_1699168745_Untitled_design_(1).png", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1772796200_1699168745_34.jpg" }, { "id": "4856", "title": "Johnson's Baby Shampoo 50ml", "urlKey": "johnson-s-baby-shampoo-50ml", "free_deal_product": "1", "free_deal_on": "299", "inventory": "18", "in_stock": "1", "mrp_price": "70", "selling_price": "45", "image_first": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323376_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_second": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_third": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg", "image_four": "https://www.staging.beemax.in/media/uploads/product/thumbs/1774323403_1755505159_BrowserPreview_tmp_-_2025-08-18T134329.567.jpg" }], "aDeliveryTips": { "header": { "title": "Delivery Tip", "description": "A small tip means a lot..." }, "amounts": [{ "id": "1", "amount": "10.00" }, { "id": "2", "amount": "20.00" }, { "id": "3", "amount": "30.00" }] } }, "message": "Please find data", "statusCode": 200 };
 
             console.log("Cart Data", result)
             changeLoadingState(false)
@@ -423,6 +429,17 @@ function CartScreen(props) {
         setCoupanData(null)
         setCoupanCode("")
         setCoupanAppliedMsg("")
+    }
+
+    // ── open the full Coupon & Offers screen ──────────────────────────────────
+    const openCouponScreen = () => {
+        navigation.navigate("CouponOffers", {
+            offersList: offersList || [],
+            subTotal,
+            appliedCoupon: appliedCoupan,
+            onApply: (code) => applyCoupan(code, "coupan"),
+            onRemove: removeCoupan,
+        })
     }
 
     // ── tip helpers ───────────────────────────────────────────────────────────
@@ -643,14 +660,14 @@ function CartScreen(props) {
                         paddingVertical: 10, justifyContent: 'space-between',
                         borderTopWidth: 1, borderTopColor: categorySaperator
                     }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
                             <AntDesign name="checkcircle" size={18} color={coupanGreen} />
-                            <View style={{ marginLeft: 8 }}>
-                                <Text style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: 13 }}>
+                            <View style={{ marginLeft: 8, flex: 1 }}>
+                                <Text numberOfLines={1} style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: fs(13) }}>
                                     Save ₹{coupanDiscount} with {appliedCoupan}
                                 </Text>
-                                <TouchableOpacity onPress={() => navigation.navigate("CouponList")}>
-                                    <Text style={{ fontFamily: 'Poppins-Regular', color: buttonBgColor, fontSize: 12 }}>
+                                <TouchableOpacity onPress={openCouponScreen}>
+                                    <Text style={{ fontFamily: 'Poppins-Regular', color: buttonBgColor, fontSize: fs(12) }}>
                                         View all coupons &gt;
                                     </Text>
                                 </TouchableOpacity>
@@ -660,9 +677,9 @@ function CartScreen(props) {
                             onPress={removeCoupan}
                             style={{
                                 borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 14, paddingVertical: 6
+                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0
                             }}>
-                            <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 13 }}>Remove</Text>
+                            <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Remove</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
@@ -671,22 +688,22 @@ function CartScreen(props) {
                         paddingHorizontal: 12, paddingVertical: 10,
                         borderTopWidth: 1, borderTopColor: categorySaperator
                     }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
                             <AntDesign name="tago" size={18} color={coupanGreen} />
-                            <View style={{ marginLeft: 8 }}>
+                            <View style={{ marginLeft: 8, flex: 1 }}>
                                 {offersList && offersList.filter(o => o.sticky_on_cart).length > 0 ? (
                                     <>
-                                        <Text style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: 13 }}>
+                                        <Text numberOfLines={1} style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: fs(13) }}>
                                             Save ₹{offersList.find(o => o.sticky_on_cart)?.discount} with {offersList.find(o => o.sticky_on_cart)?.coupon_code}
                                         </Text>
-                                        <TouchableOpacity onPress={() => navigation.navigate("CouponList")}>
-                                            <Text style={{ fontFamily: 'Poppins-Regular', color: buttonBgColor, fontSize: 12 }}>
+                                        <TouchableOpacity onPress={openCouponScreen}>
+                                            <Text style={{ fontFamily: 'Poppins-Regular', color: buttonBgColor, fontSize: fs(12) }}>
                                                 View all coupons &gt;
                                             </Text>
                                         </TouchableOpacity>
                                     </>
                                 ) : (
-                                    <Text style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: 13 }}>
+                                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: fs(13) }}>
                                         Apply a coupon code
                                     </Text>
                                 )}
@@ -698,14 +715,14 @@ function CartScreen(props) {
                                 if (sticky) {
                                     applyCoupan(sticky.coupon_code, "coupan")
                                 } else {
-                                    navigation.navigate("CouponList")
+                                    openCouponScreen()
                                 }
                             }}
                             style={{
                                 borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 14, paddingVertical: 6
+                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0
                             }}>
-                            <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 13 }}>Apply</Text>
+                            <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Apply</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -1041,75 +1058,81 @@ function CartScreen(props) {
             <View style={{
                 flexDirection: "row", marginTop: 0, padding: 10,
                 borderBottomColor: categorySaperator, borderBottomWidth: 1,
-                justifyContent: 'space-between'
+                alignItems: 'flex-start'
             }}>
-                <View style={{ justifyContent: 'center', alignItems: 'center', flex: .27 }}>
-                    <TouchableOpacity onPress={() => navigation.navigate("ProductDetails", { product: item })}>
-                        <Image
-                            style={{
-                                width: 80, height: 80, borderWidth: 1,
-                                borderColor: categorySaperator, borderRadius: 8,
-                                resizeMode: 'contain'
-                            }}
-                            source={{ uri: item.FIRST_IMAGE }}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <View style={{ flex: .73 }}>
-                    <View style={{ paddingVertical: 4, paddingHorizontal: 5, flexDirection: 'row', width: '100%' }}>
-                        <Text numberOfLines={2} style={{
-                            fontFamily: 'Poppins-Medium', color: textColor, fontSize: 12,
-                            flex: item.is_deal_product === '1' ? .68 : 1
-                        }}>{item.title}</Text>
-                        {item.is_deal_product === '1' && (
-                            <View style={{
-                                borderRadius: 6, backgroundColor: coupanGreen,
-                                paddingHorizontal: 8, height: 28, justifyContent: 'center',
-                                flex: .32, alignSelf: 'flex-end'
-                            }}>
-                                <Text style={{ color: '#fff', fontSize: 11, fontFamily: 'Poppins-Medium', textAlign: 'center' }}>
-                                    Deal Applied
-                                </Text>
-                            </View>
-                        )}
-                    </View>
+                {/* Product image – pinned to top */}
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("ProductDetails", { product: item })}
+                    style={{ marginRight: 10 }}>
+                    <Image
+                        style={{
+                            width: 76, height: 76, borderWidth: 1,
+                            borderColor: categorySaperator, borderRadius: 8,
+                            resizeMode: 'contain'
+                        }}
+                        source={{ uri: item.FIRST_IMAGE }}
+                    />
+                </TouchableOpacity>
+
+                {/* Middle – title, size, badges */}
+                <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text numberOfLines={2} style={{
+                        fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(11), lineHeight: fs(15)
+                    }}>{item.title}</Text>
+
                     {item.product_size ? (
-                        <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: 11, paddingLeft: 5 }}>
+                        <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: fs(13), marginTop: 2 }}>
                             {item.product_size}
                         </Text>
                     ) : null}
-                    <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end', flexDirection: 'row', marginTop: 4 }}>
-                        {Number(item?.inventory) <= Number(item?.QTY) && (
-                            <View style={{
-                                marginBottom: 5, marginRight: 5, paddingHorizontal: 5,
-                                paddingVertical: 2, borderWidth: 1, borderRadius: 5, borderColor: offPurpleColor
-                            }}>
-                                <Text style={{ color: offPurpleColor, fontSize: 11 }}>
-                                    Only {item?.inventory} left
-                                </Text>
-                            </View>
-                        )}
-                        <AddButton
-                            isAddedToCart={true}
-                            style={{ alignSelf: 'flex-end' }}
-                            callBack={getCartData}
-                            changeLoadingState={changeLoadingState}
-                            addItem={addItem}
-                            minusItem={minusItem}
-                            item={{ ...item, qty_added_in_cart: item.QTY }}
-                        />
-                        <View style={{ alignSelf: 'flex-end', marginLeft: 10, marginBottom: 8, minWidth: 50 }}>
-                            <Text style={{
-                                alignSelf: 'flex-end', fontFamily: 'Poppins-Regular',
-                                color: textInputColor, textDecorationLine: 'line-through',
-                                fontSize: 12
-                            }}>
-                                {currency} {(Number(item.mrp_price) * Number(item.QTY)).toFixed(0)}
-                            </Text>
-                            <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, alignSelf: 'flex-end', fontSize: 14 }}>
-                                {currency}{item.subtotal}
+
+                    {item.is_deal_product === '1' && (
+                        <View style={{
+                            flexDirection: 'row', alignItems: 'center', marginTop: 5,
+                            alignSelf: 'flex-start', backgroundColor: '#F0FFF4', borderRadius: 6,
+                            paddingHorizontal: 8, paddingVertical: 3
+                        }}>
+                            <AntDesign name="checkcircle" size={fs(13)} color={coupanGreen} />
+                            <Text style={{ color: coupanGreen, fontSize: fs(12), fontFamily: 'Poppins-Medium', marginLeft: 5 }}>
+                                Deal applied
                             </Text>
                         </View>
+                    )}
+
+                    {Number(item?.inventory) <= Number(item?.QTY) && (
+                        <View style={{
+                            marginTop: 5, alignSelf: 'flex-start', paddingHorizontal: 6,
+                            paddingVertical: 2, borderWidth: 1, borderRadius: 5, borderColor: offPurpleColor
+                        }}>
+                            <Text style={{ color: offPurpleColor, fontSize: fs(11) }}>
+                                Only {item?.inventory} left
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* Right – Add button on top, price on a single line below */}
+                <View style={{ alignItems: 'flex-end' }}>
+                    <AddButton
+                        isAddedToCart={true}
+                        cartTheme={true}
+                        style={{ alignSelf: 'flex-end' }}
+                        callBack={getCartData}
+                        changeLoadingState={changeLoadingState}
+                        addItem={addItem}
+                        minusItem={minusItem}
+                        item={{ ...item, qty_added_in_cart: item.QTY }}
+                    />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                        <Text style={{
+                            fontFamily: 'Poppins-Regular', color: textInputColor,
+                            textDecorationLine: 'line-through', fontSize: fs(12), marginRight: 6
+                        }}>
+                            {currency}{(Number(item.mrp_price) * Number(item.QTY)).toFixed(0)}
+                        </Text>
+                        <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: fs(14) }}>
+                            {currency}{item.subtotal}
+                        </Text>
                     </View>
                 </View>
             </View>

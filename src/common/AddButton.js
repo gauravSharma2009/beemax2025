@@ -13,8 +13,13 @@ const AddButtonCMP = (props) => {
 
     const { item, addItem, minusItem, type, changeLoadingState, callBack, style,
         changeCartCount, setAction = undefined, index = undefined, isAddedToCart = false, freeDealAddedToCart = false,
-        isAddBlocked = false } = props;
+        isAddBlocked = false, cartTheme = false } = props;
     const [quantity, setQuantity] = useState(0);
+
+    // Cart-page styling: light-pink fill, pink border + pink text (matches cart design)
+    const themedBg = cartTheme ? '#FDEAF0' : allCategoryPink
+    const themedText = cartTheme ? allCategoryPink : whiteTxtColor
+    const themedBorderWidth = cartTheme ? 1 : 0
 
     useEffect(() => {
 
@@ -205,33 +210,22 @@ const AddButtonCMP = (props) => {
                 </View>
             :
             <TouchableOpacity style={[styles.button, style, {
-                maxHeight: 35, backgroundColor: item.in_stock === "0" || parseInt(item.inventory) < 1 ?
-                    // "#E5E5E5"
-                    allCategoryPink
-                    : allCategoryPink
+                maxHeight: 35, backgroundColor: themedBg,
+                borderColor: allCategoryPink, borderWidth: themedBorderWidth
             }]} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
 
                 {!item.qty_added_in_cart || Number(item.qty_added_in_cart) === 0 ? (
-                    <Text style={styles.addButton}>Add</Text>
+                    <Text style={[styles.addButton, { color: themedText }]}>Add</Text>
                 ) : (
                     <View style={styles.quantityContainer}>
-                                                {/* <TouchableOpacity style={styles.minusButton} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 || parseInt(item.qty_added_in_cart) <= 0 ? () => { */}
-
                         <TouchableOpacity style={styles.minusButton} onPress={ parseInt(item.qty_added_in_cart) <= 0 ? () => {
-                            console.log("items value : ", item.in_stock === "0" || parseInt(item.inventory) < 1 || quantity <= 0)
-                            console.log("items value : ", item.in_stock === "0", parseInt(item.inventory) < 1, quantity <= 0)
-                            console.log("items value : ", item.in_stock, parseInt(item.inventory), quantity)
                             console.log("item : ", item)
-
-                            //alert("from here")
-
-
                         } : handleMinus}>
-                            <Text style={styles.quantityText}>-</Text>
+                            <Text style={[styles.quantityText, { color: themedText }]}>-</Text>
                         </TouchableOpacity>
-                        <Text style={styles.quantity}>{'' + item.qty_added_in_cart ? Number(item.qty_added_in_cart) : 0}</Text>
+                        <Text style={[styles.quantity, { color: themedText }]}>{'' + item.qty_added_in_cart ? Number(item.qty_added_in_cart) : 0}</Text>
                         <TouchableOpacity style={styles.plusButton} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
-                            <Text style={styles.quantityText}>+</Text>
+                            <Text style={[styles.quantityText, { color: themedText }]}>+</Text>
                         </TouchableOpacity>
                     </View>
                 )}

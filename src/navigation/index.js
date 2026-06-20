@@ -30,6 +30,7 @@ import { setPopup } from "../actions/message";
 import ProductSearchPage from "../screens/Search";
 import Cms from "../screens/CmsPage";
 import AutoSuggestSearchPage from "../screens/AutoSuggestSearchPage";
+import CouponOffers from "../screens/CouponOffers";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Stack = createNativeStackNavigator();
@@ -78,6 +79,7 @@ function NavigatorScreen(props) {
                     <Stack.Screen name="UserScreen" component={UserNavigator} />
                     <Stack.Screen name="ProductSearchPage" component={ProductSearchPage} />
                     <Stack.Screen name="AutoSuggestSearchPage" component={AutoSuggestSearchPage} />
+                    <Stack.Screen name="CouponOffers" component={CouponOffers} />
                 </Stack.Navigator>
                 {isLoading && <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator
