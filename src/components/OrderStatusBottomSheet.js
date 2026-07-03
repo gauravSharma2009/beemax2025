@@ -187,7 +187,7 @@ const OrderStatusBottomSheet = ({
     const MINI_CONN = (SCREEN_WIDTH - 64 - MINI_ICON * 4) / 3;
 
     return (
-      <View style={styles.miniCard}>
+      <TouchableOpacity style={styles.miniCard} activeOpacity={0.9} onPress={expand}>
         <View style={styles.miniStepsRow}>
           {steps.map((step, stepIdx) => {
             const isCompleted = step.status === 'completed';
@@ -238,7 +238,7 @@ const OrderStatusBottomSheet = ({
             ))}
           </View>
         )}
-      </View>
+      </TouchableOpacity>
     );
   };
 

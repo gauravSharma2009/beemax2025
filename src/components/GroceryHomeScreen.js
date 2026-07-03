@@ -18,10 +18,10 @@ import FastImage from 'react-native-fast-image';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
-const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, topHalfBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction ,offerBannerOptionalPro}) => {
+const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, topHalfBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction, offerBannerOptionalPro }) => {
   const [searchText, setSearchText] = useState('');
-  const [bannerAspectRatio, setBannerAspectRatio] = useState(1);
   const [topHalfImageHeight, setTopHalfImageHeight] = useState(SCREEN_WIDTH / 2);
+  const [offerBannerHeight, setOfferBannerHeight] = useState(SCREEN_WIDTH / 2);
   const [quantities, setQuantities] = useState({});
   const [deliveryTime, setDeliveryTime] = useState("")
 
@@ -74,6 +74,29 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
         ★
       </Text>
     ));
+  };
+
+  const handleOfferBannerPress = () => {
+    //  if (type === 'category') {
+    //         navigation.navigate("ProductListing", { item: bannerItem, from: 'banner' })
+    //     } else if (type === 'page') {
+    //         navigation.navigate("CmsPage", { item: bannerItem, from: 'banner' })
+    //     } else {
+    //         navigation.navigate("ProductDetails", { product: bannerItem, from: 'banner' })
+    //     }
+    if (offerBannerOptionalPro?.offer_redirection_type === 'category') {
+      navigation.navigate("ProductListing", {
+        item: { id: offerBannerOptionalPro?.offer_redirection_id },
+        from: 'banner'
+      });
+    } else if (offerBannerOptionalPro?.offer_redirection_type === 'page') {
+      navigation.navigate("CmsPage", { item: offerBannerOptionalPro, from: 'banner' });
+    } else {
+      navigation.navigate("ProductDetails", {
+        product: { ...offerBannerOptionalPro, redirection_id: offerBannerOptionalPro?.offer_redirection_id },
+        from: 'banner'
+      });
+    }
   };
 
   const renderQuantityControl = (product) => {
@@ -202,46 +225,75 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
         )}
 
         {/* Products horizontal scroll — sits below the banner on the same purple background */}
-        {optionalBannerData?.offer_pro_info?.length > 0 && (
-          <View style={{ position: 'relative' }}>
+        {optionalBannerData?.offer_pro_info?.length > 0 ? (
+          <View style={{ position: 'relative', width: SCREEN_WIDTH, height: offerBannerHeight }}>
             {offerBannerOptionalPro?.offer_banner && (
-              <FastImage
-                source={{ uri: offerBannerOptionalPro.offer_banner }}
+              <TouchableOpacity
+                activeOpacity={0.9}
                 style={StyleSheet.absoluteFill}
-                resizeMode={FastImage.resizeMode.cover}
-              />
+                onPress={handleOfferBannerPress}
+              >
+                <FastImage
+                  source={{ uri: offerBannerOptionalPro.offer_banner }}
+                  style={StyleSheet.absoluteFill}
+                  resizeMode={FastImage.resizeMode.cover}
+                  onLoad={(event) => {
+                    const { width, height } = event.nativeEvent;
+                    if (width && height) {
+                      setOfferBannerHeight((SCREEN_WIDTH / width) * height);
+                    }
+                  }}
+                />
+              </TouchableOpacity>
             )}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalScrollContent}
-              style={{ paddingVertical: 10 }}
+              style={[StyleSheet.absoluteFill, { paddingVertical: 10 }]}
             >
-            {optionalBannerData.offer_pro_info.map((product, index) => (
-              <View key={'offer_product_' + index} style={{ flexDirection: 'row' }}>
-                <ProductItem
-                  discountPosition={-7}
-                  discontPostionTop={-15}
-                  navigation={navigation}
-                  imageHeight={130}
-                  cardWidth={.35}
-                  imageWidth={200}
-                  showOffer={true}
-                  item={product}
-                  borderRadius={5}
-                  borderColor={'white'}
-                  index={index}
-                  onPress={handleProductPress}
-                  getProductList={getProductList}
-                  changeLoadingState={changeLoadingState}
-                  setAction={setAction}
-                />
-                <View style={{ width: 10 }} />
-              </View>
-            ))}
+              {optionalBannerData.offer_pro_info.map((product, index) => (
+                <View key={'offer_product_' + index} style={{ flexDirection: 'row' }}>
+                  <ProductItem
+                    discountPosition={-7}
+                    discontPostionTop={-15}
+                    navigation={navigation}
+                    imageHeight={130}
+                    cardWidth={.35}
+                    imageWidth={200}
+                    showOffer={true}
+                    item={product}
+                    borderRadius={5}
+                    borderColor={'white'}
+                    index={index}
+                    onPress={handleProductPress}
+                    getProductList={getProductList}
+                    changeLoadingState={changeLoadingState}
+                    setAction={setAction}
+                  />
+                  <View style={{ width: 10 }} />
+                </View>
+              ))}
             </ScrollView>
           </View>
+        ) : (
+          offerBannerOptionalPro?.offer_banner && (
+            <TouchableOpacity activeOpacity={0.9} onPress={handleOfferBannerPress}>
+              <FastImage
+                source={{ uri: offerBannerOptionalPro.offer_banner }}
+                style={{ width: SCREEN_WIDTH, height: offerBannerHeight }}
+                resizeMode={FastImage.resizeMode.cover}
+                onLoad={(event) => {
+                  const { width, height } = event.nativeEvent;
+                  if (width && height) {
+                    setOfferBannerHeight((SCREEN_WIDTH / width) * height);
+                  }
+                }}
+              />
+            </TouchableOpacity>
+          )
         )}
+
       </View>
     </SafeAreaView>
   );

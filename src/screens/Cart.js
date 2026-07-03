@@ -306,6 +306,7 @@ function CartScreen(props) {
                         isInactive ||
                         item.in_stock === "0" ||
                         item.in_stock === 0 ||
+                        item.is_deleted === "1" ||
                         !item.in_stock ||
                         inventoryNum === 0
                     ) {
@@ -543,6 +544,7 @@ function CartScreen(props) {
                                 setSummaryData(pResult.data)
                                 setOrderNo(pResult.data?.oder_id)
                                 changeCartCount(0)
+                                setSelectedTip(null)
                             }
                         }
                     }).catch(err => Alert.alert("Payment Error", `${err.code} | ${err.description}`))
@@ -555,6 +557,8 @@ function CartScreen(props) {
 
         // COD
         changeLoadingState(true)
+        console.log("URL : :", `${server}orderplace`)
+        console.log("Placing order with payload (stringified):", JSON.stringify(orderPayload))
         try {
             const res = await fetch(`${server}orderplace`, {
                 method: 'POST',
@@ -562,12 +566,14 @@ function CartScreen(props) {
                 body: JSON.stringify(orderPayload)
             });
             const result = await res.json();
+            console.log("Order placement result:", result)
             changeLoadingState(false)
             if (result?.status) {
                 setSummary(true); setAddress(false); setIsCart(false)
                 setSummaryData(result.data)
                 setOrderNo(result.data?.oder_id)
                 changeCartCount(0)
+                setSelectedTip(null)
             } else {
                 setPopup({ message: result.message, status: "faliure", open: true })
             }
@@ -866,6 +872,7 @@ function CartScreen(props) {
                     // Late night fee: skip if not late-night AND inactive
                     if (fee.code === 'late_night_fee' && !fee.active) return null;
                     const isFree = fee.amount === 0 || fee.amount === "0"
+                    if(fee.code === 'small_cart_fee' && isFree) return null; // Skip small cart fee if free
                     return (
                         <View key={"fee" + idx} style={{
                             flexDirection: 'row', justifyContent: 'space-between',
@@ -903,7 +910,7 @@ function CartScreen(props) {
                 })}
 
                 {/* Delivery Fee (shipping) */}
-                <View style={{
+                {/* <View style={{
                     flexDirection: 'row', justifyContent: 'space-between',
                     paddingHorizontal: 12, paddingVertical: 6
                 }}>
@@ -932,7 +939,7 @@ function CartScreen(props) {
                             {shippingAmount === 0 ? "FREE" : `${currency}${shippingAmount}`}
                         </Text>
                     </View>
-                </View>
+                </View> */}
 
                 {/* Delivery Tip – fixed options 10, 20, 30 (image 6) */}
                 <View style={{ paddingHorizontal: 12, paddingVertical: 6 }}>
@@ -956,55 +963,28 @@ function CartScreen(props) {
                                     Remove  ₹{selectedTip}
                                 </Text>
                             </TouchableOpacity>
-                        ) : (
-                            <View style={{ flexDirection: 'row', marginTop: 0 }}>
-                                {TIP_OPTIONS.map(amount => (
-                                    <TouchableOpacity
-                                        key={"tip" + amount}
-                                        onPress={() => handleTip(amount)}
-                                        style={{
-                                            marginLeft: 8, borderRadius: 6, borderWidth: 1,
-                                            borderColor: selectedTip === amount ? coupanGreen : categorySaperator,
-                                            paddingHorizontal: 12, paddingVertical: 5,
-                                            backgroundColor: selectedTip === amount ? '#F0FFF4' : '#fff'
-                                        }}>
-                                        <Text style={{
-                                            fontFamily: 'Poppins-Medium',
-                                            color: selectedTip === amount ? coupanGreen : textColor,
-                                            fontSize: 13
-                                        }}>₹{amount}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        )}
+                        ) : null}
                     </View>
-                    {selectedTip && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                            {/* When tip selected, show tip amount with remove button inline + value on right */}
-                            <View style={{ flexDirection: 'row', flex: 1 }}>
-                                {TIP_OPTIONS.map(amount => (
-                                    <TouchableOpacity
-                                        key={"tip2" + amount}
-                                        onPress={() => handleTip(amount)}
-                                        style={{
-                                            marginRight: 8, borderRadius: 6, borderWidth: 1,
-                                            borderColor: selectedTip === amount ? coupanGreen : categorySaperator,
-                                            paddingHorizontal: 12, paddingVertical: 5,
-                                            backgroundColor: selectedTip === amount ? coupanGreen : '#fff'
-                                        }}>
-                                        <Text style={{
-                                            fontFamily: 'Poppins-Medium',
-                                            color: selectedTip === amount ? '#fff' : textColor,
-                                            fontSize: 13
-                                        }}>₹{amount}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                            <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 13 }}>
-                                ₹{selectedTip}
-                            </Text>
-                        </View>
-                    )}
+                    {/* Tip options – always on their own line below the label */}
+                    <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                        {TIP_OPTIONS.map(amount => (
+                            <TouchableOpacity
+                                key={"tip" + amount}
+                                onPress={() => handleTip(amount)}
+                                style={{
+                                    marginRight: 8, borderRadius: 6, borderWidth: 1,
+                                    borderColor: selectedTip === amount ? coupanGreen : categorySaperator,
+                                    paddingHorizontal: 12, paddingVertical: 5,
+                                    backgroundColor: selectedTip === amount ? '#F0FFF4' : '#fff'
+                                }}>
+                                <Text style={{
+                                    fontFamily: 'Poppins-Medium',
+                                    color: selectedTip === amount ? coupanGreen : textColor,
+                                    fontSize: 13
+                                }}>₹{amount}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                 </View>
 
                 {/* Divider */}
@@ -1369,7 +1349,7 @@ function CartScreen(props) {
                             <Text style={{
                                 color: whiteTxtColor, fontFamily: 'Poppins-SemiBold',
                                 alignSelf: 'center', fontSize: 16, letterSpacing: 1
-                            }}>PROCEED</Text>
+                            }}>PROCEED\</Text>
                         </TouchableOpacity>
                     )}
                 </ScrollView>
