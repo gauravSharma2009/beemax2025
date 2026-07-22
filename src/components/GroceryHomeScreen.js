@@ -18,6 +18,11 @@ import FastImage from 'react-native-fast-image';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // Accounting for padding and gap
 
+// ProductItem (imageHeight=130) needs roughly this much vertical room for its
+// image + title + size + price rows + Add button before anything gets clipped
+// by the horizontal ScrollView's vertical bounds.
+const OFFER_BANNER_MIN_HEIGHT_WITH_PRODUCTS = 300;
+
 const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData, topHalfBannerData, appHeaderColor, address, handlePincodePress, handleSearchPress, handleUserPress, pinCode, getProductList, changeLoadingState, setAction, offerBannerOptionalPro }) => {
   const [searchText, setSearchText] = useState('');
   const [topHalfImageHeight, setTopHalfImageHeight] = useState(SCREEN_WIDTH / 2);
@@ -188,7 +193,7 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
           />
         </TouchableOpacity>
       </View>
-
+{/* {console.log("topHalfBannerData", topHalfBannerData)} */}
       <View style={{ ...styles.content, backgroundColor: appHeaderColor }}>
         {/* Top half banner image - full width, no overlay */}
         {topHalfBannerData?.top_half_banner && (
@@ -226,7 +231,10 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
 
         {/* Products horizontal scroll — sits below the banner on the same purple background */}
         {optionalBannerData?.offer_pro_info?.length > 0 ? (
-          <View style={{ position: 'relative', width: SCREEN_WIDTH, height: offerBannerHeight }}>
+          <View style={{
+            position: 'relative', width: SCREEN_WIDTH,
+            height: Math.max(offerBannerHeight, OFFER_BANNER_MIN_HEIGHT_WITH_PRODUCTS)
+          }}>
             {offerBannerOptionalPro?.offer_banner && (
               <TouchableOpacity
                 activeOpacity={0.9}

@@ -16,24 +16,26 @@ const fs = (n) => (SMALL ? n - 1 : n)   // font scale helper
  *
  * Navigated to from Cart via:
  *   navigation.navigate("CouponOffers", {
- *       offersList, subTotal, appliedCoupon, onApply, onRemove
+ *       offersList, couponEligibleAmount, appliedCoupon, onApply, onRemove
  *   })
  *
- * - offersList   : aCouponOffersList array from cartdata API
- * - subTotal     : current cart item total (used to decide locked / unlocked)
- * - appliedCoupon: currently applied coupon_code (or null)
- * - onApply(code): callback that applies the coupon to the cart
- * - onRemove()   : callback that removes the applied coupon
+ * - offersList          : aCouponOffersList array from cartdata API
+ * - couponEligibleAmount: sum of cart items with is_coupon_applicable !== false/0
+ *                         (used to decide locked / unlocked, not the raw cart total)
+ * - appliedCoupon       : currently applied coupon_code (or null)
+ * - onApply(code)       : callback that applies the coupon to the cart
+ * - onRemove()          : callback that removes the applied coupon
  */
 function CouponOffers(props) {
     const { navigation, route } = props
     const {
         offersList = [],
-        subTotal = 0,
+        couponEligibleAmount = 0,
         appliedCoupon = null,
         onApply,
         onRemove,
     } = route?.params || {}
+    console.log("CouponOffers screen props:", { offersList, couponEligibleAmount, appliedCoupon })
 
     const [typedCode, setTypedCode] = useState("")
     const [expandedId, setExpandedId] = useState(null)
@@ -49,7 +51,7 @@ function CouponOffers(props) {
     }
 
     const isUnlocked = (coupon) =>
-        parseFloat(subTotal) >= parseFloat(coupon.min_order_value || 0)
+        parseFloat(couponEligibleAmount) >= parseFloat(coupon.min_order_value || 0)
 
     const handleApply = (code) => {
         if (!code) return

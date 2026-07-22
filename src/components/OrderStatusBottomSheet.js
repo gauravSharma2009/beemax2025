@@ -324,8 +324,14 @@ const OrderStatusBottomSheet = ({
 
   // ── main render ─────────────────────────────────────────────────────────────
   return (
-    // FIX 2: no pointerEvents="box-none" — container blocks touches behind it
-    <View style={[styles.outerContainer, { bottom: tabBarHeight }]}>
+    // FIX 2: pointerEvents is 'auto' while expanded so the full card blocks touches
+    // behind it, but 'box-none' while minimized so the empty space above the mini
+    // card (left behind once the sheet translates down) lets scroll/tap events
+    // through to the Home screen instead of swallowing them.
+    <View
+      style={[styles.outerContainer, { bottom: tabBarHeight }]}
+      pointerEvents={isMinimized ? 'box-none' : 'auto'}
+    >
       <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
 
         {isMinimized ? (

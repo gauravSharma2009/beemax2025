@@ -36,6 +36,24 @@ const isLateNight = () => {
 const SMALL = Dimensions.get('window').width < 360
 const fs = (n) => (SMALL ? n - 1 : n)
 
+// A cart item counts towards the coupon-unlock amount unless it's explicitly
+// flagged as not applicable (supports boolean or 0/1 from the API).
+const isCouponApplicableItem = (item) => {
+    console.log("Checking coupon applicability for item:", item?.title, "is_coupon_applicable:", item?.is_coupon_applicable)
+    const v = item?.is_coupon_applicable
+    return v == "1"
+}
+
+const getCouponEligibleAmount = (items) => {
+    let amount = 0
+    ;(items || []).forEach(item => {
+        if (isCouponApplicableItem(item)) {
+            amount += Number(item.selling_price) * Number(item.QTY)
+        }
+    })
+    return amount
+}
+
 function CartScreen(props) {
     const { navigation, changeLoadingState, changeCartCount, setPopup } = props
 
@@ -289,6 +307,7 @@ function CartScreen(props) {
             setIsLoading(false)
 
             if (result?.data?.aCartItemDetails) {
+                console.log("Cart Data Items", result.data.aCartItemDetails)
                 const d = result.data
 
                 setIsCodAvailable(d.isCodAvailable)
@@ -301,7 +320,7 @@ function CartScreen(props) {
                     // Auto-adjust qty to current inventory if cart qty > stock
                     const inventoryNum = parseInt(item.inventory || 0)
                     const cartQty = parseInt(item.QTY || 0)
-                    const isInactive = item.is_active === false || item.is_active === "false"
+                    const isInactive = item.is_active === false || item.is_active === "false" || item.is_active === 0 || item.is_active === "0"
                     if (
                         isInactive ||
                         item.in_stock === "0" ||
@@ -387,6 +406,10 @@ function CartScreen(props) {
         cartData.forEach(item => { amount += Number(item.subtotal) })
         setSubTotal(amount)
 
+        // Only items marked is_coupon_applicable count towards the amount
+        // used to unlock/validate a coupon.
+        const couponEligibleAmount = getCouponEligibleAmount(cartData)
+
         if (!code) {
             setError({ CoupanCode: "Please enter coupon code" })
             return;
@@ -395,7 +418,7 @@ function CartScreen(props) {
 
         const raw = JSON.stringify({
             coupon_code: code,
-            total: "" + amount,
+            total: "" + couponEligibleAmount,
             device_id: uniqueId,
             user_id: userData?.USER_ID
         });
@@ -436,7 +459,7 @@ function CartScreen(props) {
     const openCouponScreen = () => {
         navigation.navigate("CouponOffers", {
             offersList: offersList || [],
-            subTotal,
+            couponEligibleAmount: getCouponEligibleAmount(cartData),
             appliedCoupon: appliedCoupan,
             onApply: (code) => applyCoupan(code, "coupan"),
             onRemove: removeCoupan,
@@ -617,7 +640,11 @@ function CartScreen(props) {
                         Items are not in stock
                     </Text>
                     <TouchableOpacity onPress={removeAllUnavailableItems}>
-                        <AntDesign name="closecircle" size={20} color="#FF4B4B" />
+                        {/* <AntDesign name="closecircle" size={20} color="#FF4B4B" /> */}
+                        <Image
+                            source={require('../../assets/cancel.png')}
+                            style={{ width: 20, height: 20, tintColor: '#FF4B4B', resizeMode: 'contain' }}
+                        />
                     </TouchableOpacity>
                 </View>
                 {/* List */}
@@ -694,6 +721,8 @@ function CartScreen(props) {
                         paddingHorizontal: 12, paddingVertical: 10,
                         borderTopWidth: 1, borderTopColor: categorySaperator
                     }}>
+                                                        {console.log("Offers List", offersList)}
+
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
                             <AntDesign name="tago" size={18} color={coupanGreen} />
                             <View style={{ marginLeft: 8, flex: 1 }}>
