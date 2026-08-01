@@ -286,10 +286,12 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
           </View>
         ) : (
           offerBannerOptionalPro?.offer_banner && (
+            // Same height formula as the with-products branch above, so this
+            // section never resizes depending on whether products are present.
             <TouchableOpacity activeOpacity={0.9} onPress={handleOfferBannerPress}>
               <FastImage
                 source={{ uri: offerBannerOptionalPro.offer_banner }}
-                style={{ width: SCREEN_WIDTH, height: offerBannerHeight }}
+                style={{ width: SCREEN_WIDTH, height: Math.max(offerBannerHeight, OFFER_BANNER_MIN_HEIGHT_WITH_PRODUCTS) }}
                 resizeMode={FastImage.resizeMode.cover}
                 onLoad={(event) => {
                   const { width, height } = event.nativeEvent;

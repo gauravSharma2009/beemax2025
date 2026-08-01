@@ -39,18 +39,23 @@ const fs = (n) => (SMALL ? n - 1 : n)
 // A cart item counts towards the coupon-unlock amount unless it's explicitly
 // flagged as not applicable (supports boolean or 0/1 from the API).
 const isCouponApplicableItem = (item) => {
-    console.log("Checking coupon applicability for item:", item?.title, "is_coupon_applicable:", item?.is_coupon_applicable)
-    const v = item?.is_coupon_applicable
-    return v == "1"
+    // console.log("Checking coupon applicability for item:", item?.title, "is_coupon_applicable:", item?.is_coupon_applicable)
+    if (item?.is_deal_product == '1') {
+        return false;
+    }
+    if (item?.is_coupon_applicable == "1") {
+        return true;
+    }
+    return item?.ignore_coupon_applicable == "1";
 }
 
 const getCouponEligibleAmount = (items) => {
     let amount = 0
-    ;(items || []).forEach(item => {
-        if (isCouponApplicableItem(item)) {
-            amount += Number(item.selling_price) * Number(item.QTY)
-        }
-    })
+        ; (items || []).forEach(item => {
+            if (isCouponApplicableItem(item)) {
+                amount += Number(item.selling_price) * Number(item.QTY)
+            }
+        })
     return amount
 }
 
@@ -90,6 +95,7 @@ function CartScreen(props) {
 
     // ── delivery tip ──────────────────────────────────────────────────────────
     const [selectedTip, setSelectedTip] = useState(null)  // 10 | 20 | 30 | null
+    const [tipPanelOpen, setTipPanelOpen] = useState(false)
     const TIP_OPTIONS = [10, 20, 30]
 
     // ── shipping / address ────────────────────────────────────────────────────
@@ -271,27 +277,34 @@ function CartScreen(props) {
         const loginData = await getData("loginData")
         const userData = JSON.parse(loginData)
         changeLoadingState(true)
+        let fetchedAddresses = addresses
         try {
             const res = await fetch(`${server}useraddresslist/${userData?.USER_ID}`, { method: 'GET' });
             const result = await res.json();
             changeLoadingState(false)
             if (result?.status) {
                 setAddresses(result.data)
-            } else {
-                result.statusCode === 200 && setAddresses([])
+                fetchedAddresses = result.data
+            } else if (result.statusCode === 200) {
+                setAddresses([])
+                fetchedAddresses = []
             }
         } catch (e) { changeLoadingState(false); console.error(e) }
-        setTimeout(getCartData, 500)
+        // Pass the freshly-fetched addresses directly instead of relying on
+        // component state, which won't reflect this update until re-render.
+        setTimeout(() => getCartData(fetchedAddresses), 500)
     }
 
-    const getCartData = async () => {
+    const getCartData = async (addressListOverride) => {
         const uniqueId = await getData("uniqueId")
         const loginData = await getData("loginData")
         const userData = JSON.parse(loginData)
 
+        const addrList = addressListOverride !== undefined ? addressListOverride : addresses
+
         let url = `${server}cartdata/${uniqueId}`
-        if (addresses?.length > 0) {
-            url += `/${userData?.USER_ID}/${addresses[selectedAddress].ID}`
+        if (addrList?.length > 0) {
+            url += `/${userData?.USER_ID}/${addrList[selectedAddress].ID}`
         }
         setIsLoading(true)
         changeLoadingState(true)
@@ -354,7 +367,7 @@ function CartScreen(props) {
 
                 // ── Applicable fees from backend ───────────────────────────────
                 setApplicableFees(d.aApplicableFeeDetails || [])
-
+                console.log("aCouponOffersList :", d.aCouponOffersList)
                 // ── Coupon list ────────────────────────────────────────────────
                 setOffersList(d.aCouponOffersList)
 
@@ -469,6 +482,10 @@ function CartScreen(props) {
     // ── tip helpers ───────────────────────────────────────────────────────────
     const handleTip = (amount) => {
         setSelectedTip(prev => prev === amount ? null : amount)
+    }
+    const removeTip = () => {
+        setSelectedTip(null)
+        setTipPanelOpen(false)
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -628,12 +645,12 @@ function CartScreen(props) {
         return (
             <View style={{
                 marginHorizontal: 10, marginTop: 10, borderRadius: 10,
-                borderWidth: 1, borderColor: '#FF4B4B', overflow: 'hidden'
+                backgroundColor: '#fff', overflow: 'hidden'
             }}>
                 {/* Header row */}
                 <View style={{
                     flexDirection: 'row', alignItems: 'center',
-                    backgroundColor: '#FFF5F5', paddingHorizontal: 12, paddingVertical: 8,
+                    paddingHorizontal: 12, paddingVertical: 8,
                     justifyContent: 'space-between'
                 }}>
                     <Text style={{ color: '#FF4B4B', fontFamily: 'Poppins-SemiBold', fontSize: 14 }}>
@@ -642,8 +659,8 @@ function CartScreen(props) {
                     <TouchableOpacity onPress={removeAllUnavailableItems}>
                         {/* <AntDesign name="closecircle" size={20} color="#FF4B4B" /> */}
                         <Image
-                            source={require('../../assets/cancel.png')}
-                            style={{ width: 20, height: 20, tintColor: '#FF4B4B', resizeMode: 'contain' }}
+                            source={require('../../assets/icons/red_cross.png')}
+                            style={{ width: 24, height: 24, resizeMode: 'contain' }}
                         />
                     </TouchableOpacity>
                 </View>
@@ -652,11 +669,11 @@ function CartScreen(props) {
                     <View key={"oos" + idx} style={{
                         flexDirection: 'row', alignItems: 'center',
                         paddingHorizontal: 12, paddingVertical: 8,
-                        borderTopWidth: idx === 0 ? 0 : 1, borderTopColor: '#FFE0E0'
+                        // borderTopWidth: idx === 0 ? 0 : 1, borderTopColor: categorySaperator
                     }}>
                         <Image
                             source={{ uri: item.FIRST_IMAGE }}
-                            style={{ width: 40, height: 40, borderRadius: 6, resizeMode: 'contain' }}
+                            style={{ width: 40, height: 40, borderRadius: 6, resizeMode: 'contain', borderWidth: 1, borderColor: '#e8eaef' }}
                         />
                         <View style={{ flex: 1, marginLeft: 10 }}>
                             <Text numberOfLines={1} style={{
@@ -677,7 +694,7 @@ function CartScreen(props) {
         return (
             <View style={{
                 marginHorizontal: 10, marginTop: 12,
-                borderRadius: 10, borderWidth: 1, borderColor: categorySaperator,
+                borderRadius: 10, backgroundColor: '#fff',
                 overflow: 'hidden'
             }}>
                 <Text style={{
@@ -690,11 +707,15 @@ function CartScreen(props) {
                     <View style={{
                         flexDirection: 'row', alignItems: 'center',
                         backgroundColor: '#F0FFF4', paddingHorizontal: 12,
-                        paddingVertical: 10, justifyContent: 'space-between',
-                        borderTopWidth: 1, borderTopColor: categorySaperator
+                        paddingVertical: 2, justifyContent: 'space-between',
+                        borderTopWidth: 0, borderTopColor: categorySaperator
                     }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
-                            <AntDesign name="checkcircle" size={18} color={coupanGreen} />
+                            {/* <AntDesign name="checkcircle" size={18} color={coupanGreen} /> */}
+                            <Image
+                                source={require('../../assets/icons/percent_icon.png')}
+                                style={{ width: 24, height: 24, resizeMode: 'contain' }}
+                            />
                             <View style={{ marginLeft: 8, flex: 1 }}>
                                 <Text numberOfLines={1} style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: fs(13) }}>
                                     Save ₹{coupanDiscount} with {appliedCoupan}
@@ -710,7 +731,7 @@ function CartScreen(props) {
                             onPress={removeCoupan}
                             style={{
                                 borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0
+                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0, marginRight: 5
                             }}>
                             <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Remove</Text>
                         </TouchableOpacity>
@@ -718,13 +739,17 @@ function CartScreen(props) {
                 ) : (
                     <View style={{
                         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                        paddingHorizontal: 12, paddingVertical: 10,
-                        borderTopWidth: 1, borderTopColor: categorySaperator
+                        paddingHorizontal: 12, paddingVertical: 2,
+                        borderTopWidth: 0, borderTopColor: categorySaperator
                     }}>
-                                                        {console.log("Offers List", offersList)}
+                        {console.log("Offers List", offersList)}
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
-                            <AntDesign name="tago" size={18} color={coupanGreen} />
+                            <Image
+                                source={require('../../assets/icons/percent_icon.png')}
+                                style={{ width: 24, height: 24, resizeMode: 'contain' }}
+                            />
+
                             <View style={{ marginLeft: 8, flex: 1 }}>
                                 {offersList && offersList.filter(o => o.sticky_on_cart).length > 0 ? (
                                     <>
@@ -755,7 +780,7 @@ function CartScreen(props) {
                             }}
                             style={{
                                 borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0
+                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0, marginRight: 5
                             }}>
                             <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Apply</Text>
                         </TouchableOpacity>
@@ -767,6 +792,7 @@ function CartScreen(props) {
 
     /** Free / Steal Deals horizontal scroll (image 5) */
     const renderStealDeals = () => {
+        console.log("Free Deal Data", freeDealData)
         if (!freeDealData || freeDealData.length === 0) return null;
         return (
             <View style={{
@@ -790,47 +816,51 @@ function CartScreen(props) {
                         const isUnlocked = parseFloat(totalAmount) >= parseFloat(item.free_deal_on)
                         return (
                             <View key={"deal" + idx} style={{
-                                width: 140, marginRight: 10, borderRadius: 10,
+                                width: 230, marginRight: 10, borderRadius: 14,
                                 borderWidth: 1, borderColor: categorySaperator,
-                                overflow: 'hidden', marginBottom: 10
+                                backgroundColor: '#fff', overflow: 'hidden', marginBottom: 10
                             }}>
-                                <TouchableOpacity onPress={() => navigation.navigate("ProductDetails", { product: item })}>
-                                    <Image
-                                        source={{ uri: item.image_first }}
-                                        style={{ width: '100%', height: 90, resizeMode: 'contain' }}
-                                    />
-                                </TouchableOpacity>
-                                <View style={{ padding: 6 }}>
-                                    <Text numberOfLines={2} style={{
-                                        fontFamily: 'Poppins-Regular', color: textColor, fontSize: 10, minHeight: 30
-                                    }}>{item.title}</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                                        <Text style={{ fontFamily: 'Poppins-Bold', color: textColor, fontSize: 13 }}>
-                                            ₹{item.selling_price}
-                                        </Text>
-                                        <Text style={{
-                                            fontFamily: 'Poppins-Regular', color: textInputColor,
-                                            fontSize: 10, textDecorationLine: 'line-through', marginLeft: 4
-                                        }}>₹{item.mrp_price}</Text>
-                                    </View>
-                                    {isUnlocked ? (
-                                        <AddButton
-                                            isAddedToCart={item.isAddedTOCart}
-                                            style={{ marginTop: 4 }}
-                                            callBack={getCartData}
-                                            changeLoadingState={changeLoadingState}
-                                            addItem={addItem}
-                                            minusItem={minusItem}
-                                            item={{ ...item, qty_added_in_cart: item.QTY }}
+                                <View style={{ flex: 1, flexDirection: 'row', padding: 10 }}>
+                                    <TouchableOpacity onPress={() => navigation.navigate("ProductDetails", { product: item })}>
+                                        <Image
+                                            source={{ uri: item.image_first }}
+                                            style={{
+                                                width: 66, height: 66, borderRadius: 8, resizeMode: 'contain',
+                                                borderWidth: 1, borderColor: categorySaperator
+                                            }}
                                         />
-                                    ) : (
-                                        <View style={{ marginTop: 4 }}>
-                                            <Text style={{
-                                                fontFamily: 'Poppins-Regular', color: '#999',
-                                                fontSize: 9, textAlign: 'center'
-                                            }}>Shop for ₹{item.free_deal_on} to unlock</Text>
+                                    </TouchableOpacity>
+                                    <View style={{ flex: 1, marginLeft: 10, justifyContent: 'space-between' }}>
+                                        <Text numberOfLines={2} style={{
+                                            fontFamily: 'Poppins-Regular', color: textColor, fontSize: 11, lineHeight: 15, minHeight: 30
+                                        }}>{item.title}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                                            <View>
+                                                <Text style={{ fontFamily: 'Poppins-Bold', color: textColor, fontSize: 14 }}>
+                                                    ₹{item.selling_price}
+                                                </Text>
+                                                <Text style={{
+                                                    fontFamily: 'Poppins-Regular', color: textInputColor,
+                                                    fontSize: 10, textDecorationLine: 'line-through'
+                                                }}>₹{item.mrp_price}</Text>
+                                            </View>
+                                            <AddButton
+                                                isAddedToCart={item.isAddedTOCart}
+                                                cartTheme={true}
+                                                isAddBlocked={!isUnlocked}
+                                                callBack={getCartData}
+                                                changeLoadingState={changeLoadingState}
+                                                addItem={addItem}
+                                                minusItem={minusItem}
+                                                item={{ ...item, qty_added_in_cart: item.QTY }}
+                                            />
                                         </View>
-                                    )}
+                                    </View>
+                                </View>
+                                <View style={{ backgroundColor: '#EAF7EC', paddingVertical: 7, alignItems: 'center' }}>
+                                    <Text style={{
+                                        fontFamily: 'Poppins-Medium', color: coupanGreen, fontSize: 11
+                                    }}>Shop for ₹{item.free_deal_on} to unlock this deal</Text>
                                 </View>
                             </View>
                         )
@@ -850,13 +880,17 @@ function CartScreen(props) {
 
         return (
             <View style={{
-                marginHorizontal: 10, marginTop: 12,
-                borderRadius: 10, borderWidth: 1, borderColor: categorySaperator,
-                overflow: 'hidden', marginBottom: 4
+                marginHorizontal: 0, marginTop: 12,
+                borderRadius: 10, borderWidth: 0, borderColor: categorySaperator,
+                overflow: 'hidden', marginBottom: 4,
             }}>
                 {/* Header */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10 }}>
-                    <AntDesign name="filetext1" size={16} color={textColor} />
+                    {/* <AntDesign name="filetext1" size={16} color={textColor} /> */}
+                    <Image
+                        source={require('../../assets/icons/bill_summary.png')}
+                        style={{ width: 22, height: 22, resizeMode: 'contain' }}
+                    />
                     <Text style={{ fontFamily: 'Poppins-SemiBold', fontSize: 15, color: textColor, marginLeft: 6 }}>
                         Bill Summary
                     </Text>
@@ -897,11 +931,12 @@ function CartScreen(props) {
                 )}
 
                 {/* Dynamic fee rows from backend */}
+                {console.log("Fee Rows", feeRows)}
                 {feeRows.map((fee, idx) => {
                     // Late night fee: skip if not late-night AND inactive
                     if (fee.code === 'late_night_fee' && !fee.active) return null;
                     const isFree = fee.amount === 0 || fee.amount === "0"
-                    if(fee.code === 'small_cart_fee' && isFree) return null; // Skip small cart fee if free
+                    if (fee.code === 'small_cart_fee' && isFree) return null; // Skip small cart fee if free
                     return (
                         <View key={"fee" + idx} style={{
                             flexDirection: 'row', justifyContent: 'space-between',
@@ -918,7 +953,12 @@ function CartScreen(props) {
                                 ) : null}
                             </Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {isFree ? null : (
+                                {isFree ? <Text style={{
+                                    fontFamily: 'Poppins-Regular', color: textInputColor,
+                                    textDecorationLine: 'line-through', fontSize: 12, marginRight: 4
+                                }}>
+                                    {fee.applicable !== false ? "" : `₹${fee.configured_amount}`}
+                                </Text> : (
                                     <Text style={{
                                         fontFamily: 'Poppins-Regular', color: textInputColor,
                                         textDecorationLine: 'line-through', fontSize: 12, marginRight: 4
@@ -973,47 +1013,68 @@ function CartScreen(props) {
                 {/* Delivery Tip – fixed options 10, 20, 30 (image 6) */}
                 <View style={{ paddingHorizontal: 12, paddingVertical: 6 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: 13 }}>
                                 Delivery Tip
                             </Text>
-                            <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: 11 }}>
-                                A small tip means a lot...
-                            </Text>
+                            {selectedTip ? (
+                                <TouchableOpacity
+                                    onPress={removeTip}
+                                    style={{
+                                        marginLeft: 10, borderRadius: 6, borderWidth: 1,
+                                        borderColor: allCategoryPink, backgroundColor: '#FDEAF0',
+                                        paddingHorizontal: 14, paddingVertical: 5
+                                    }}>
+                                    <Text style={{ fontFamily: 'Poppins-Medium', color: allCategoryPink, fontSize: 12 }}>
+                                        Remove
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => setTipPanelOpen(true)}
+                                    style={{
+                                        marginLeft: 10, borderRadius: 6, borderWidth: 1,
+                                        borderColor: coupanGreen, backgroundColor: '#F0FFF4',
+                                        paddingHorizontal: 14, paddingVertical: 5
+                                    }}>
+                                    <Text style={{ fontFamily: 'Poppins-Medium', color: coupanGreen, fontSize: 12 }}>
+                                        Add
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                         {selectedTip ? (
-                            <TouchableOpacity
-                                onPress={() => setSelectedTip(null)}
-                                style={{
-                                    borderRadius: 6, borderWidth: 1, borderColor: '#999',
-                                    paddingHorizontal: 12, paddingVertical: 5, backgroundColor: '#f5f5f5'
-                                }}>
-                                <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: 12 }}>
-                                    Remove  ₹{selectedTip}
-                                </Text>
-                            </TouchableOpacity>
+                            <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: 14 }}>
+                                ₹{selectedTip}
+                            </Text>
                         ) : null}
                     </View>
-                    {/* Tip options – always on their own line below the label */}
-                    <View style={{ flexDirection: 'row', marginTop: 8 }}>
-                        {TIP_OPTIONS.map(amount => (
-                            <TouchableOpacity
-                                key={"tip" + amount}
-                                onPress={() => handleTip(amount)}
-                                style={{
-                                    marginRight: 8, borderRadius: 6, borderWidth: 1,
-                                    borderColor: selectedTip === amount ? coupanGreen : categorySaperator,
-                                    paddingHorizontal: 12, paddingVertical: 5,
-                                    backgroundColor: selectedTip === amount ? '#F0FFF4' : '#fff'
-                                }}>
-                                <Text style={{
-                                    fontFamily: 'Poppins-Medium',
-                                    color: selectedTip === amount ? coupanGreen : textColor,
-                                    fontSize: 13
-                                }}>₹{amount}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: 11, marginTop: 2 }}>
+                        A small tip means a lot...
+                    </Text>
+
+                    {/* Tip options – only shown once the panel is opened via Add */}
+                    {tipPanelOpen && (
+                        <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                            {TIP_OPTIONS.map(amount => (
+                                <TouchableOpacity
+                                    key={"tip" + amount}
+                                    onPress={() => handleTip(amount)}
+                                    style={{
+                                        marginRight: 8, borderRadius: 6, borderWidth: 1,
+                                        borderColor: selectedTip === amount ? coupanGreen : categorySaperator,
+                                        paddingHorizontal: 12, paddingVertical: 5,
+                                        backgroundColor: selectedTip === amount ? coupanGreen : '#fff'
+                                    }}>
+                                    <Text style={{
+                                        fontFamily: 'Poppins-Medium',
+                                        color: selectedTip === amount ? '#fff' : textColor,
+                                        fontSize: 13
+                                    }}>₹{amount}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 {/* Divider */}
@@ -1066,7 +1127,6 @@ function CartScreen(props) {
         return (
             <View style={{
                 flexDirection: "row", marginTop: 0, padding: 10,
-                borderBottomColor: categorySaperator, borderBottomWidth: 1,
                 alignItems: 'flex-start'
             }}>
                 {/* Product image – pinned to top */}
@@ -1191,22 +1251,25 @@ function CartScreen(props) {
 
             {/* Header */}
             <View style={{
-                width: "100%", backgroundColor: '#3b006a', justifyContent: 'center',
-                flexDirection: 'row', paddingVertical: 15, paddingTop: 20
+                width: "100%", backgroundColor: '#FFFFFF',
+                flexDirection: 'row', alignItems: 'center', paddingVertical: 15, paddingTop: 15
             }}>
                 <TouchableOpacity
                     onPress={() => {
                         if (iAddress) { setIsCart(true); setAddress(false) }
                         else navigation.goBack()
                     }}
-                    style={{ position: 'absolute', left: 10, alignSelf: 'center', marginTop: 5 }}>
+                    style={{ marginLeft: 10, height: 28, justifyContent: 'center' }}>
                     <Image
                         source={require('../../assets/icons/back.png')}
-                        style={{ width: 28, height: 28, resizeMode: 'contain', tintColor: '#FFFFFF' }}
+                        style={{ width: 28, height: 28, resizeMode: 'contain', tintColor: '#000000' }}
                     />
                 </TouchableOpacity>
-                <Text style={{ fontFamily: 'Poppins-SemiBold', color: 'white', fontSize: 18, alignSelf: 'center' }}>
-                    {iAddress ? "Checkout" : "Cart"}
+                <Text style={{
+                    fontFamily: 'Poppins-SemiBold', color: 'black', fontSize: 18, marginLeft: 10,
+                    height: 28, lineHeight: 28, textAlignVertical: 'center'
+                }}>
+                    {iAddress ? "Checkout" : "Checkout"}
                 </Text>
             </View>
 

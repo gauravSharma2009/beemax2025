@@ -9,14 +9,22 @@ import {
   ScrollView,
   Linking,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { server } from '../common/apiConstant';
 import { getData } from '../common/asyncStore';
+import { coupanGreen, textColor } from '../common/colours';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const EXPANDED_HEIGHT = 240;
-const MINIMIZED_HEIGHT = 90; // height of the compact white card
+// Scale font sizes relative to a 375pt-wide baseline design, clamped so text
+// never gets too cramped on small phones or too large on tablets/big phones.
+const FONT_SCALE = Math.min(Math.max(SCREEN_WIDTH / 375, 0.85), 1.08);
+const rf = (size) => Math.round(size * FONT_SCALE);
+
+const CARD_AREA_HEIGHT = 160; // fallback header + steps height, refined once measured on-device
+const EXPANDED_HEIGHT = 160; // fixed outer sheet height — must stay constant across minimize/expand
+const MINIMIZED_HEIGHT = 70; // height of the compact white card
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -53,6 +61,11 @@ const OrderStatusBottomSheet = ({
 
   const [loading, setLoading] = useState(false);
 
+  // Real measured height of an order card — the fallback constant above is
+  // only used until the first layout pass reports in. This only sizes the
+  // inner ScrollView, never the sheet's own fixed outer box (see minimize()).
+  const [cardH, setCardH] = useState(CARD_AREA_HEIGHT);
+
   const pollerRef = useRef(null);
   const scrollRef = useRef(null);
   const isMounted = useRef(true);
@@ -83,9 +96,19 @@ const OrderStatusBottomSheet = ({
   const minimize = useCallback(() => {
     isMinimizedRef.current = true;
     setIsMinimized(true);
-    // slide down so only MINIMIZED_HEIGHT peeks above tabBar
+    // slide down so only MINIMIZED_HEIGHT peeks above tabBar. The sheet's
+    // outer box must stay a fixed EXPANDED_HEIGHT at all times (even while
+    // showing the mini card) for this slide distance to stay correct —
+    // letting the box auto-size to whichever child is rendered breaks it.
     animateTo(EXPANDED_HEIGHT - MINIMIZED_HEIGHT);
   }, [animateTo]);
+
+  // Track the tallest order card so the horizontal pager sizes to the real
+  // content instead of stretching to fill the whole fixed sheet height.
+  const onCardLayout = useCallback((e) => {
+    const h = Math.ceil(e.nativeEvent.layout.height);
+    setCardH(prev => (h > prev ? h : prev));
+  }, []);
 
   // ── fetch ───────────────────────────────────────────────────────────────────
   const fetchOrders = useCallback(async (showLoader = false) => {
@@ -248,7 +271,7 @@ const OrderStatusBottomSheet = ({
     const shipped = isShipped(order);
 
     return (
-      <View key={order.PRIMARY_ORDER_ID} style={styles.orderCard}>
+      <View key={order.PRIMARY_ORDER_ID} style={styles.orderCard} onLayout={onCardLayout}>
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
             <View style={styles.orderIdRow}>
@@ -269,19 +292,15 @@ const OrderStatusBottomSheet = ({
           </View>
 
           {shipped && order.DBOY_MOBILE ? (
-            <View style={styles.dboyActions}>
-              <TouchableOpacity
-                style={styles.callButton}
-                onPress={() => Linking.openURL(`tel:${order.DBOY_MOBILE}`)}
-              >
-                <Text style={styles.callIcon}>📞</Text>
-              </TouchableOpacity>
-              <View style={styles.avatarCircle}>
-                <Text style={styles.avatarText}>
-                  {order.DBOY_NAME ? order.DBOY_NAME[0].toUpperCase() : 'D'}
-                </Text>
-              </View>
-            </View>
+            <TouchableOpacity
+              style={styles.dboyActions}
+              onPress={() => Linking.openURL(`tel:${order.DBOY_MOBILE}`)}
+            >
+              <Image
+                source={require('../../assets/icons/call_delivery.png')}
+                style={styles.callDeliveryImg}
+              />
+            </TouchableOpacity>
           ) : null}
         </View>
 
@@ -357,8 +376,8 @@ const OrderStatusBottomSheet = ({
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
                   onMomentumScrollEnd={onScrollEnd}
-                  style={styles.pager}
-                  contentContainerStyle={{ width: SCREEN_WIDTH * orders.length }}
+                  style={[styles.pager, { height: cardH }]}
+                  contentContainerStyle={{ width: SCREEN_WIDTH * orders.length, alignItems: 'flex-start' }}
                 >
                   {orders.map((order) => renderOrderCard(order))}
                 </ScrollView>
@@ -420,17 +439,17 @@ const styles = StyleSheet.create({
 
   closeBtnAbsolute: {
     position: 'absolute',
-    top: 18,
-    right: 16,
-    backgroundColor: '#F1F1F1',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: 12,
+    right: 12,
+    backgroundColor: '#9CA3AF',
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
-  closeIcon: { fontSize: 16, color: '#111', fontWeight: '500' },
+  closeIcon: { fontSize: 12, color: '#fff', fontWeight: '700' },
 
   // ── FIX 1: minimized white card ─────────────────────────────────────────────
   miniCard: {
@@ -475,7 +494,7 @@ const styles = StyleSheet.create({
   miniPendingDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#D1D5DB' },
   miniConnector: { position: 'absolute', height: 5, backgroundColor: '#E5E7EB', borderRadius: 3 },
   miniConnectorDone: { backgroundColor: '#10B981' },
-  miniLabel: { fontSize: 11, color: '#9CA3AF', textAlign: 'center' },
+  miniLabel: { fontSize: rf(10), color: '#9CA3AF', textAlign: 'center' },
   miniLabelDone: { color: '#374151', fontWeight: '600' },
   miniLabelActive: { color: '#1F2937', fontWeight: '600' },
   miniDotsRow: {
@@ -489,33 +508,23 @@ const styles = StyleSheet.create({
   miniDotActive: { backgroundColor: '#10B981', width: 14, borderRadius: 3 },
 
   // ── expanded ─────────────────────────────────────────────────────────────────
-  pager: { flex: 1 },
+  pager: { flexGrow: 0 },
   orderCard: { width: SCREEN_WIDTH - 40 },
 
-  headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14, paddingRight: 46 },
-  orderIdRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  orderIdLabel: { fontSize: 14, color: '#1F2937', fontWeight: '500' },
-  orderIdValue: { fontSize: 14, color: '#10B981', fontWeight: '700' },
-  statusText: { fontSize: 15, fontWeight: '700', color: '#1F2937', marginBottom: 2 },
-  dboyRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  dboyName: { fontSize: 14, color: '#EF4444', fontWeight: '700' },
-  dboyRole: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, paddingRight: 46 },
+  orderIdRow: { flexDirection: 'row', alignItems: 'center' },
+  orderIdLabel: { fontSize: rf(15), color: textColor, fontWeight: '500', lineHeight: rf(19) },
+  orderIdValue: { fontSize: rf(15), color: coupanGreen, fontWeight: '700', lineHeight: rf(19) },
+  statusText: { fontSize: rf(14), fontWeight: '700', color: '#1F2937', lineHeight: rf(18) },
+  dboyRow: { flexDirection: 'row', alignItems: 'center' },
+  dboyName: { fontSize: rf(13), color: '#EF4444', fontWeight: '700', lineHeight: rf(17) },
+  dboyRole: { fontSize: rf(12), color: '#374151', fontWeight: '500', lineHeight: rf(17) },
   slotRow: { flexDirection: 'row', alignItems: 'center' },
-  slotLabel: { fontSize: 13, color: '#374151', fontWeight: '500' },
-  slotValue: { fontSize: 13, color: '#059669', fontWeight: '700' },
+  slotLabel: { fontSize: rf(13), color: textColor, fontWeight: '500', lineHeight: rf(17) },
+  slotValue: { fontSize: rf(13), color: coupanGreen, fontWeight: '700', lineHeight: rf(17) },
 
-  dboyActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  callButton: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#10B981',
-  },
-  callIcon: { fontSize: 16 },
-  avatarCircle: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: '#6366F1', alignItems: 'center', justifyContent: 'center',
-  },
-  avatarText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  dboyActions: { alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  callDeliveryImg: { width: 44, height: 44, resizeMode: 'contain' },
 
   stepsRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   stepWrapper: { alignItems: 'center', width: '25%' },
@@ -541,7 +550,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB', borderRadius: 3,
   },
   connectorLineDone: { backgroundColor: '#10B981' },
-  stepLabel: { fontSize: 12, color: '#9CA3AF', textAlign: 'center', lineHeight: 16 },
+  stepLabel: { fontSize: rf(11), color: '#9CA3AF', textAlign: 'center', lineHeight: rf(15) },
   stepLabelDone: { color: '#374151', fontWeight: '600' },
   stepLabelActive: { color: '#1F2937', fontWeight: '600' },
 

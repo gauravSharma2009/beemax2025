@@ -701,7 +701,7 @@ const tabBarHeight = useBottomTabBarHeight();
                         changeLoadingState={changeLoadingState}
                         setAction={undefined}
                     />
-                    {!optionalBannerData?.offer_pro_info ||  optionalBannerData?.offer_pro_info.length==0 && <SliderComponent
+                    {!offerBannerOptionalPro?.offer_banner  && <SliderComponent
                         navigation={navigation}
                         bannerData={bannerData}
                     />}
