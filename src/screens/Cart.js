@@ -141,7 +141,9 @@ function CartScreen(props) {
         setAdditionalFeeTotal(feeTotal)
 
         const tip = selectedTip || 0;
-        setGrandAmount(afterCoupon + Number(shippingAmount) + feeTotal + tip)
+        setGrandAmount(afterCoupon  + feeTotal + tip)
+                // setGrandAmount(afterCoupon + Number(shippingAmount) + feeTotal + tip)
+
     }, [cartData, coupanDiscount, shippingAmount, applicableFees, selectedTip])
 
     // ── percentageSaved ───────────────────────────────────────────────────────
