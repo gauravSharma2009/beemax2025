@@ -22,9 +22,12 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const FONT_SCALE = Math.min(Math.max(SCREEN_WIDTH / 375, 0.85), 1.08);
 const rf = (size) => Math.round(size * FONT_SCALE);
 
-const CARD_AREA_HEIGHT = 160; // fallback header + steps height, refined once measured on-device
-const EXPANDED_HEIGHT = 160; // fixed outer sheet height — must stay constant across minimize/expand
-const MINIMIZED_HEIGHT = 70; // height of the compact white card
+// Bumped from 160 -> 210 to match the client's reference design: larger
+// header text, extra line-gap between the header rows, and a bigger call
+// icon all add vertical height. Keep this in sync if the header design changes.
+const CARD_AREA_HEIGHT = 210; // fallback header + steps height, refined once measured on-device
+const EXPANDED_HEIGHT = 210; // fixed outer sheet height — must stay constant across minimize/expand
+const MINIMIZED_HEIGHT = 80; // height of the compact white card
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -269,6 +272,11 @@ const OrderStatusBottomSheet = ({
   const renderOrderCard = (order) => {
     const steps = getStatusSteps(order.ORDER_TRACK_DETAILS);
     const shipped = isShipped(order);
+    // Client's design shows a clean 3-line header once a delivery partner is
+    // assigned (Order ID / partner name / slot) — no separate generic status
+    // line. Before that point (no partner yet) we still need the generic
+    // status line since there's nothing else to tell the user what's going on.
+    const hasDboyLine = shipped && !!order.DBOY_NAME;
 
     return (
       <View key={order.PRIMARY_ORDER_ID} style={styles.orderCard} onLayout={onCardLayout}>
@@ -278,26 +286,29 @@ const OrderStatusBottomSheet = ({
               <Text style={styles.orderIdLabel}>Order ID - </Text>
               <Text style={styles.orderIdValue}>{order.DISPLAY_PRIMARY_ORDER_ID}</Text>
             </View>
-            <Text style={styles.statusText}>{getHeaderText(order)}</Text>
-            {shipped && order.DBOY_NAME ? (
+            {hasDboyLine ? (
               <View style={styles.dboyRow}>
-                <Text style={styles.dboyName}>{order.DBOY_NAME}</Text>
+                <Text style={styles.dboyName}>{order.DBOY_NAME?.split(" ")?.[0]}</Text>
                 <Text style={styles.dboyRole}>, is your delivery partner</Text>
               </View>
-            ) : null}
+            ) : (
+              <Text style={styles.statusText}>{getHeaderText(order)}</Text>
+            )}
             <View style={styles.slotRow}>
               <Text style={styles.slotLabel}>Delivery slot: </Text>
               <Text style={styles.slotValue}>{order.GROCERY_DELIVERY_SLOT}</Text>
             </View>
           </View>
 
+          {/* NOTE 2 fix: bigger size + correct (vertically centered, clear of
+              the close button) position for the call/delivery-partner icon */}
           {shipped && order.DBOY_MOBILE ? (
             <TouchableOpacity
               style={styles.dboyActions}
               onPress={() => Linking.openURL(`tel:${order.DBOY_MOBILE}`)}
             >
               <Image
-                source={require('../../assets/icons/call_delivery.png')}
+                source={require('../../assets/icons/new-call.png')}
                 style={styles.callDeliveryImg}
               />
             </TouchableOpacity>
@@ -399,8 +410,9 @@ const OrderStatusBottomSheet = ({
 };
 
 // ── styles ──────────────────────────────────────────────────────────────────────
-const ICON_SIZE = 34;
-const CONNECTOR_WIDTH = (SCREEN_WIDTH - 40 - ICON_SIZE * 4) / 3;
+const SHEET_H_PADDING = 22; // must match styles.sheet.paddingHorizontal below
+const ICON_SIZE = 38;
+const CONNECTOR_WIDTH = (SCREEN_WIDTH - SHEET_H_PADDING * 2 - ICON_SIZE * 4) / 3;
 
 const styles = StyleSheet.create({
 
@@ -416,10 +428,15 @@ const styles = StyleSheet.create({
   sheet: {
     height: EXPANDED_HEIGHT,
     backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    // NOTE: client reference shows a visible border around the card —
+    // bottom edge is harmless to include since it sits flush against the
+    // tab bar and is never actually exposed.
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 22,
+    paddingTop: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.12,
@@ -434,22 +451,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   closeBtnAbsolute: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 14,
+    right: 14,
     backgroundColor: '#9CA3AF',
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
-  closeIcon: { fontSize: 12, color: '#fff', fontWeight: '700' },
+  closeIcon: { fontSize: 13, color: '#fff', fontWeight: '700' },
 
   // ── FIX 1: minimized white card ─────────────────────────────────────────────
   miniCard: {
@@ -509,22 +526,29 @@ const styles = StyleSheet.create({
 
   // ── expanded ─────────────────────────────────────────────────────────────────
   pager: { flexGrow: 0 },
-  orderCard: { width: SCREEN_WIDTH - 40 },
+  orderCard: { width: SCREEN_WIDTH - SHEET_H_PADDING * 2 },
 
-  headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, paddingRight: 46 },
-  orderIdRow: { flexDirection: 'row', alignItems: 'center' },
-  orderIdLabel: { fontSize: rf(15), color: textColor, fontWeight: '500', lineHeight: rf(19) },
-  orderIdValue: { fontSize: rf(15), color: coupanGreen, fontWeight: '700', lineHeight: rf(19) },
-  statusText: { fontSize: rf(14), fontWeight: '700', color: '#1F2937', lineHeight: rf(18) },
-  dboyRow: { flexDirection: 'row', alignItems: 'center' },
-  dboyName: { fontSize: rf(13), color: '#EF4444', fontWeight: '700', lineHeight: rf(17) },
-  dboyRole: { fontSize: rf(12), color: '#374151', fontWeight: '500', lineHeight: rf(17) },
+  // NOTE 1 fix ("Line Gap"): each header row now carries its own marginBottom
+  // instead of being packed edge-to-edge, matching the breathing room in the
+  // client's reference. headerRow itself centers its two columns so the
+  // (now bigger) call icon lines up with the middle of the text block.
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  orderIdRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  orderIdLabel: { fontSize: rf(17), color: textColor, fontWeight: '600', lineHeight: rf(21) },
+  orderIdValue: { fontSize: rf(17), color: coupanGreen, fontWeight: '700', lineHeight: rf(21) },
+  statusText: { fontSize: rf(15), fontWeight: '700', color: '#1F2937', lineHeight: rf(19), marginBottom: 6 },
+  dboyRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 },
+  dboyName: { fontSize: rf(14), color: '#FF5C8A', fontWeight: '700', lineHeight: rf(19) },
+  dboyRole: { fontSize: rf(13), color: '#374151', fontWeight: '500', lineHeight: rf(19) },
   slotRow: { flexDirection: 'row', alignItems: 'center' },
-  slotLabel: { fontSize: rf(13), color: textColor, fontWeight: '500', lineHeight: rf(17) },
-  slotValue: { fontSize: rf(13), color: coupanGreen, fontWeight: '700', lineHeight: rf(17) },
+  slotLabel: { fontSize: rf(14), color: textColor, fontWeight: '500', lineHeight: rf(18) },
+  slotValue: { fontSize: rf(14), color: coupanGreen, fontWeight: '700', lineHeight: rf(18) },
 
-  dboyActions: { alignItems: 'center', justifyContent: 'center', marginTop: 4 },
-  callDeliveryImg: { width: 44, height: 44, resizeMode: 'contain' },
+  // NOTE 2 fix ("Bigger size with correct position"): scaled up with rf() and
+  // centered against the header block instead of pinned to the top corner,
+  // so it no longer crowds the close button.
+  dboyActions: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  callDeliveryImg: { width: rf(82), height: rf(40), resizeMode: 'contain' },
 
   stepsRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   stepWrapper: { alignItems: 'center', width: '25%' },
@@ -539,7 +563,7 @@ const styles = StyleSheet.create({
   },
   stepIconCompleted: { backgroundColor: '#10B981', borderColor: '#10B981' },
   stepIconActive: { backgroundColor: '#fff', borderColor: '#D1D5DB', borderWidth: 2.5 },
-  checkMark: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  checkMark: { color: '#fff', fontSize: 17, fontWeight: '700' },
   activeDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#3B82F6' },
   pendingDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#D1D5DB' },
   connectorLine: {
@@ -550,7 +574,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB', borderRadius: 3,
   },
   connectorLineDone: { backgroundColor: '#10B981' },
-  stepLabel: { fontSize: rf(11), color: '#9CA3AF', textAlign: 'center', lineHeight: rf(15) },
+  stepLabel: { fontSize: rf(11), fontWeight: '600', color: '#9CA3AF', textAlign: 'center', lineHeight: rf(16) },
   stepLabelDone: { color: '#374151', fontWeight: '600' },
   stepLabelActive: { color: '#1F2937', fontWeight: '600' },
 

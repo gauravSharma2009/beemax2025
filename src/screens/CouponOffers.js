@@ -82,16 +82,20 @@ function CouponOffers(props) {
                 }}>
                     {/* Discount tag: rotated square outline with an upright "%" (no icon font) */}
                     <View style={{
-                        width: 24, height: 24, borderRadius: 12, backgroundColor: coupanGreen,
+                        // width: 24, height: 24, borderRadius: 12, backgroundColor: coupanGreen,
                         justifyContent: 'center', alignItems: 'center', marginRight: 8, marginTop: 1
                     }}>
-                        <View style={{
+                        <Image
+                        style={{ width: 25, height: 25, resizeMode: 'contain'}}
+                        source={require('../../assets/icons/percent_icon.png')}/>
+                        
+                        {/* <View style={{
                             position: 'absolute', width: 13, height: 13, borderRadius: 3,
                             borderWidth: 1.5, borderColor: whiteTxtColor, transform: [{ rotate: '45deg' }]
                         }} />
                         <Text style={{
                             color: whiteTxtColor, fontFamily: 'Poppins-SemiBold', fontSize: fs(9)
-                        }}>%</Text>
+                        }}>%</Text> */}
                     </View>
 
                     <View style={{ flex: 1, paddingRight: 8 }}>

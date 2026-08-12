@@ -26,6 +26,7 @@ import { setPopup } from "../actions/message"
 import RadioButton from "../common/RadioButton"
 import RazorpayCheckout from 'react-native-razorpay';
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const isLateNight = () => {
     const h = new Date().getHours();
@@ -113,6 +114,7 @@ function CartScreen(props) {
     const [instantDelivery, setInstantDelivery] = useState(false)
     const [instantDeliveryText, setInstantDeliveryTxt] = useState(null)
     const [showInstantDelivery, setShowInstantDelivery] = useState(false)
+    const [userData, setUserData] = useState(null)
 
     // ── misc ──────────────────────────────────────────────────────────────────
     const [type, setType] = useState("")
@@ -141,8 +143,8 @@ function CartScreen(props) {
         setAdditionalFeeTotal(feeTotal)
 
         const tip = selectedTip || 0;
-        setGrandAmount(afterCoupon  + feeTotal + tip)
-                // setGrandAmount(afterCoupon + Number(shippingAmount) + feeTotal + tip)
+        setGrandAmount(afterCoupon + feeTotal + tip)
+        // setGrandAmount(afterCoupon + Number(shippingAmount) + feeTotal + tip)
 
     }, [cartData, coupanDiscount, shippingAmount, applicableFees, selectedTip])
 
@@ -296,17 +298,17 @@ function CartScreen(props) {
         // component state, which won't reflect this update until re-render.
         setTimeout(() => getCartData(fetchedAddresses), 500)
     }
-
     const getCartData = async (addressListOverride) => {
         const uniqueId = await getData("uniqueId")
         const loginData = await getData("loginData")
         const userData = JSON.parse(loginData)
-
+        setUserData(userData)
+        console.log("user data : ", userData)
         const addrList = addressListOverride !== undefined ? addressListOverride : addresses
 
-        let url = `${server}cartdata/${uniqueId}`
+        let url = `${server}cartdata/${uniqueId}/${userData?.USER_ID || ""}`
         if (addrList?.length > 0) {
-            url += `/${userData?.USER_ID}/${addrList[selectedAddress].ID}`
+            url += `/${addrList[selectedAddress].ID}`
         }
         setIsLoading(true)
         changeLoadingState(true)
@@ -472,6 +474,11 @@ function CartScreen(props) {
 
     // ── open the full Coupon & Offers screen ──────────────────────────────────
     const openCouponScreen = () => {
+
+        if (!userData) {
+            navigation.navigate("LoginFlow", { from: "cart" })
+            return
+        }
         navigation.navigate("CouponOffers", {
             offersList: offersList || [],
             couponEligibleAmount: getCouponEligibleAmount(cartData),
@@ -744,7 +751,7 @@ function CartScreen(props) {
                         paddingHorizontal: 12, paddingVertical: 2,
                         borderTopWidth: 0, borderTopColor: categorySaperator
                     }}>
-                        {console.log("Offers List", offersList)}
+                        {/* {console.log("Offers List", offersList)} */}
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
                             <Image
@@ -766,13 +773,17 @@ function CartScreen(props) {
                                     </>
                                 ) : (
                                     <Text numberOfLines={1} style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: fs(13) }}>
-                                        Apply a coupon code
+                                        {userData ? "Apply a coupon code" : "Login to unlock all Offers!"}
                                     </Text>
                                 )}
                             </View>
                         </View>
                         <TouchableOpacity
                             onPress={() => {
+                                if (!userData) {
+                                    navigation.navigate("LoginFlow", { from: "cart" })
+                                    return
+                                }
                                 const sticky = offersList?.find(o => o.sticky_on_cart)
                                 if (sticky) {
                                     applyCoupan(sticky.coupon_code, "coupan")
@@ -871,7 +882,7 @@ function CartScreen(props) {
             </View>
         )
     }
-
+    const [titleWidths, setTitleWidths] = useState({});
     /** Bill Summary section with dynamic fees (images 5, 6) */
     const renderBillSummary = () => {
         // Determine which fees to show from aApplicableFeeDetails
@@ -908,6 +919,7 @@ function CartScreen(props) {
                         return mrp
                     })()}
                     value={subTotal}
+
                 />
 
                 {/* Coupon line – shown always when applied (image 5 right) */}
@@ -935,25 +947,47 @@ function CartScreen(props) {
                 {/* Dynamic fee rows from backend */}
                 {console.log("Fee Rows", feeRows)}
                 {feeRows.map((fee, idx) => {
-                    // Late night fee: skip if not late-night AND inactive
                     if (fee.code === 'late_night_fee' && !fee.active) return null;
                     const isFree = fee.amount === 0 || fee.amount === "0"
-                    if (fee.code === 'small_cart_fee' && isFree) return null; // Skip small cart fee if free
+                    if (fee.code === 'small_cart_fee' && isFree) return null;
+
+                    const hasSubHeading = fee.sub_heading && String(fee.sub_heading).trim().length > 0;
+
                     return (
                         <View key={"fee" + idx} style={{
                             flexDirection: 'row', justifyContent: 'space-between',
                             paddingHorizontal: 12, paddingVertical: 6
                         }}>
-                            <Text style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: 13 }}>
-                                {fee.title}
-                                {fee.applicable === false ? (
-                                    <Text style={{ color: textInputColor, fontSize: 11 }}>
-                                        {fee.code === 'small_cart_fee'
-                                            ? `\nNo small cart fee on orders above ₹${fee.condition_amount}`
-                                            : ""}
-                                    </Text>
-                                ) : null}
-                            </Text>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: 13 }}>
+                                    {fee.title}
+                                    {fee.applicable === false ? (
+                                        <Text style={{ color: textInputColor, fontSize: 11 }}>
+                                            {fee.code === 'small_cart_fee'
+                                                ? `\nNo small cart fee on orders above ₹${fee.condition_amount}`
+                                                : ""}
+                                        </Text>
+                                    ) : null}
+                                </Text>
+
+                                {hasSubHeading && (
+                                    <>
+                                        <View
+                                            style={{
+                                                width: SCREEN_WIDTH * 0.5,
+                                                borderBottomWidth: 1,
+                                                borderStyle: 'dashed',
+                                                borderColor: categorySaperator,
+                                                marginVertical: 3,
+                                            }}
+                                        />
+                                        <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: 11 }}>
+                                            {fee.sub_heading}
+                                        </Text>
+                                    </>
+                                )}
+                            </View>
+
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 {isFree ? <Text style={{
                                     fontFamily: 'Poppins-Regular', color: textInputColor,
@@ -979,38 +1013,6 @@ function CartScreen(props) {
                         </View>
                     )
                 })}
-
-                {/* Delivery Fee (shipping) */}
-                {/* <View style={{
-                    flexDirection: 'row', justifyContent: 'space-between',
-                    paddingHorizontal: 12, paddingVertical: 6
-                }}>
-                    <View>
-                        <Text style={{ fontFamily: 'Poppins-Regular', color: textColor, fontSize: 13 }}>
-                            Delivery Fee
-                        </Text>
-                        {shippingAmount === 0 && aShippingDetails && (
-                            <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: 11 }}>
-                                Free delivery on orders above ₹{aShippingDetails.min_free_delivery || "199"}
-                            </Text>
-                        )}
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {shippingAmount > 0 && (
-                            <Text style={{
-                                fontFamily: 'Poppins-Regular', color: textInputColor,
-                                textDecorationLine: 'line-through', fontSize: 12, marginRight: 4
-                            }}>₹{shippingAmount}</Text>
-                        )}
-                        <Text style={{
-                            fontFamily: 'Poppins-Medium',
-                            color: shippingAmount === 0 ? coupanGreen : textColor,
-                            fontSize: 13
-                        }}>
-                            {shippingAmount === 0 ? "FREE" : `${currency}${shippingAmount}`}
-                        </Text>
-                    </View>
-                </View> */}
 
                 {/* Delivery Tip – fixed options 10, 20, 30 (image 6) */}
                 <View style={{ paddingHorizontal: 12, paddingVertical: 6 }}>
@@ -1094,7 +1096,7 @@ function CartScreen(props) {
                                 fontFamily: 'Poppins-Regular', color: textInputColor,
                                 textDecorationLine: 'line-through', fontSize: 14, marginRight: 6
                             }}>
-                                {currency}{subTotal + additionalFeeTotal + Number(shippingAmount) + (selectedTip || 0)}
+                                {currency}{subTotal + additionalFeeTotal + (selectedTip || 0)}
                             </Text>
                         )}
                         <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: 16 }}>
@@ -1443,7 +1445,7 @@ function CartScreen(props) {
                             <Text style={{
                                 color: whiteTxtColor, fontFamily: 'Poppins-SemiBold',
                                 alignSelf: 'center', fontSize: 16, letterSpacing: 1
-                            }}>PROCEED\</Text>
+                            }}>PROCEED</Text>
                         </TouchableOpacity>
                     )}
                 </ScrollView>

@@ -719,7 +719,7 @@ const tabBarHeight = useBottomTabBarHeight();
                                         horizontal={true}
                                         showsHorizontalScrollIndicator={false}
                                     >
-                                        {console.log("Inside the loop", item?.aTSNData[0]?.products)}
+                                        {/* {console.log("Inside the loop", item?.aTSNData[0]?.products)} */}
                                         {item?.aTSNData[0].products?.map((product, index) =>
                                             <ProductItem
                                                 imageHeight={130}
