@@ -17,9 +17,10 @@ const AddButtonCMP = (props) => {
     const [quantity, setQuantity] = useState(0);
 
     // Cart-page styling: light-pink fill, pink border + pink text (matches cart design)
-    const themedBg = cartTheme ? '#FDEAF0' : allCategoryPink
-    const themedText = cartTheme ? allCategoryPink : whiteTxtColor
-    const themedBorderWidth = cartTheme ? 1 : 0
+    // Locked (isAddBlocked) steal-deal buttons show gray instead of the pink theme
+    const themedBg = isAddBlocked ? '#E5E5E5' : (cartTheme ? '#FDEAF0' : allCategoryPink)
+    const themedText = isAddBlocked ? '#8A8A8A' : (cartTheme ? allCategoryPink : whiteTxtColor)
+    const themedBorderWidth = isAddBlocked ? 0 : (cartTheme ? 1 : 0)
 
     useEffect(() => {
 
@@ -157,7 +158,7 @@ const AddButtonCMP = (props) => {
         </View>
     }
     if (isAddedToCart && item.is_deal_product && item.is_deal_product == '1') {
-        return <TouchableOpacity style={[styles.button, style, { maxHeight: 35, width: 90 }]}
+        return <TouchableOpacity style={[styles.button, style, { maxHeight: 35, width: 75 }]}
             onPress={handleMinus}>
             <Text style={styles.addButton}>Remove</Text>
         </TouchableOpacity>
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     addButton: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: 13,
         fontFamily: 'Poppins-Regular'
 
     },

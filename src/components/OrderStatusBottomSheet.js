@@ -371,7 +371,15 @@ const OrderStatusBottomSheet = ({
           <>
             <View style={styles.handleBar} />
 
-            <TouchableOpacity style={styles.closeBtnAbsolute} onPress={minimize}>
+            {/* <TouchableOpacity style={styles.closeBtnAbsolute} onPress={minimize}>
+              <Image
+                source={require('../../assets/icons/nw-cross.png')}
+                style={styles.closeIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity> */}
+
+              <TouchableOpacity style={styles.closeBtnAbsolute} onPress={minimize}>
               <Text style={styles.closeIcon}>✕</Text>
             </TouchableOpacity>
 
@@ -463,10 +471,10 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     alignItems: 'center',
-    justifyContent: 'center',
+    // justifyContent: 'center',
     zIndex: 10,
   },
-  closeIcon: { fontSize: 13, color: '#fff', fontWeight: '700' },
+  closeIcon: { width: 36, height: 36, color: '#fff', fontSize: 16, textAlign: 'center', alignSelf: 'center' },
 
   // ── FIX 1: minimized white card ─────────────────────────────────────────────
   miniCard: {
@@ -548,7 +556,7 @@ const styles = StyleSheet.create({
   // centered against the header block instead of pinned to the top corner,
   // so it no longer crowds the close button.
   dboyActions: { alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
-  callDeliveryImg: { width: rf(82), height: rf(40), resizeMode: 'contain' },
+  callDeliveryImg: { width: rf(80), height: rf(40), resizeMode: 'contain', marginRight: 2 },
 
   stepsRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   stepWrapper: { alignItems: 'center', width: '25%' },

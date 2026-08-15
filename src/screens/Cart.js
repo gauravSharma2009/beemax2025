@@ -37,6 +37,17 @@ const isLateNight = () => {
 const SMALL = Dimensions.get('window').width < 360
 const fs = (n) => (SMALL ? n - 1 : n)
 
+// Darker gray used for product weight / MRP text (feedback: 575757)
+const darkGrayColor = "#575757"
+// Deal-applied tag colours (feedback: bg dafde1, font 606460, stroke 85c591)
+const dealTagBg = "#DAFDE1"
+const dealTagBorder = "#85C591"
+const dealTagText = "#606460"
+// "Shop for ₹X to unlock this deal" font colour (feedback: 0d662b)
+const unlockTextColor = "#0D662B"
+// Locked steal-deal Add button colour (feedback: e5e5e5)
+const lockedAddBg = "#E5E5E5"
+
 // A cart item counts towards the coupon-unlock amount unless it's explicitly
 // flagged as not applicable (supports boolean or 0/1 from the API).
 const isCouponApplicableItem = (item) => {
@@ -91,8 +102,9 @@ function CartScreen(props) {
     const [totalAmount, setTotalAmount] = useState(0)
     const [grandAmount, setGrandAmount] = useState(0)
     const [additionalFeeTotal, setAdditionalFeeTotal] = useState(0)
-    const [discountOnly, setdiscountOnly] = useState(0)
-    const [percentageSaved, setPercentageSaved] = useState(null)
+    const [additionalFeeOriginalTotal, setAdditionalFeeOriginalTotal] = useState(0)
+    const [noDiscountTotal, setNoDiscountTotal] = useState(0)
+    const [totalSaved, setTotalSaved] = useState(0)
 
     // ── delivery tip ──────────────────────────────────────────────────────────
     const [selectedTip, setSelectedTip] = useState(null)  // 10 | 20 | 30 | null
@@ -126,39 +138,53 @@ function CartScreen(props) {
     // ─────────────────────────────────────────────────────────────────────────
     useEffect(() => {
         let amount = 0;
+        let mrpTotal = 0;
         if (cartData) {
             for (let i = 0; i < cartData.length; i++) {
                 amount += Number(cartData[i].subtotal)
+                mrpTotal += parseFloat(cartData[i].mrp_price) * Number(cartData[i].QTY)
             }
         }
         setSubTotal(amount)
         const afterCoupon = amount - Number(coupanDiscount)
         setTotalAmount(afterCoupon)
 
-        // Sum applicable (active) fees dynamically from API data
+        // feeTotal = what's actually charged right now (a FREE/waived fee counts as 0).
+        // feeOriginalTotal = what those same fees would have cost without the waiver —
+        // this is the same amount the fee row itself shows crossed-out when waived.
+        // Mirrors the exact same visibility rules used when rendering the fee rows
+        // below, so a fee that's hidden from the bill (e.g. a free small_cart_fee)
+        // never contributes to the total either — otherwise the total and what's
+        // visibly itemised on screen wouldn't add up.
         let feeTotal = 0;
+        let feeOriginalTotal = 0;
         applicableFees.forEach(f => {
-            if (f.active) feeTotal += Number(f.amount)
+            if (!(f.active || f.status_active)) return;
+            if (f.code === 'late_night_fee' && !f.active) return;
+            const isFreeFee = Number(f.amount) === 0
+            if (f.code === 'small_cart_fee' && isFreeFee) return;
+
+            feeTotal += Number(f.amount)
+            feeOriginalTotal += isFreeFee && f.configured_amount ? Number(f.configured_amount) : Number(f.amount)
         });
         setAdditionalFeeTotal(feeTotal)
+        setAdditionalFeeOriginalTotal(feeOriginalTotal)
 
         const tip = selectedTip || 0;
-        setGrandAmount(afterCoupon + feeTotal + tip)
+        const grand = afterCoupon + feeTotal + tip
+        setGrandAmount(grand)
         // setGrandAmount(afterCoupon + Number(shippingAmount) + feeTotal + tip)
 
-    }, [cartData, coupanDiscount, shippingAmount, applicableFees, selectedTip])
+        // Gray/cut total shown above "To Pay" = the cut (MRP) amount already
+        // shown crossed-out in the Item Total row + any other amount shown as
+        // a cut line elsewhere in the bill summary (waived fees' original
+        // amount) + tip — i.e. a "grand total" built purely from the figures
+        // that are already struck through in the UI.
+        const noDiscount = mrpTotal + feeOriginalTotal + tip
+        setNoDiscountTotal(noDiscount)
+        setTotalSaved(noDiscount - grand)
 
-    // ── percentageSaved ───────────────────────────────────────────────────────
-    useEffect(() => {
-        let mrpTotal = 0, sellingTotal = 0;
-        cartData.forEach(item => {
-            mrpTotal += parseFloat(item.mrp_price) * Number(item.QTY)
-            sellingTotal += parseFloat(item.selling_price) * Number(item.QTY)
-        })
-        setdiscountOnly(mrpTotal - sellingTotal)
-        const total = (mrpTotal - sellingTotal) + Number(coupanDiscount)
-        setPercentageSaved("₹ " + total + " Saved! ")
-    }, [cartData, coupanDiscount])
+    }, [cartData, coupanDiscount, shippingAmount, applicableFees, selectedTip])
 
     // ── free-deal removal when total drops below threshold ────────────────────
     useEffect(() => {
@@ -180,9 +206,24 @@ function CartScreen(props) {
     // ── re-apply coupon when cart changes ─────────────────────────────────────
     useEffect(() => {
         if (appliedCoupan) {
+            // Client-side minimum-order check first: don't rely solely on the
+            // backend rejecting the re-validation call, since removing items
+            // can drop the coupon-eligible amount below the applied coupon's
+            // min_order_value and we need to guarantee removal either way.
+            const coupon = offersList?.find(o => o.coupon_code === appliedCoupan)
+            const eligibleAmount = getCouponEligibleAmount(cartData)
+            const minOrderValue = parseFloat(coupon?.min_order_value || 0)
+            if (coupon && parseFloat(eligibleAmount) < minOrderValue) {
+                setPopup({
+                    message: `${appliedCoupan} removed — minimum order value of ${currency}${minOrderValue} no longer met.`,
+                    status: "faliure", open: true
+                })
+                removeCoupan()
+                return
+            }
             setTimeout(() => applyCoupan(appliedCoupan), 1000)
         }
-    }, [cartData])
+    }, [cartData, offersList])
 
     // ── navigation focus ──────────────────────────────────────────────────────
     useEffect(() => {
@@ -456,10 +497,22 @@ function CartScreen(props) {
                 setAppliedCoupan(code)
                 setCoupanAppliedMsg(result.message || "")
             } else {
-                if (from === "coupan")
+                if (from === "coupan") {
                     setPopup({ message: result.message, status: "faliure", open: true })
-                setCoupanDiscount(0)
-                setCoupanData(null)
+                    setCoupanDiscount(0)
+                    setCoupanData(null)
+                } else {
+                    // Auto re-validation (cart changed) failed — e.g. removing
+                    // items dropped the total below the coupon's minimum order
+                    // value. The coupon no longer qualifies, so remove it
+                    // entirely instead of leaving a stale "applied" banner
+                    // with a zero discount.
+                    setPopup({
+                        message: result.message || `${code} removed — minimum order value no longer met.`,
+                        status: "faliure", open: true
+                    })
+                    removeCoupan()
+                }
             }
         } catch (e) { changeLoadingState(false); console.error(e) }
     }
@@ -668,7 +721,7 @@ function CartScreen(props) {
                     <TouchableOpacity onPress={removeAllUnavailableItems}>
                         {/* <AntDesign name="closecircle" size={20} color="#FF4B4B" /> */}
                         <Image
-                            source={require('../../assets/icons/red_cross.png')}
+                            source={require('../../assets/icons/nw-cross.png')}
                             style={{ width: 24, height: 24, resizeMode: 'contain' }}
                         />
                     </TouchableOpacity>
@@ -698,12 +751,21 @@ function CartScreen(props) {
         )
     }
 
+    // Apply (unapplied state) and Remove (applied state) buttons must share the
+    // same width/alignment so the row doesn't jump when a coupon is applied.
+    const couponActionBtnStyle = {
+        borderWidth: 1, borderColor: '#999', borderRadius: 6, width: 75,
+        paddingVertical: 6, marginRight: 5, alignItems: 'center',
+        justifyContent: 'center', alignSelf: 'center'
+    }
+
     /** Coupon & offers section (image 5 – left/right states) */
     const renderCouponSection = () => {
         return (
             <View style={{
                 marginHorizontal: 10, marginTop: 12,
                 borderRadius: 10, backgroundColor: '#fff',
+                borderWidth: 1, borderColor: categorySaperator,
                 overflow: 'hidden'
             }}>
                 <Text style={{
@@ -715,16 +777,18 @@ function CartScreen(props) {
                 {appliedCoupan ? (
                     <View style={{
                         flexDirection: 'row', alignItems: 'center',
-                        backgroundColor: '#F0FFF4', paddingHorizontal: 12,
-                        paddingVertical: 2, justifyContent: 'space-between',
-                        borderTopWidth: 0, borderTopColor: categorySaperator
+                        backgroundColor: dealTagBg, paddingHorizontal: 12,
+                        paddingVertical: 8, justifyContent: 'space-between',
+                        borderTopWidth: 1, borderTopColor: dealTagBorder
                     }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
-                            {/* <AntDesign name="checkcircle" size={18} color={coupanGreen} /> */}
-                            <Image
-                                source={require('../../assets/icons/percent_icon.png')}
-                                style={{ width: 24, height: 24, resizeMode: 'contain' }}
-                            />
+                            <View style={{width: 30, height: 30, justifyContent: 'center', alignItems: 'center',
+                                 borderRadius: 5, borderWidth:1 , borderColor:"#D0D0D0"}}>
+                                <Image
+                                    source={require('../../assets/icons/percent_icon.png')}
+                                    style={{ width: 24, height: 24, resizeMode: 'contain' }}
+                                />
+                            </View>
                             <View style={{ marginLeft: 8, flex: 1 }}>
                                 <Text numberOfLines={1} style={{ fontFamily: 'Poppins-SemiBold', color: coupanGreen, fontSize: fs(13) }}>
                                     Save ₹{coupanDiscount} with {appliedCoupan}
@@ -738,10 +802,7 @@ function CartScreen(props) {
                         </View>
                         <TouchableOpacity
                             onPress={removeCoupan}
-                            style={{
-                                borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0, marginRight: 5
-                            }}>
+                            style={couponActionBtnStyle}>
                             <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Remove</Text>
                         </TouchableOpacity>
                     </View>
@@ -754,10 +815,13 @@ function CartScreen(props) {
                         {/* {console.log("Offers List", offersList)} */}
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
-                            <Image
-                                source={require('../../assets/icons/percent_icon.png')}
-                                style={{ width: 24, height: 24, resizeMode: 'contain' }}
-                            />
+                            <View style={{width: 30, height: 30, justifyContent: 'center', alignItems: 'center',
+                                 borderRadius: 5, borderWidth:1 , borderColor:"#D0D0D0"}}>
+                                <Image
+                                    source={require('../../assets/icons/percent_icon.png')}
+                                    style={{ width: 24, height: 24, resizeMode: 'contain' }}
+                                />
+                            </View>
 
                             <View style={{ marginLeft: 8, flex: 1 }}>
                                 {offersList && offersList.filter(o => o.sticky_on_cart).length > 0 ? (
@@ -791,10 +855,7 @@ function CartScreen(props) {
                                     openCouponScreen()
                                 }
                             }}
-                            style={{
-                                borderWidth: 1, borderColor: '#999', borderRadius: 6,
-                                paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0, marginRight: 5
-                            }}>
+                            style={couponActionBtnStyle}>
                             <Text style={{ fontFamily: 'Poppins-Medium', color: textColor, fontSize: fs(13) }}>Apply</Text>
                         </TouchableOpacity>
                     </View>
@@ -805,13 +866,13 @@ function CartScreen(props) {
 
     /** Free / Steal Deals horizontal scroll (image 5) */
     const renderStealDeals = () => {
-        console.log("Free Deal Data", freeDealData)
+        // console.log("Free Deal Data", freeDealData)
         if (!freeDealData || freeDealData.length === 0) return null;
         return (
             <View style={{
                 marginHorizontal: 10, marginTop: 12,
                 borderRadius: 10, borderWidth: 1, borderColor: categorySaperator,
-                overflow: 'hidden'
+                backgroundColor: '#fff', overflow: 'hidden'
             }}>
                 {/* Header */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
@@ -824,12 +885,12 @@ function CartScreen(props) {
                     <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: 14 }}>More Deals for you</Text>
                 </View>
                 {/* Horizontal list */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 12, paddingBottom: 10 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 12, paddingBottom: 10 }} contentContainerStyle={{ paddingRight: 12 }}>
                     {freeDealData.map((item, idx) => {
                         const isUnlocked = parseFloat(totalAmount) >= parseFloat(item.free_deal_on)
                         return (
                             <View key={"deal" + idx} style={{
-                                width: 230, marginRight: 10, borderRadius: 14,
+                                width: 245, marginRight: 10, borderRadius: 14,
                                 borderWidth: 1, borderColor: categorySaperator,
                                 backgroundColor: '#fff', overflow: 'hidden', marginBottom: 10
                             }}>
@@ -848,13 +909,13 @@ function CartScreen(props) {
                                             fontFamily: 'Poppins-Regular', color: textColor, fontSize: 11, lineHeight: 15, minHeight: 30
                                         }}>{item.title}</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-                                            <View>
-                                                <Text style={{ fontFamily: 'Poppins-Bold', color: textColor, fontSize: 14 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <Text style={{ fontFamily: 'Poppins-Bold', color: textColor, fontSize: 12 }}>
                                                     ₹{item.selling_price}
                                                 </Text>
                                                 <Text style={{
-                                                    fontFamily: 'Poppins-Regular', color: textInputColor,
-                                                    fontSize: 10, textDecorationLine: 'line-through'
+                                                    fontFamily: 'Poppins-Regular', color: '#575757',
+                                                    fontSize: 9, textDecorationLine: 'line-through', marginLeft: 4
                                                 }}>₹{item.mrp_price}</Text>
                                             </View>
                                             <AddButton
@@ -872,7 +933,7 @@ function CartScreen(props) {
                                 </View>
                                 <View style={{ backgroundColor: '#EAF7EC', paddingVertical: 7, alignItems: 'center' }}>
                                     <Text style={{
-                                        fontFamily: 'Poppins-Medium', color: coupanGreen, fontSize: 11
+                                        fontFamily: 'Poppins-Medium', color: "#0d662b", fontSize: 11
                                     }}>Shop for ₹{item.free_deal_on} to unlock this deal</Text>
                                 </View>
                             </View>
@@ -898,13 +959,12 @@ function CartScreen(props) {
                 overflow: 'hidden', marginBottom: 4,
             }}>
                 {/* Header */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10 }}>
-                    {/* <AntDesign name="filetext1" size={16} color={textColor} /> */}
+                <View style={{ flexDirection: 'row', paddingHorizontal: 12, paddingTop: 6, paddingBottom: 10 }}>
                     <Image
                         source={require('../../assets/icons/bill_summary.png')}
-                        style={{ width: 22, height: 22, resizeMode: 'contain' }}
+                        style={{ width: 30, height: 30, resizeMode: 'contain' }}
                     />
-                    <Text style={{ fontFamily: 'Poppins-SemiBold', fontSize: 15, color: textColor, marginLeft: 6 }}>
+                    <Text style={{ fontFamily: 'Poppins-SemiBold', fontSize: 16, color: textColor, marginLeft: 8, marginTop: 2 }}>
                         Bill Summary
                     </Text>
                 </View>
@@ -989,19 +1049,14 @@ function CartScreen(props) {
                             </View>
 
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {isFree ? <Text style={{
-                                    fontFamily: 'Poppins-Regular', color: textInputColor,
-                                    textDecorationLine: 'line-through', fontSize: 12, marginRight: 4
-                                }}>
-                                    {fee.applicable !== false ? "" : `₹${fee.configured_amount}`}
-                                </Text> : (
+                                {fee.configured_amount && Number(fee.configured_amount) !== Number(fee.amount) ? (
                                     <Text style={{
                                         fontFamily: 'Poppins-Regular', color: textInputColor,
                                         textDecorationLine: 'line-through', fontSize: 12, marginRight: 4
                                     }}>
-                                        {fee.applicable !== false ? "" : `₹${fee.configured_amount}`}
+                                        ₹{fee.configured_amount}
                                     </Text>
-                                )}
+                                ) : null}
                                 <Text style={{
                                     fontFamily: 'Poppins-Medium',
                                     color: isFree ? coupanGreen : textColor,
@@ -1091,14 +1146,12 @@ function CartScreen(props) {
                 }}>
                     <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: 16 }}>To Pay</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {(discountOnly + Number(coupanDiscount)) > 0 && (
-                            <Text style={{
-                                fontFamily: 'Poppins-Regular', color: textInputColor,
-                                textDecorationLine: 'line-through', fontSize: 14, marginRight: 6
-                            }}>
-                                {currency}{subTotal + additionalFeeTotal + (selectedTip || 0)}
-                            </Text>
-                        )}
+                        <Text style={{
+                            fontFamily: 'Poppins-Regular', color: textInputColor,
+                            textDecorationLine: 'line-through', fontSize: 14, marginRight: 6
+                        }}>
+                            {currency}{noDiscountTotal}
+                        </Text>
                         <Text style={{ fontFamily: 'Poppins-SemiBold', color: textColor, fontSize: 16 }}>
                             {currency}{grandAmount}
                         </Text>
@@ -1106,7 +1159,7 @@ function CartScreen(props) {
                 </View>
 
                 {/* Savings badge */}
-                {percentageSaved && (
+                {totalSaved > 0 && (
                     <View style={{ flexDirection: 'row', justifyContent: 'center', paddingBottom: 10 }}>
                         <Image
                             style={{ width: 18, height: 18, tintColor: coupanGreen }}
@@ -1116,7 +1169,7 @@ function CartScreen(props) {
                             color: coupanGreen, fontFamily: 'Poppins-SemiBold',
                             alignSelf: 'center', fontSize: 13, marginLeft: 4
                         }}>
-                            {percentageSaved}
+                            ₹ {totalSaved} Saved!
                             <Text style={{ fontSize: 11, fontFamily: 'Poppins-Regular' }}> on this order</Text>
                         </Text>
                     </View>
@@ -1154,7 +1207,7 @@ function CartScreen(props) {
                     }}>{item.title}</Text>
 
                     {item.product_size ? (
-                        <Text style={{ fontFamily: 'Poppins-Regular', color: textInputColor, fontSize: fs(13), marginTop: 2 }}>
+                        <Text style={{ fontFamily: 'Poppins-Regular', color: darkGrayColor, fontSize: fs(13), marginTop: 2 }}>
                             {item.product_size}
                         </Text>
                     ) : null}
@@ -1162,10 +1215,15 @@ function CartScreen(props) {
                     {item.is_deal_product === '1' && (
                         <View style={{
                             flexDirection: 'row', alignItems: 'center', marginTop: 5,
-                            alignSelf: 'flex-start', backgroundColor: '#F0FFF4', borderRadius: 6,
+                            alignSelf: 'flex-start', backgroundColor: dealTagBg,
+                            borderWidth: 1, borderColor: dealTagBorder, borderRadius: 6,
                             paddingHorizontal: 8, paddingVertical: 3
                         }}>
-                            <AntDesign name="checkcircle" size={fs(13)} color={coupanGreen} />
+                            <Image
+                                source={require('../../assets/icons/check_right.png')}
+                                style={{ width: 14, height: 14, resizeMode: 'contain', }}
+                            />
+
                             <Text style={{ color: coupanGreen, fontSize: fs(12), fontFamily: 'Poppins-Medium', marginLeft: 5 }}>
                                 Deal applied
                             </Text>
@@ -1196,9 +1254,9 @@ function CartScreen(props) {
                         minusItem={minusItem}
                         item={{ ...item, qty_added_in_cart: item.QTY }}
                     />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginRight: 6 }}>
                         <Text style={{
-                            fontFamily: 'Poppins-Regular', color: textInputColor,
+                            fontFamily: 'Poppins-Regular', color: darkGrayColor,
                             textDecorationLine: 'line-through', fontSize: fs(12), marginRight: 6
                         }}>
                             {currency}{(Number(item.mrp_price) * Number(item.QTY)).toFixed(0)}
