@@ -7,20 +7,32 @@ import { setPopup } from '../actions/message';
 import store from '../store/configureStore';
 import { server } from './apiConstant';
 import { getData } from './asyncStore';
-import { allCategoryPink, whiteTxtColor } from './colours';
+import { allCategoryPink, textInputColor, whiteTxtColor } from './colours';
 
 const AddButtonCMP = (props) => {
 
     const { item, addItem, minusItem, type, changeLoadingState, callBack, style,
         changeCartCount, setAction = undefined, index = undefined, isAddedToCart = false, freeDealAddedToCart = false,
-        isAddBlocked = false, cartTheme = false } = props;
+        isAddBlocked = false, cartTheme = false, stealDealTheme = false } = props;
     const [quantity, setQuantity] = useState(0);
 
     // Cart-page styling: light-pink fill, pink border + pink text (matches cart design)
     // Locked (isAddBlocked) steal-deal buttons show gray instead of the pink theme
-    const themedBg = isAddBlocked ? '#E5E5E5' : (cartTheme ? '#FDEAF0' : allCategoryPink)
-    const themedText = isAddBlocked ? '#8A8A8A' : (cartTheme ? allCategoryPink : whiteTxtColor)
-    const themedBorderWidth = isAddBlocked ? 0 : (cartTheme ? 1 : 0)
+    //
+    // stealDealTheme is its own design used only by the "More Deals for you" /
+    // steal-deals row: solid pink when unlocked, light-gray fill + a visible
+    // gray border when locked (isAddBlocked). It's opt-in via a prop so every
+    // other AddButton usage in the app is unaffected.
+    const themedBg = stealDealTheme
+        ? (isAddBlocked ? '#E5E5E5' : allCategoryPink)
+        : (isAddBlocked ? '#E5E5E5' : (cartTheme ? '#FDEAF0' : allCategoryPink))
+    const themedText = stealDealTheme
+        ? (isAddBlocked ? '#8A8A8A' : whiteTxtColor)
+        : (isAddBlocked ? '#8A8A8A' : (cartTheme ? allCategoryPink : whiteTxtColor))
+    const themedBorderColor = stealDealTheme && isAddBlocked ? textInputColor : allCategoryPink
+    const themedBorderWidth = stealDealTheme
+        ? (isAddBlocked ? 1 : 0)
+        : (isAddBlocked ? 0 : (cartTheme ? 1 : 0))
 
     useEffect(() => {
 
@@ -164,9 +176,12 @@ const AddButtonCMP = (props) => {
         </TouchableOpacity>
     }
     if (!item.qty_added_in_cart || item.is_added_in_cart == '0') {
-        return <TouchableOpacity style={[styles.button, style, { maxHeight: 35 }]}
-            onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
-            <Text style={styles.addButton}>Add</Text>
+        return <TouchableOpacity style={[styles.button, style, {
+            maxHeight: 35, backgroundColor: themedBg,
+            borderColor: themedBorderColor, borderWidth: themedBorderWidth
+        }]}
+            onPress={isAddBlocked || item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
+            <Text style={[styles.addButton, { color: themedText }]}>Add</Text>
         </TouchableOpacity>
     }
     if (item.is_added_in_cart == '0') {
@@ -212,8 +227,8 @@ const AddButtonCMP = (props) => {
             :
             <TouchableOpacity style={[styles.button, style, {
                 maxHeight: 35, backgroundColor: themedBg,
-                borderColor: allCategoryPink, borderWidth: themedBorderWidth
-            }]} onPress={item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
+                borderColor: themedBorderColor, borderWidth: themedBorderWidth
+            }]} onPress={isAddBlocked || item.in_stock === "0" || parseInt(item.inventory) < 1 ? null : handleAdd}>
 
                 {!item.qty_added_in_cart || Number(item.qty_added_in_cart) === 0 ? (
                     <Text style={[styles.addButton, { color: themedText }]}>Add</Text>

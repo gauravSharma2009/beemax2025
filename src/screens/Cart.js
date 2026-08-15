@@ -920,7 +920,7 @@ function CartScreen(props) {
                                             </View>
                                             <AddButton
                                                 isAddedToCart={item.isAddedTOCart}
-                                                cartTheme={true}
+                                                stealDealTheme={true}
                                                 isAddBlocked={!isUnlocked}
                                                 callBack={getCartData}
                                                 changeLoadingState={changeLoadingState}
