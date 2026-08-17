@@ -17,9 +17,17 @@ const CustomModal = ({ visible, status, closeModal, message }) => {
                 <View style={{ width: "80%", height: '30%', }}>
 
                     <View style={{ ...styles.modalContent, }}>
-                        <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+                        {/* <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
                             <Icon name="close" size={20} color="#333" />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
+
+                        {/* <TouchableOpacity style={styles.closeBtnAbsolute} onPress={closeModal}>
+                            <Text style={styles.closeIcon}>✕</Text>
+                            <Image
+                                source={require('../../assets/icons/nw-cross.png')}
+                                style={{ width: 24, height: 24, resizeMode: 'contain' }}
+                            />
+                        </TouchableOpacity> */}
 
                         <Text style={styles.statusMessage}>
                             {message}
@@ -28,7 +36,7 @@ const CustomModal = ({ visible, status, closeModal, message }) => {
                             {status === 'success' ? "Successful" : "Failed"}
                         </Text>
                     </View>
-                    <View style={styles.statusIcon}>
+                    {/* <View style={styles.statusIcon}>
                         {status === 'success' ? <Image
                             style={{ width: 50, height: 50 }}
                             source={require('../../assets/succ.png')}
@@ -36,16 +44,8 @@ const CustomModal = ({ visible, status, closeModal, message }) => {
                             style={{ width: 50, height: 50 }}
                             source={require('../../assets/error.png')}
                         />}
-                        {/* <Image
-                            style={{ width: 50, height: 50 }}
-                            source={require(status === 'success' ? '../../assets/success.png' : '../../assets/error.png')}
-                        /> */}
-                        {/* <Icon
-                            name={status === 'success' ? 'check-circle' : 'times-circle'}
-                            size={50}
-                            color={status === 'success' ? 'green' : 'red'}
-                        /> */}
-                    </View>
+                       
+                    </View> */}
                     <TouchableOpacity
                         onPress={closeModal}
                         style={{ position: 'absolute', backgroundColor: allCategoryPink, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginVertical: 10, width: '60%', alignSelf: 'center', bottom: 0 }}>
@@ -61,6 +61,23 @@ const CustomModal = ({ visible, status, closeModal, message }) => {
 export default CustomModal;
 
 const styles = StyleSheet.create({
+    closeBtnAbsolute: {
+        position: 'absolute',
+        top: 14,
+        right: 14,
+        // backgroundColor: '#9CA3AF',
+        width: 36,
+        height: 36,
+        borderRadius: 14,
+        alignItems: 'center',
+        // justifyContent: 'center',
+        zIndex: 10,
+    },
+    closeIcon: { width: 36, height: 36, color: '#fff', fontSize: 16, textAlign: 'center', alignSelf: 'center',
+         position: 'absolute',
+        top: 14,
+        right: 14,
+     },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -84,7 +101,7 @@ const styles = StyleSheet.create({
         right: 10,
     },
     statusIcon: {
-      //  marginBottom: 10,
+        //  marginBottom: 10,
         width: 50,
         height: 50,
         resizeMode: 'center',
@@ -94,14 +111,14 @@ const styles = StyleSheet.create({
     statusMessage: {
         fontSize: 12,
         textAlign: 'center',
-        marginTop: 20,
+        marginTop: 10,
         fontFamily: 'Poppins-Regular',
         color: '#101010'
     },
     statusText: {
         fontSize: 14,
         textAlign: 'center',
-        marginTop: 20,
+        marginTop: 10,
         fontFamily: 'Poppins-SemiBold',
         color: '#101010'
     },

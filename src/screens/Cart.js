@@ -71,6 +71,22 @@ const getCouponEligibleAmount = (items) => {
     return amount
 }
 
+// Cart subtotal excluding steal/free deal products, used to decide whether a
+// steal deal is unlocked. Computed directly from cartData (not from the
+// separately-debounced `totalAmount` state) so it's never one render stale —
+// using totalAmount here caused a newly-added deal item's own amount to be
+// subtracted from a total that hadn't caught up yet, instantly re-locking
+// (and auto-removing) the item that had just been added.
+const getNonDealAmount = (items) => {
+    let amount = 0
+        ; (items || []).forEach(item => {
+            if (item?.is_deal_product !== '1') {
+                amount += Number(item.subtotal || 0)
+            }
+        })
+    return amount
+}
+
 function CartScreen(props) {
     const { navigation, changeLoadingState, changeCartCount, setPopup } = props
 
@@ -189,15 +205,16 @@ function CartScreen(props) {
     // ── free-deal removal when total drops below threshold ────────────────────
     useEffect(() => {
         if (totalAmount > 0 && cartData.length > 0) {
+            const dealUnlockAmount = getNonDealAmount(cartData) - Number(coupanDiscount)
             const needToRemove = freeDealData.filter(
-                item => parseFloat(totalAmount) < parseFloat(item.free_deal_on)
+                item => parseFloat(dealUnlockAmount) < parseFloat(item.free_deal_on)
             )
             if (needToRemove.length > 0) {
                 const filteredItems = cartData.filter(c => needToRemove.find(f => f.id === c.id))
                 if (filteredItems.length > 0) removeFromCart(filteredItems)
             }
         }
-    }, [totalAmount, cartData])
+    }, [totalAmount, cartData, coupanDiscount])
 
     // ── slot / instant delivery mutual exclusion ──────────────────────────────
     useEffect(() => { if (instantDelivery) { setSelectedSlot(null); setSelectedDay(null) } }, [instantDelivery])
@@ -239,6 +256,19 @@ function CartScreen(props) {
     // ─────────────────────────────────────────────────────────────────────────
     // API helpers
     // ─────────────────────────────────────────────────────────────────────────
+    // Refreshes the bottom-tab cart count badge from the server. Needed after
+    // any cart mutation that doesn't already go through AddButton's own
+    // add/minus handlers (which do this themselves) — e.g. the automatic
+    // free-deal removal below, which calls addtocart directly.
+    const refreshCartCount = async () => {
+        const uniqueId = await getData("uniqueId")
+        try {
+            const res = await fetch(`${server}countcartdata/${uniqueId}`, { method: 'GET' })
+            const result = await res.json()
+            changeCartCount(result.data)
+        } catch (e) { console.error('refreshCartCount error', e) }
+    }
+
     const removeFromCart = async (filteredItems) => {
         const loginData = await getData("loginData")
         const userData = JSON.parse(loginData)
@@ -259,6 +289,7 @@ function CartScreen(props) {
             } catch (e) { console.error('removeFromCart error', e) }
         }
         getCartData()
+        refreshCartCount()
     }
 
     const addToCart = async ({ product, qty }) => {
@@ -488,6 +519,7 @@ function CartScreen(props) {
                 body: raw
             });
             const result = await res.json();
+            console.log("applyCoupan result", result)
             changeLoadingState(false)
             if (result?.status) {
                 if (from === "coupan")
@@ -886,8 +918,8 @@ function CartScreen(props) {
                 </View>
                 {/* Horizontal list */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 12, paddingBottom: 10 }} contentContainerStyle={{ paddingRight: 12 }}>
-                    {freeDealData.map((item, idx) => {
-                        const isUnlocked = parseFloat(totalAmount) >= parseFloat(item.free_deal_on)
+                    {(() => { const dealUnlockAmount = getNonDealAmount(cartData) - Number(coupanDiscount); return freeDealData.map((item, idx) => {
+                        const isUnlocked = parseFloat(dealUnlockAmount) >= parseFloat(item.free_deal_on)
                         return (
                             <View key={"deal" + idx} style={{
                                 width: 245, marginRight: 10, borderRadius: 14,
@@ -938,7 +970,7 @@ function CartScreen(props) {
                                 </View>
                             </View>
                         )
-                    })}
+                    }) })()}
                 </ScrollView>
             </View>
         )

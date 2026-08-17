@@ -131,7 +131,7 @@ function ProductDetailsScreen(props) {
         };
         changeLoadingState(true)
         const uniqueId = await getData("uniqueId")
-console.log("from : ", from )
+        console.log("from : ", from)
         console.log("URLS: ", `${server}productdetailsbyid/${from && (from === 'banner' || from === 'coupon') ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`)
         fetch(`${server}productdetailsbyid/${from && (from === 'banner' || from === 'coupon') ? product.redirection_id : product.id}/${props.pincode}/${uniqueId}`, requestOptions)
             .then(response => response.json())
@@ -412,9 +412,9 @@ console.log("from : ", from )
                 <View style={{ flexDirection: 'row', alignSelf: 'center', flex: .2, justifyContent: 'flex-end' }}>
                     <TouchableOpacity
                         style={{ alignItems: 'center' }}
-                        onPress={() =>      navigation.navigate("AutoSuggestSearchPage")
+                        onPress={() => navigation.navigate("AutoSuggestSearchPage")
 
-                          //  navigation.navigate("ProductSearchPage")
+                            //  navigation.navigate("ProductSearchPage")
                         }
                     >
                         <Image
@@ -458,10 +458,10 @@ console.log("from : ", from )
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                             <Text
-                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', alignSelf:'center'}}
+                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', alignSelf: 'center' }}
                             >{currency}</Text>
                             <Text
-                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2, alignSelf:'center' }}
+                                style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 2, alignSelf: 'center' }}
                             >{productDetails[0].selling_price}</Text>
                             {/* <Text
                                 style={{ fontSize: 18, color: textColor, fontFamily: 'Poppins-Light', marginLeft: 10, textDecorationLine: 'line-through',
@@ -470,14 +470,14 @@ console.log("from : ", from )
                             <Text
                                 style={{
                                     fontSize: 18, color: mrpColor, fontFamily: 'Poppins-Regular', marginLeft: 2, textDecorationLine: 'line-through',
-                                    textDecorationStyle: 'solid', marginLeft: 10, alignSelf:'center'
+                                    textDecorationStyle: 'solid', marginLeft: 10, alignSelf: 'center'
                                 }}
                             >{currency} {productDetails[0].mrp_price}</Text>
                             {/* {productDetails[0].discount_percentage && <Text
                             style={{ fontSize: 16, color: offColor, fontFamily: 'Poppins-Regular', marginLeft: 5, marginBottom: 5 }}
                         >{productDetails[0].discount_percentage + "% OFF"}</Text>} */}
 
-                            <View style={{ backgroundColor: '#056e48', borderRadius: 5, justifyContent: 'center', paddingHorizontal: 5, alignSelf: 'center', flexDirection: 'row', paddingVertical: 3 , marginLeft:10}}>
+                            <View style={{ backgroundColor: '#056e48', borderRadius: 5, justifyContent: 'center', paddingHorizontal: 5, alignSelf: 'center', flexDirection: 'row', paddingVertical: 3, marginLeft: 10 }}>
                                 <Image
                                     source={require('../../assets/star.png')}
                                     style={{ width: 20, height: 20 }} />
@@ -575,17 +575,18 @@ console.log("from : ", from )
                         {pincodeMessage?.availability.toLowerCase() === 'no' ? <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: "red", alignSelf: 'flex-end' }}>Delivery not available in your area.</Text> : null}
 
                     </View> : null}
-                    {console.log("productDetails[0]  :  ", productDetails[0].specification)}
+                    {/* {console.log("productDetails[0]  :  ", productDetails[0].specification)} */}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={{ fontSize: 16, color: textColor, fontFamily: 'Poppins-SemiBold', marginLeft: 0, marginTop: 10 }}>Quantity : <Text style={{ color: mrpColor }}>{productDetails[0]?.product_size}</Text></Text>
-
-                        <AddButton
+                        {/* {console.log("productDetails?.free_deal_product  :  ", productDetails)} */}
+                        {productDetails && Array.isArray(productDetails) && productDetails.length > 0 &&
+                         productDetails[0].free_deal_product == '1' ? null : <AddButton
                             callBack={getProductDetails}
                             changeLoadingState={changeLoadingState}
                             addItem={addItem}
                             minusItem={minusItem}
                             item={productDetails[0]}
-                        />
+                        />}
                     </View>
                     <Accordion
                         changeLoadingState={changeLoadingState}
