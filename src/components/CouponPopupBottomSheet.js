@@ -10,6 +10,7 @@ import {
     Dimensions,
     TouchableWithoutFeedback,
     StatusBar,
+    Platform,
 } from 'react-native';
 import { getData } from '../common/asyncStore';
 import { server } from '../common/apiConstant';
@@ -243,7 +244,11 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
                     onPress={handleClose}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                    <Text style={styles.closeText}>✕</Text>
+                    {/* <Text style={styles.closeText}>✕</Text> */}
+                    <Image
+                        source={require('../../assets/close.png')}
+                        style={{ width: 16, height: 16, resizeMode: 'contain',tintColor: '#fff' }}
+                    />  
                 </TouchableOpacity>
 
                 {/* Coupon image — full width, proportional height, fully clickable */}
@@ -295,6 +300,17 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: '700',
+        // The glyph's ascent/descent metrics differ across OEM fonts (Samsung,
+        // MIUI, stock Android, iOS), which is why the ✕ looks off-center on
+        // some devices even though the button itself is centered.
+        // Pinning lineHeight to the button's height + explicit text alignment
+        // forces the glyph into the same box on every device.
+        width: 30,
+        height: 30,
+        lineHeight: Platform.OS === 'android' ? 30 : 28,
+        textAlign: 'center',
+        textAlignVertical: 'center', // Android only, ignored on iOS
+        includeFontPadding: false,   // Android only: strips extra top/bottom font padding that pushes glyph off-center
     },
     couponImage: {
         width: SCREEN_WIDTH,

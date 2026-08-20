@@ -809,9 +809,9 @@ function CartScreen(props) {
                 {appliedCoupan ? (
                     <View style={{
                         flexDirection: 'row', alignItems: 'center',
-                        backgroundColor: dealTagBg, paddingHorizontal: 12,
+                        backgroundColor: '#ffffff', paddingHorizontal: 12,
                         paddingVertical: 8, justifyContent: 'space-between',
-                        borderTopWidth: 1, borderTopColor: dealTagBorder
+                        borderTopWidth: 1, borderTopColor: categorySaperator
                     }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 }}>
                             <View style={{width: 30, height: 30, justifyContent: 'center', alignItems: 'center',
