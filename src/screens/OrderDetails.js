@@ -81,13 +81,13 @@ function OrderDetailsScreen(props) {
                         <View style={{ flex: .5 }}>
                             <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5 }}>{"Payment Option:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.PAYMENT_METHOD}</Text></Text>
                             <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5 }}>{"Ship to:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {JSON.parse(item.ADDRESS_DATA).name}</Text></Text>
-                            <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5,fontSize:12 }}>{"Delivery Date:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_DATE}</Text></Text>
+                            <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Date:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_DATE}</Text></Text>
 
                         </View>
                         <View style={{ flex: .5 }}>
                             <Text style={{ fontFamily: 'Poppins-SemiBold', marginTop: 5 }}>{"Payment Status:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.PAYMENT_STATUS}</Text></Text>
                             <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5 }}>{"Transaction ID:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item?.TRANSACTION_ID}</Text></Text>
-                            <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5,fontSize:12 }}>{"Delivery Time:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_SLOT}</Text></Text>
+                            <Text style={{ fontFamily: 'Poppins-SemiBold', marginVertical: 5, fontSize: 12 }}>{"Delivery Time:"}<Text style={{ fontFamily: 'Poppins-Regular' }}>  {item.GROCERY_DELIVERY_SLOT}</Text></Text>
 
                         </View>
                     </View>
@@ -160,23 +160,32 @@ function OrderDetailsScreen(props) {
                         </Text>
 
                     </View>
+                    {item.aApplicableFeeDetails && Array.isArray(item.aApplicableFeeDetails) && item.aApplicableFeeDetails.map((feeItem, index) => {
+                        return (
+                            <View key={index} style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
+                                <Text style={{ color: textColor, fontSize: 16 }}>{feeItem.title}</Text>
+                                <Text style={{ color: textColor, fontSize: 16 }}><Text style={{ color: feeItem.display =='Free' ? 'green' : textColor, fontSize: 18 }}>{feeItem.display}</Text>
+                                </Text>
+                            </View>
+                        )
+                    })}
                     <View style={{ width: '100%', height: 1, backgroundColor: categorySaperator, marginVertical: 15 }}></View>
                     <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 0 }}>
-                        <Text style={{ color: coupanGreen, fontSize: 16, fontFamily: 'Poppins-Regular' }}>Coupan Discount</Text>
+                        <Text style={{ color: coupanGreen, fontSize: 13, fontFamily: 'Poppins-Regular' }}>{item.COUPON_LINE_TITLE}</Text>
                         <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.DISCOUNT_AMOUNT)}</Text>
                         </Text>
 
                     </View>
-                    <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
+                    {/* <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
                         <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>Shipping Charge</Text>
                         <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{item.SHIPPING_CHARGE}</Text>
                         </Text>
 
-                    </View>
+                    </View> */}
                     <View style={{ width: '100%', height: 1, backgroundColor: categorySaperator, marginVertical: 15 }}></View>
                     <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 0 }}>
                         <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-SemiBold' }}>Total Paid</Text>
-                        <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.TOTAL)}</Text>
+                        <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.TOTAL) + Math.round(item.order_fee_total)}</Text>
                         </Text>
 
                     </View>
