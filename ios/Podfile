@@ -17,6 +17,18 @@ end
 target 'beemax' do
   config = use_native_modules!
 
+  # Firebase's Swift pods (e.g. FirebaseCoreInternal) require their
+  # Objective-C/C dependencies to expose modulemaps when built as static
+  # libraries. Scope modular_headers to just these pods rather than using
+  # `use_modular_headers!` globally, which collides with React Native 0.80's
+  # internal pods (React-RuntimeCore / React-jsitooling both define the
+  # `react_runtime` module) once they're forced to generate modulemaps too.
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+  pod 'PromisesObjC', :modular_headers => true
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
