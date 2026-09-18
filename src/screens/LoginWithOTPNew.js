@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { TextInput } from 'react-native';
+import { TextInput, TouchableOpacity, Platform } from 'react-native';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Button, Input } from 'react-native-elements';
 import PhoneInput from 'react-native-phone-input';
@@ -122,6 +122,14 @@ const OTPLoginScreen = (props) => {
                     // disabled={!validNumber}
                 />}
             </View>
+            {Platform.OS === 'ios' && (
+            <TouchableOpacity
+                onPress={() => navigation.navigate("DeleteAccount")}
+                style={styles.deleteLinkContainer}
+            >
+                <Text style={styles.deleteLinkText}>Delete your account</Text>
+            </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -162,6 +170,17 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: 18,
         marginTop: 10,
+    },
+    deleteLinkContainer: {
+        position: 'absolute',
+        bottom: 30,
+        alignSelf: 'center',
+    },
+    deleteLinkText: {
+        color: 'white',
+        fontSize: 13,
+        textDecorationLine: 'underline',
+        opacity: 0.9,
     },
 });
 

@@ -164,11 +164,18 @@ function OrderDetailsScreen(props) {
                         return (
                             <View key={index} style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
                                 <Text style={{ color: textColor, fontSize: 16 }}>{feeItem.title}</Text>
-                                <Text style={{ color: textColor, fontSize: 16 }}><Text style={{ color: feeItem.display =='Free' ? 'green' : textColor, fontSize: 18 }}>{feeItem.display}</Text>
+                                <Text style={{ color: textColor, fontSize: 16 }}><Text style={{ color: feeItem.display == 'Free' ? 'green' : textColor, fontSize: 18 }}>{feeItem.display}</Text>
                                 </Text>
                             </View>
                         )
                     })}
+
+                    <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
+                        <Text style={{ color: textColor, fontSize: 16 }}>Delivery Tip</Text>
+                        <Text style={{ color: textColor, fontSize: 16 }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{item.TIP_AMOUNT || 0}</Text>
+                        </Text>
+
+                    </View>
                     <View style={{ width: '100%', height: 1, backgroundColor: categorySaperator, marginVertical: 15 }}></View>
                     <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 0 }}>
                         <Text style={{ color: coupanGreen, fontSize: 13, fontFamily: 'Poppins-Regular' }}>{item.COUPON_LINE_TITLE}</Text>
@@ -185,7 +192,9 @@ function OrderDetailsScreen(props) {
                     <View style={{ width: '100%', height: 1, backgroundColor: categorySaperator, marginVertical: 15 }}></View>
                     <View style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 0 }}>
                         <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-SemiBold' }}>Total Paid</Text>
-                        <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.TOTAL) + Math.round(item.order_fee_total)}</Text>
+                        <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.ORDER_GRAND_TOTAL)}</Text>
+                            {/* <Text style={{ color: textColor, fontSize: 16, fontFamily: 'Poppins-Regular' }}>{currency}<Text style={{ color: textColor, fontSize: 18 }}>{Math.round(item.ORDER_GRAND_TOTAL) + Math.round(item.order_fee_total)+ Math.round(item.TIP_AMOUNT || 0)}</Text> */}
+
                         </Text>
 
                     </View>

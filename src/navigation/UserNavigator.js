@@ -20,6 +20,7 @@ import OTPLogin from '../screens/LoginWithOTP';
 import OTPVerify from '../screens/OtpVerify';
 import LoginWithOtpNew from '../screens/LoginWithOTPNew'
 import OTPVerificationScreen from '../screens/OTPVerifyNew';
+import DeleteAccount from '../screens/DeleteAccount';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +45,7 @@ function UserNavigatorScreen(props) {
             {/* <Stack.Screen name="Login" component={Login} /> */}
             <Stack.Screen name="OTPLogin" component={LoginWithOtpNew} />
             <Stack.Screen name="OTPVerify" component={OTPVerificationScreen} />
+            <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
         </Stack.Navigator> : <Stack.Navigator
             screenOptions={{
                 headerShown: false
@@ -56,6 +58,7 @@ function UserNavigatorScreen(props) {
             <Stack.Screen name="AboutUs" component={AboutUs} />
             <Stack.Screen name="NeedHelp" component={NeedHelp} />
             <Stack.Screen name="OrderDetails" component={OrderDetails} />
+            <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
 
 
         </Stack.Navigator >
