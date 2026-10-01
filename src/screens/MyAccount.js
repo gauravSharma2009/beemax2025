@@ -171,25 +171,6 @@ function AccountScreen(props) {
                             source={require('../../assets/right-arrow.png')} />
                     </TouchableOpacity>
                 </View>
-                {Platform.OS === 'ios' && (
-                <View style={{ padding: 10 }}>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("DeleteAccount")}
-                        style={{ justifyContent: 'space-between', borderRadius: 10, borderWidth: 1, borderColor: "#FC0033", flexDirection: 'row', paddingVertical: 15, marginTop: 0, paddingHorizontal: 10, }}>
-                        <View style={{ alignSelf: 'center', flexDirection: 'row' }}>
-                            <Image
-                                style={{ width: 30, height: 30, tintColor: '#FC0033' }}
-                                source={require('../../assets/profile-icon.png')}
-                            />
-                            <Text style={{ fontSize: 18, marginLeft: 20, fontFamily: 'Poppins-SemiBold', color: '#FC0033', alignSelf: 'center' }}>{"Delete Account"}</Text>
-
-                        </View>
-                        <Image
-                            style={{ marginLeft: 10, alignSelf: 'center', width: 18, height: 18 }}
-                            source={require('../../assets/right-arrow.png')} />
-                    </TouchableOpacity>
-                </View>
-                )}
                 <View style={{ padding: 10 }}>
                     <TouchableOpacity
                         onPress={() => {
@@ -212,7 +193,13 @@ function AccountScreen(props) {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-
+            {Platform.OS === 'ios' && (
+            <TouchableOpacity
+                onPress={() => navigation.navigate("DeleteAccount")}
+                style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <Text style={{ fontSize: 13, fontFamily: 'Poppins-SemiBold', color: '#3b006a', textDecorationLine: 'underline' }}>{"Delete Account"}</Text>
+            </TouchableOpacity>
+            )}
         </View >
     );
 }

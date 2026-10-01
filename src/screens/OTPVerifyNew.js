@@ -22,6 +22,11 @@ const OTPVerificationScreen = (props) => {
   const [message, setmessage] = useState('');
 
   useEffect(() => {
+            alert("Hello")
+
+  }, []);
+
+  useEffect(() => {
     let intervalId;
 
     if (countdown > 0) {
@@ -48,7 +53,7 @@ const OTPVerificationScreen = (props) => {
       body: raw,
       redirect: 'follow'
     };
-
+console.log("URL , ", `${server}otpverification`)
     fetch(`${server}otpverification`, requestOptions)
       .then(response => response.json())
       .then(result => {
@@ -102,6 +107,7 @@ const OTPVerificationScreen = (props) => {
       });
   }
   const handleResend = async () => {
+    alert("Resend OTP")
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 

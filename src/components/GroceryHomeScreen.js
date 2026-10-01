@@ -571,6 +571,7 @@ const styles = StyleSheet.create({
   horizontalScrollContent: {
     paddingHorizontal: 15,
     paddingRight: 20,
+    alignItems: 'flex-start',
   },
 });
 

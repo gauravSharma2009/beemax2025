@@ -122,14 +122,14 @@ const OTPLoginScreen = (props) => {
                     // disabled={!validNumber}
                 />}
             </View>
-            {Platform.OS === 'ios' && (
+            {/* {Platform.OS === 'ios' && (
             <TouchableOpacity
                 onPress={() => navigation.navigate("DeleteAccount")}
                 style={styles.deleteLinkContainer}
             >
                 <Text style={styles.deleteLinkText}>Delete your account</Text>
             </TouchableOpacity>
-            )}
+            )} */}
         </View>
     );
 };

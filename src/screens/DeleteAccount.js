@@ -44,14 +44,19 @@ function DeleteAccountScreen(props) {
     const doLogout = () => {
         storeData("loginData", "");
         storeData("isLogin", "false");
-        changeAuthState(false);
+        // Navigate out BEFORE flipping isLoggedIn: changing the auth state makes
+        // UserNavigator swap the stack it renders, which unmounts this screen and
+        // leaves its navigation object with no navigator left to handle the action.
         if (isLoggedIn) {
-            navigation.navigate("HomeStack");
+            // "HomeStack" is a tab inside the "Tabs" screen of the root stack, so
+            // it has to be addressed as a nested route.
+            navigation.navigate("Tabs", { screen: "HomeStack" });
         } else if (navigation.canGoBack()) {
             navigation.goBack();
         } else {
             navigation.navigate("OTPLogin");
         }
+        changeAuthState(false);
     };
 
     const requestDeleteAccount = () => {
