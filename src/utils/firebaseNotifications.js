@@ -24,6 +24,15 @@ export const requestUserPermission = async () => {
 // Get Firebase token
 export const getFirebaseToken = async () => {
   try {
+    // On iOS, FCM refuses to issue a token until the device is registered with
+    // APNs. RNFB kicks off registration at launch, but it only completes once
+    // the user has granted notification permission - which happens later in our
+    // flow - so we wait for it here before asking for the token.
+    if (Platform.OS === 'ios' && !messaging().isDeviceRegisteredForRemoteMessages) {
+      await messaging().registerDeviceForRemoteMessages();
+      console.log('Device registered for remote messages');
+    }
+
     const token = await messaging().getToken();
     console.log('Firebase token:', token);
     return token;

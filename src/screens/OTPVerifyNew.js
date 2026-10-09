@@ -21,10 +21,10 @@ const OTPVerificationScreen = (props) => {
   const [apiStatus, setApiStatus] = useState("success");
   const [message, setmessage] = useState('');
 
-  useEffect(() => {
-            alert("Hello")
+  // useEffect(() => {
+  //           alert("Hello")
 
-  }, []);
+  // }, []);
 
   useEffect(() => {
     let intervalId;

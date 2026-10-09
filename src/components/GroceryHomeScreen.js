@@ -202,7 +202,7 @@ const GroceryHomeScreen = ({ navigation, handleProductPress, optionalBannerData,
             onPress={() => {
               if (topHalfBannerData?.top_half_redirection_type === 'category') {
                 navigation.navigate("ProductListing", {
-                  item: { id: topHalfBannerData?.top_half_redirection_id },
+                  item: { redirection_id: topHalfBannerData?.top_half_redirection_id },
                   from: 'banner'
                 });
               } else if (topHalfBannerData?.top_half_redirection_type === 'page') {
