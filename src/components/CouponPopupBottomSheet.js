@@ -12,6 +12,7 @@ import {
     StatusBar,
     Platform,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { getData } from '../common/asyncStore';
 import { server } from '../common/apiConstant';
 
@@ -38,11 +39,15 @@ const COUPON_POPUP_API = 'get_coupon_popups';
 // Max allowed image height so it never overflows the screen
 const MAX_IMAGE_HEIGHT = SCREEN_HEIGHT * 0.82;
 
+// Coupon popup images are always uploaded at 800 x 818, so the height is
+// derived from that fixed ratio instead of fetching the size at runtime.
+const IMAGE_ASPECT_RATIO = 818 / 800;
+const IMAGE_HEIGHT = Math.min(SCREEN_WIDTH * IMAGE_ASPECT_RATIO, MAX_IMAGE_HEIGHT);
+
 function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
     const [visible, setVisible] = useState(false);
     const [currentPopup, setCurrentPopup] = useState(null);
     const [popupQueue, setPopupQueue] = useState([]);
-    const [imageHeight, setImageHeight] = useState(SCREEN_WIDTH); // 1:1 fallback
     const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
     // ─── Fetch coupon popups silently on mount ─────────────────────────────────
@@ -64,6 +69,7 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
             });
 
             const result = await response.json();
+            console.log('[CouponPopup] API response:', result);
             //  let result = {
             //     "status": true,
             //     "data": {
@@ -121,6 +127,8 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
                 }
 
                 if (ordered.length > 0) {
+                    // Warm the FastImage cache so every popup image is ready when shown
+                    FastImage.preload(ordered.map(p => ({ uri: p.image_url })));
                     setPopupQueue(ordered);
                     showPopup(ordered[0]);
                 }
@@ -153,36 +161,13 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
 
     // ─── Show / hide animations ────────────────────────────────────────────────
     const showPopup = (popup) => {
-        // Fetch real image dimensions first, then slide up
-        Image.getSize(
-            popup.image_url,
-            (imgWidth, imgHeight) => {
-                // Scale proportionally: width = SCREEN_WIDTH, height = proportional
-                const proportionalHeight = (SCREEN_WIDTH / imgWidth) * imgHeight;
-                // Cap at MAX_IMAGE_HEIGHT so it never exceeds the screen
-                const finalHeight = Math.min(proportionalHeight, MAX_IMAGE_HEIGHT);
-                setImageHeight(finalHeight);
-                setCurrentPopup(popup);
-                setVisible(true);
-                Animated.spring(slideAnim, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                    bounciness: 4,
-                }).start();
-            },
-            (_error) => {
-                // If getSize fails, fall back to a square and still show
-                console.log('[CouponPopup] getSize failed, using fallback height');
-                setImageHeight(SCREEN_WIDTH);
-                setCurrentPopup(popup);
-                setVisible(true);
-                Animated.spring(slideAnim, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                    bounciness: 4,
-                }).start();
-            }
-        );
+        setCurrentPopup(popup);
+        setVisible(true);
+        Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 4,
+        }).start();
     };
 
     const hidePopup = (callback) => {
@@ -253,10 +238,14 @@ function CouponPopupBottomSheet({ navigation, isLoggedIn }) {
 
                 {/* Coupon image — full width, proportional height, fully clickable */}
                 <TouchableOpacity activeOpacity={0.9} onPress={handleRedirect}>
-                    <Image
-                        source={{ uri: currentPopup.image_url }}
-                        style={[styles.couponImage, { height: imageHeight }]}
-                        resizeMode="cover"
+                    <FastImage
+                        source={{
+                            uri: currentPopup.image_url,
+                            priority: FastImage.priority.high,
+                            cache: FastImage.cacheControl.immutable,
+                        }}
+                        style={styles.couponImage}
+                        resizeMode={FastImage.resizeMode.cover}
                     />
                 </TouchableOpacity>
             </Animated.View>
@@ -314,7 +303,7 @@ const styles = StyleSheet.create({
     },
     couponImage: {
         width: SCREEN_WIDTH,
-        // height is set dynamically via state (proportional to real image dimensions)
+        height: IMAGE_HEIGHT, // fixed 800 x 818 ratio
         borderTopLeftRadius: SHEET_BORDER_RADIUS,
         borderTopRightRadius: SHEET_BORDER_RADIUS,
     },

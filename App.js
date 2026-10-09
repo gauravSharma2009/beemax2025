@@ -28,7 +28,7 @@ export default function App() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [iosVersion, setIosVersion] = useState("1.0.22");
-  const [androidVersion, setAndroidVersion] = useState("1.0.22");
+  const [androidVersion, setAndroidVersion] = useState("1.0.31");
   const [showSplash, setShowSplash] = useState(true);
   const [splashImageUrl, setSplashImageUrl] = useState(null);
   const [appInfo, setAppInfo] = useState({});

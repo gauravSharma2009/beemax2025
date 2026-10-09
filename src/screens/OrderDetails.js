@@ -160,11 +160,12 @@ function OrderDetailsScreen(props) {
                         </Text>
 
                     </View>
+                    {console.log("item.aApplicableFeeDetails : ", item.aApplicableFeeDetails)}
                     {item.aApplicableFeeDetails && Array.isArray(item.aApplicableFeeDetails) && item.aApplicableFeeDetails.map((feeItem, index) => {
                         return (
                             <View key={index} style={{ flexDirection: "row", justifyContent: 'space-between', marginTop: 10 }}>
                                 <Text style={{ color: textColor, fontSize: 16 }}>{feeItem.title}</Text>
-                                <Text style={{ color: textColor, fontSize: 16 }}><Text style={{ color: feeItem.display == 'Free' ? 'green' : textColor, fontSize: 18 }}>{feeItem.display}</Text>
+                                <Text style={{ color: textColor, fontSize: 16 }}><Text style={{ color: feeItem.display == 'Free' ? 'green' : textColor, fontSize: 18 }}>{`${feeItem.display == 'Free' ? 'Free' : `${currency}${feeItem.amount}`}`}</Text>
                                 </Text>
                             </View>
                         )
